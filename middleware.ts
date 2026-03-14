@@ -27,18 +27,22 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Rotas públicas (não precisam de login)
-  const publicRoutes = ['/login', '/cadastro']
-  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname)
+  const path = request.nextUrl.pathname
 
-  // Se não está autenticado e tenta acessar rota protegida
+  // Rotas de API nunca redirecionam — retornam 401 pelo próprio handler
+  if (path.startsWith('/api/')) {
+    return supabaseResponse
+  }
+
+  const publicRoutes = ['/login', '/cadastro']
+  const isPublicRoute = publicRoutes.includes(path)
+
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Se está autenticado e tenta acessar login/cadastro
   if (user && isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/'

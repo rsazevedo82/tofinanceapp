@@ -1,0 +1,104 @@
+'use client'
+
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+
+export default function CadastroPage() {
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const router = useRouter()
+
+  async function handleCadastro(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres')
+      setLoading(false)
+      return
+    }
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signUp({ email, password })
+
+    if (error) {
+      setError('Erro ao criar conta. Tente novamente.')
+      setLoading(false)
+      return
+    }
+
+    router.push('/')
+    router.refresh()
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold">
+            F
+          </div>
+          <span className="text-xl font-semibold text-slate-100">FinanceApp</span>
+        </div>
+
+        <div className="card">
+          <h1 className="text-lg font-semibold text-slate-100 mb-6">
+            Criar conta
+          </h1>
+
+          <form onSubmit={handleCadastro} className="space-y-4">
+            <div>
+              <label className="label">Email</label>
+              <input
+                type="email"
+                className="input"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Senha</label>
+              <input
+                type="password"
+                className="input"
+                placeholder="mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="text-red-400 text-sm bg-red-500/10 px-4 py-2.5 rounded-xl">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="btn-primary w-full py-3 mt-2"
+              disabled={loading}
+            >
+              {loading ? 'Criando conta...' : 'Criar conta'}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-sm text-slate-500 mt-4">
+          Já tem conta?{' '}
+          <a href="/login" className="text-brand-500 hover:text-brand-400">
+            Entrar
+          </a>
+        </p>
+      </div>
+    </div>
+  )
+}
