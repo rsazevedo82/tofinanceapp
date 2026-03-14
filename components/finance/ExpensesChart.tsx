@@ -47,7 +47,7 @@ export function ExpensesChart({ data }: { data: ExpenseData[] }) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number) => formatCurrency(value)}
+          formatter={(value) => formatCurrency(Number(value))}
           contentStyle={{
             background: '#1e293b',
             border: '1px solid #334155',

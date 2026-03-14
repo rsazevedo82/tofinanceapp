@@ -79,13 +79,14 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
     const body = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { data: null, error: parsed.error.errors[0].message },
-        { status: 400 }
-      )
-    }
-
+if (!parsed.success) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const message = (parsed as any).error.errors[0]?.message ?? 'Dados inválidos'
+  return NextResponse.json(
+    { data: null, error: message },
+    { status: 400 }
+  )
+}
     const { data: account, error: accountError } = await supabase
       .from('accounts')
       .select('id')
