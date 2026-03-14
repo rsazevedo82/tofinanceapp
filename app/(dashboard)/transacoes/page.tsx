@@ -18,10 +18,10 @@ export default async function TransacoesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-100">Transações</h1>
-        <NewTransactionButton />
-      </div>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+	  <h1 className="text-2xl font-bold text-slate-100">Transações</h1>
+	  <NewTransactionButton />
+	</div>
       <div className="card">
         <TransactionList transactions={transactions ?? []} />
       </div>

@@ -9,7 +9,10 @@ export function NewTransactionButton() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)} className="btn-primary flex items-center gap-2">
+      <button
+        onClick={() => setIsOpen(true)}
+        className="btn-primary flex items-center justify-center gap-2 w-full md:w-auto"
+      >
         <span className="text-lg leading-none">+</span>
         Nova transação
       </button>
