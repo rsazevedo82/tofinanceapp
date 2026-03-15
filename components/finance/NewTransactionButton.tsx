@@ -9,18 +9,11 @@ export function NewTransactionButton() {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="btn-primary flex items-center justify-center gap-2 w-full md:w-auto"
-      >
-        <span className="text-lg leading-none">+</span>
+      <button onClick={() => setIsOpen(true)} className="btn-primary text-xs">
+        <span className="opacity-60">+</span>
         Nova transação
       </button>
-      <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title="Nova transação"
-      >
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Nova transação">
         <TransactionForm onSuccess={() => setIsOpen(false)} />
       </Modal>
     </>

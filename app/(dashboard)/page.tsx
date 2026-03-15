@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, getCurrentMonthRange } from '@/lib/utils/format'
 import { TransactionList } from '@/components/finance/TransactionList'
-import { ExpensesChart } from '@/components/finance/ExpensesChart'
 import { NewTransactionButton } from '@/components/finance/NewTransactionButton'
 
 export const dynamic = 'force-dynamic'
@@ -11,115 +10,97 @@ export default async function DashboardPage() {
   const { start, end } = getCurrentMonthRange()
 
   const [accountsResult, transactionsResult] = await Promise.all([
-    supabase
-      .from('accounts')
-      .select('*')
-      .eq('is_active', true)
-      .order('name'),
-    supabase
-      .from('transactions')
-	.select(`
-	  *,
-	  account:accounts!transactions_account_id_fkey(id, name, color, icon),
-	  category:categories(id, name, color, icon)
-	`)
-      .is('deleted_at', null)
-      .gte('date', start)
-      .lte('date', end)
-      .eq('status', 'confirmed')
-      .order('date', { ascending: false }),
+    supabase.from('accounts').select('*').eq('is_active', true).is('deleted_at', null).order('name'),
+    supabase.from('transactions').select(`
+      *, account:accounts!transactions_account_id_fkey(id,name,color,icon),
+      category:categories(id,name,color,icon)
+    `).gte('date', start).lte('date', end).eq('status', 'confirmed')
+      .is('deleted_at', null).order('date', { ascending: false }),
   ])
 
   const accounts = accountsResult.data ?? []
   const transactions = transactionsResult.data ?? []
 
-  const income = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + Number(t.amount), 0)
-
-  const expense = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + Number(t.amount), 0)
-
-  const totalBalance = accounts
-    .reduce((sum, a) => sum + Number(a.balance), 0)
-
-  const categoryMap = new Map<string, {
-    category_id: string
-    category_name: string
-    category_color: string | null
-    total: number
-  }>()
-
-  transactions
-    .filter(t => t.type === 'expense' && t.category)
-    .forEach(t => {
-      const cat = t.category
-      const prev = categoryMap.get(cat.id)
-      if (prev) {
-        prev.total += Number(t.amount)
-      } else {
-        categoryMap.set(cat.id, {
-          category_id: cat.id,
-          category_name: cat.name,
-          category_color: cat.color,
-          total: Number(t.amount),
-        })
-      }
-    })
-
-  const expensesByCategory = Array.from(categoryMap.values())
-    .sort((a, b) => b.total - a.total)
+  const income  = transactions.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+  const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+  const balance = accounts.reduce((s, a) => s + Number(a.balance), 0)
 
   const month = new Date().toLocaleDateString('pt-BR', {
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'America/Sao_Paulo',
+    month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo'
   })
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
 
-{/* Header */}
-	<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-	  <div>
-	    <h1 className="text-2xl font-bold text-slate-100">Dashboard</h1>
-	    <p className="text-slate-500 text-sm mt-1 capitalize">{month}</p>
-	  </div>
-	  <NewTransactionButton />
-	</div>
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight mb-1">
+          Dashboard
+        </h1>
+        <p className="text-sm capitalize" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          {month}
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Properties (estilo Notion) */}
+      <div className="mb-8 space-y-0">
+        {[
+          { key: 'Conta',   val: accounts[0]?.name ?? 'Nenhuma conta' },
+          { key: 'Período', val: `${start} → ${end}` },
+          { key: 'Status',  val: '● Ativo', color: '#6ee7b7' },
+        ].map(({ key, val, color }) => (
+          <div key={key} className="flex items-center py-1.5 text-sm border-b border-white/[0.04]">
+            <span className="w-28 flex-shrink-0 text-xs font-medium"
+              style={{ color: 'rgba(200,198,190,0.35)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              {key}
+            </span>
+            <span style={{ color: color ?? 'rgba(200,198,190,0.6)' }}>{val}</span>
+          </div>
+        ))}
+      </div>
+
+      <hr className="border-white/[0.06] mb-8" />
+
+      {/* KPIs */}
+      <p className="section-heading">Resumo do mês</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         <div className="card">
-          <p className="text-slate-500 text-sm mb-1">Saldo total</p>
-          <p className="text-2xl font-bold text-slate-100">
-            {formatCurrency(totalBalance)}
+          <p className="label">Saldo total</p>
+          <p className="text-xl font-semibold tracking-tight text-[#f0ede8]">
+            {formatCurrency(balance)}
           </p>
         </div>
-        <div className="card border-green-500/20">
-          <p className="text-slate-500 text-sm mb-1">Receitas do mês</p>
-          <p className="text-2xl font-bold text-green-400">
+        <div className="card">
+          <p className="label">Receitas</p>
+          <p className="text-xl font-semibold tracking-tight" style={{ color: '#6ee7b7' }}>
             {formatCurrency(income)}
           </p>
         </div>
-        <div className="card border-red-500/20">
-          <p className="text-slate-500 text-sm mb-1">Gastos do mês</p>
-          <p className="text-2xl font-bold text-red-400">
+        <div className="card">
+          <p className="label">Gastos</p>
+          <p className="text-xl font-semibold tracking-tight" style={{ color: '#fca5a5' }}>
             {formatCurrency(expense)}
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
-          <h2 className="text-slate-100 font-semibold mb-4">Transações recentes</h2>
-          <TransactionList transactions={transactions.slice(0, 5)} />
-        </div>
-        <div className="card">
-          <h2 className="text-slate-100 font-semibold mb-4">Gastos por categoria</h2>
-          <ExpensesChart data={expensesByCategory} />
-        </div>
+      {/* Transações */}
+      <div className="flex items-center justify-between mb-3">
+        <p className="section-heading mb-0">Transações recentes</p>
+        <NewTransactionButton />
       </div>
+
+      {/* Database header estilo Notion */}
+      <div className="grid gap-2 px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest"
+        style={{ color: 'rgba(200,198,190,0.3)', gridTemplateColumns: '1fr 100px 80px 90px' }}>
+        <span>Nome</span>
+        <span>Categoria</span>
+        <span>Data</span>
+        <span className="text-right">Valor</span>
+      </div>
+      <hr className="border-white/[0.05] mb-1" />
+
+      <TransactionList transactions={transactions.slice(0, 8)} layout="database" />
 
     </div>
   )

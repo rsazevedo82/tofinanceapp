@@ -9,17 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50:  '#eef2ff',
-          100: '#e0e7ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-        },
-        income:  '#22c55e',
-        expense: '#ef4444',
-        pending: '#f59e0b',
+        notion: {
+          bg:       '#111110',
+          surface:  '#161614',
+          border:   'rgba(255,255,255,0.07)',
+          text:     '#e8e6e1',
+          muted:    'rgba(200,198,190,0.55)',
+          faint:    'rgba(200,198,190,0.35)',
+          income:   '#6ee7b7',
+          expense:  '#fca5a5',
+        }
       },
+      fontFamily: {
+        sans: ['-apple-system', 'Inter', 'ui-sans-serif', 'system-ui'],
+      },
+      borderRadius: {
+        notion: '6px',
+      }
     },
   },
   plugins: [],

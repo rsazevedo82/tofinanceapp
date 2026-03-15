@@ -13,83 +13,50 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-
+    setLoading(true); setError('')
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (error) {
-      setError('Email ou senha incorretos')
-      setLoading(false)
-      return
-    }
-
-    router.push('/')
-    router.refresh()
+    if (error) { setError('Email ou senha incorretos'); setLoading(false); return }
+    router.push('/'); router.refresh()
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#111110] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
+        <div className="flex items-center gap-2 mb-10">
+          <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold"
+            style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}>F</div>
+          <span className="text-base font-semibold text-[#e8e6e1] tracking-tight">FinanceApp</span>
+        </div>
 
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold">
-            F
+        <h1 className="text-xl font-semibold text-[#f0ede8] tracking-tight mb-1">Entrar</h1>
+        <p className="text-sm mb-8" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          Acesse sua conta financeira
+        </p>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="label">Email</label>
+            <input type="email" className="input" placeholder="seu@email.com"
+              value={email} onChange={e => setEmail(e.target.value)} required />
           </div>
-          <span className="text-xl font-semibold text-slate-100">FinanceApp</span>
-        </div>
+          <div>
+            <label className="label">Senha</label>
+            <input type="password" className="input" placeholder="••••••••"
+              value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          {error && (
+            <p className="text-xs px-3 py-2 rounded-lg"
+              style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>{error}</p>
+          )}
+          <button type="submit" className="btn-primary w-full justify-center py-2.5" disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
 
-        <div className="card">
-          <h1 className="text-lg font-semibold text-slate-100 mb-6">
-            Entrar na sua conta
-          </h1>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="label">Email</label>
-              <input
-                type="email"
-                className="input"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="label">Senha</label>
-              <input
-                type="password"
-                className="input"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {error && (
-              <p className="text-red-400 text-sm bg-red-500/10 px-4 py-2.5 rounded-xl">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className="btn-primary w-full py-3 mt-2"
-              disabled={loading}
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-          </form>
-        </div>
-
-        <p className="text-center text-sm text-slate-500 mt-4">
+        <p className="text-center text-xs mt-6" style={{ color: 'rgba(200,198,190,0.3)' }}>
           Não tem conta?{' '}
-          <a href="/cadastro" className="text-brand-500 hover:text-brand-400">
+          <a href="/cadastro" style={{ color: 'rgba(200,198,190,0.6)' }} className="hover:text-[#e8e6e1] transition-colors">
             Criar conta
           </a>
         </p>
