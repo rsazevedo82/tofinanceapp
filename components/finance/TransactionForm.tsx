@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import type { Account, Category } from '@/types'
+import { useState } from 'react'
+import { useCreateTransaction } from '@/hooks/useTransactions'
+import { useAccounts } from '@/hooks/useAccounts'
+import { useCategories } from '@/hooks/useCategories'
 
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState('')
-  const [accounts, setAccounts]     = useState<Account[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [error, setError] = useState('')
+
+  const { data: accounts  = [] } = useAccounts()
+  const { data: categories = [] } = useCategories()
+  const createTransaction = useCreateTransaction()
 
   const [form, setForm] = useState({
     type:        'expense' as 'income' | 'expense',
@@ -19,47 +22,23 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
     notes:       '',
   })
 
-  useEffect(() => {
-    async function load() {
-      const [accRes, catRes] = await Promise.all([
-        fetch('/api/accounts'),
-        fetch('/api/categories'),
-      ])
-      const accData = await accRes.json()
-      const catData = await catRes.json()
-      if (accData.data) setAccounts(accData.data)
-      if (catData.data) setCategories(catData.data)
-    }
-    load()
-  }, [])
-
   const filteredCategories = categories.filter(c => c.type === form.type)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError('')
 
-    const res = await fetch('/api/transactions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    createTransaction.mutate(
+      {
         ...form,
         amount: parseFloat(form.amount),
         category_id: form.category_id || undefined,
-      }),
-    })
-
-    const json = await res.json()
-
-    if (json.error) {
-      setError(json.error)
-      setLoading(false)
-      return
-    }
-
-    onSuccess()
-    window.location.reload()
+      },
+      {
+        onSuccess: () => onSuccess(),
+        onError: (err) => setError(err.message),
+      }
+    )
   }
 
   return (
@@ -87,11 +66,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       <div>
         <label className="label">Valor (R$)</label>
         <input
-          type="number"
-          step="0.01"
-          min="0.01"
-          className="input"
-          placeholder="0,00"
+          type="number" step="0.01" min="0.01" className="input" placeholder="0,00"
           value={form.amount}
           onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
           required
@@ -101,9 +76,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       <div>
         <label className="label">Descrição</label>
         <input
-          type="text"
-          className="input"
-          placeholder="Ex: Almoço, Salário..."
+          type="text" className="input" placeholder="Ex: Almoço, Salário..."
           value={form.description}
           onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           required
@@ -142,8 +115,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       <div>
         <label className="label">Data</label>
         <input
-          type="date"
-          className="input"
+          type="date" className="input"
           value={form.date}
           onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
           required
@@ -159,9 +131,9 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       <button
         type="submit"
         className="btn-primary w-full py-3"
-        disabled={loading}
+        disabled={createTransaction.isPending}
       >
-        {loading ? 'Salvando...' : 'Salvar transação'}
+        {createTransaction.isPending ? 'Salvando...' : 'Salvar transação'}
       </button>
 
     </form>

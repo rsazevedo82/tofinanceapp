@@ -1,7 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import type { Account, Category, Transaction } from '@/types'
+import { useState } from 'react'
+import { useUpdateTransaction, useDeleteTransaction } from '@/hooks/useTransactions'
+import { useAccounts } from '@/hooks/useAccounts'
+import { useCategories } from '@/hooks/useCategories'
+import type { Transaction } from '@/types'
 
 interface EditTransactionFormProps {
   transaction: Transaction
@@ -10,12 +13,13 @@ interface EditTransactionFormProps {
 }
 
 export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTransactionFormProps) {
-  const [loading, setLoading]       = useState(false)
-  const [deleting, setDeleting]     = useState(false)
-  const [error, setError]           = useState('')
-  const [accounts, setAccounts]     = useState<Account[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [error, setError]               = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const { data: accounts   = [] } = useAccounts()
+  const { data: categories = [] } = useCategories()
+  const updateTransaction = useUpdateTransaction()
+  const deleteTransaction = useDeleteTransaction()
 
   const [form, setForm] = useState({
     type:        transaction.type as 'income' | 'expense',
@@ -27,47 +31,26 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
     notes:       transaction.notes ?? '',
   })
 
-  useEffect(() => {
-    async function load() {
-      const [accRes, catRes] = await Promise.all([
-        fetch('/api/accounts'),
-        fetch('/api/categories'),
-      ])
-      const accData = await accRes.json()
-      const catData = await catRes.json()
-      if (accData.data) setAccounts(accData.data)
-      if (catData.data) setCategories(catData.data)
-    }
-    load()
-  }, [])
-
   const filteredCategories = categories.filter(c => c.type === form.type)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError('')
 
-    const res = await fetch(`/api/transactions/${transaction.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        amount: parseFloat(form.amount),
-        category_id: form.category_id || undefined,
-      }),
-    })
-
-    const json = await res.json()
-
-    if (json.error) {
-      setError(json.error)
-      setLoading(false)
-      return
-    }
-
-    onSuccess()
-    window.location.reload()
+    updateTransaction.mutate(
+      {
+        id: transaction.id,
+        body: {
+          ...form,
+          amount: parseFloat(form.amount),
+          category_id: form.category_id || undefined,
+        },
+      },
+      {
+        onSuccess: () => onSuccess(),
+        onError: (err) => setError(err.message),
+      }
+    )
   }
 
   async function handleDelete() {
@@ -76,21 +59,10 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
       return
     }
 
-    setDeleting(true)
-    const res = await fetch(`/api/transactions/${transaction.id}`, {
-      method: 'DELETE',
+    deleteTransaction.mutate(transaction.id, {
+      onSuccess: () => onDelete(),
+      onError: (err) => setError(err.message),
     })
-
-    const json = await res.json()
-
-    if (json.error) {
-      setError(json.error)
-      setDeleting(false)
-      return
-    }
-
-    onDelete()
-    window.location.reload()
   }
 
   return (
@@ -118,10 +90,7 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
       <div>
         <label className="label">Valor (R$)</label>
         <input
-          type="number"
-          step="0.01"
-          min="0.01"
-          className="input"
+          type="number" step="0.01" min="0.01" className="input"
           value={form.amount}
           onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
           required
@@ -131,8 +100,7 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
       <div>
         <label className="label">Descrição</label>
         <input
-          type="text"
-          className="input"
+          type="text" className="input"
           value={form.description}
           onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           required
@@ -171,8 +139,7 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
       <div>
         <label className="label">Data</label>
         <input
-          type="date"
-          className="input"
+          type="date" className="input"
           value={form.date}
           onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
           required
@@ -188,22 +155,26 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
       <button
         type="submit"
         className="btn-primary w-full py-3"
-        disabled={loading}
+        disabled={updateTransaction.isPending}
       >
-        {loading ? 'Salvando...' : 'Salvar alterações'}
+        {updateTransaction.isPending ? 'Salvando...' : 'Salvar alterações'}
       </button>
 
       <button
         type="button"
         onClick={handleDelete}
-        disabled={deleting}
+        disabled={deleteTransaction.isPending}
         className={`w-full py-3 rounded-xl text-sm font-medium transition-colors ${
           confirmDelete
             ? 'bg-red-500 text-white hover:bg-red-600'
             : 'bg-transparent text-red-400 border border-red-500/30 hover:bg-red-500/10'
         }`}
       >
-        {deleting ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusão' : 'Excluir transação'}
+        {deleteTransaction.isPending
+          ? 'Excluindo...'
+          : confirmDelete
+          ? 'Confirmar exclusão'
+          : 'Excluir transação'}
       </button>
 
       {confirmDelete && (
