@@ -70,7 +70,8 @@ export function Sidebar() {
       </aside>
 
       {/* ── Mobile header ── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-30">
+{/* ── Mobile header ── */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/50 flex items-center justify-between px-4 z-30">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-xs">
             F
