@@ -38,19 +38,19 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
     const accountId = searchParams.get('account_id')
     const type      = searchParams.get('type')
 
-    let query = supabase
+    let dbQuery = supabase
       .from('transactions')
       .select(transactionSelect)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(100)
 
-    if (startDate) query = query.gte('date', startDate)
-    if (endDate)   query = query.lte('date', endDate)
-    if (accountId) query = query.eq('account_id', accountId)
-    if (type)      query = query.eq('type', type)
+    if (startDate) dbQuery = dbQuery.gte('date', startDate)
+    if (endDate)   dbQuery = dbQuery.lte('date', endDate)
+    if (accountId) dbQuery = dbQuery.eq('account_id', accountId)
+    if (type)      dbQuery = dbQuery.eq('type', type)
 
-    const { data, error } = await query
+    const { data, error } = await dbQuery
     if (error) throw error
 
     return NextResponse.json({ data, error: null })
@@ -79,14 +79,15 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
     const body = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
 
-if (!parsed.success) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const message = (parsed as any).error.errors[0]?.message ?? 'Dados inválidos'
-  return NextResponse.json(
-    { data: null, error: message },
-    { status: 400 }
-  )
-}
+    if (!parsed.success) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (parsed as any).error.errors[0]?.message ?? 'Dados inválidos'
+      return NextResponse.json(
+        { data: null, error: message },
+        { status: 400 }
+      )
+    }
+
     const { data: account, error: accountError } = await supabase
       .from('accounts')
       .select('id')

@@ -1,21 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
 import type { Account, Category } from '@/types'
 
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
-  
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState('')
-  const [accounts, setAccounts]   = useState<Account[]>([])
+  const [loading, setLoading]       = useState(false)
+  const [error, setError]           = useState('')
+  const [accounts, setAccounts]     = useState<Account[]>([])
   const [categories, setCategories] = useState<Category[]>([])
 
   const [form, setForm] = useState({
     type:        'expense' as 'income' | 'expense',
     amount:      '',
     description: '',
-    date:        new Date().toISOString().split('T')[0],
+    date:        new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }),
     account_id:  '',
     category_id: '',
     notes:       '',
@@ -54,20 +52,19 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
 
     const json = await res.json()
 
-	if (json.error) {
-	  setError(json.error)
-	  setLoading(false)
-	  return
-	}
+    if (json.error) {
+      setError(json.error)
+      setLoading(false)
+      return
+    }
 
-	onSuccess()
-	window.location.reload()
+    onSuccess()
+    window.location.reload()
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
 
-      {/* Tipo */}
       <div className="grid grid-cols-2 gap-2">
         {(['expense', 'income'] as const).map((type) => (
           <button
@@ -87,7 +84,6 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         ))}
       </div>
 
-      {/* Valor */}
       <div>
         <label className="label">Valor (R$)</label>
         <input
@@ -102,7 +98,6 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         />
       </div>
 
-      {/* Descrição */}
       <div>
         <label className="label">Descrição</label>
         <input
@@ -115,7 +110,6 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         />
       </div>
 
-      {/* Conta */}
       <div>
         <label className="label">Conta</label>
         <select
@@ -131,7 +125,6 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         </select>
       </div>
 
-      {/* Categoria */}
       <div>
         <label className="label">Categoria</label>
         <select
@@ -146,7 +139,6 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         </select>
       </div>
 
-      {/* Data */}
       <div>
         <label className="label">Data</label>
         <input
@@ -171,6 +163,7 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       >
         {loading ? 'Salvando...' : 'Salvar transação'}
       </button>
+
     </form>
   )
 }
