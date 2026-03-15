@@ -14,6 +14,7 @@ export default async function TransacoesPage() {
       account:accounts!transactions_account_id_fkey(id, name, color, icon),
       category:categories(id, name, color, icon)
     `)
+    .is('deleted_at', null)
     .order('date', { ascending: false })
 
   return (

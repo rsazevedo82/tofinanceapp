@@ -16,7 +16,9 @@ export async function GET(): Promise<NextResponse<ApiResponse<Account[]>>> {
       .from('accounts')
       .select('*')
       .eq('is_active', true)
+      .is('deleted_at', null)
       .order('name')
+
 
     if (error) throw error
 

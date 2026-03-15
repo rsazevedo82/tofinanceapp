@@ -41,6 +41,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
     let dbQuery = supabase
       .from('transactions')
       .select(transactionSelect)
+      .is('deleted_at', null)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(100)
