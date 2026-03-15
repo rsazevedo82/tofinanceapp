@@ -71,6 +71,21 @@ describe('createTransactionSchema', () => {
     const result = createTransactionSchema.safeParse({ ...validTransaction, type: 'invalid' })
     expect(result.success).toBe(false)
   })
+
+  it('rejeita amount com mais de 2 casas decimais', () => {
+    const result = createTransactionSchema.safeParse({ ...validTransaction, amount: 10.999 })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita date fora do intervalo permitido', () => {
+    const result = createTransactionSchema.safeParse({ ...validTransaction, date: '1999-01-01' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita description com caracteres de controle', () => {
+    const result = createTransactionSchema.safeParse({ ...validTransaction, description: 'teste\x00injetado' })
+    expect(result.success).toBe(false)
+  })
 })
 
 describe('createAccountSchema', () => {
@@ -114,5 +129,15 @@ describe('createAccountSchema', () => {
     if (result.success) {
       expect(result.data.name).toBe('Nubank')
     }
+  })
+
+  it('rejeita color com formato inválido', () => {
+    const result = createAccountSchema.safeParse({ ...validAccount, color: 'red' })
+    expect(result.success).toBe(false)
+  })
+
+  it('aceita color com formato hex válido', () => {
+    const result = createAccountSchema.safeParse({ ...validAccount, color: '#EF4444' })
+    expect(result.success).toBe(true)
   })
 })
