@@ -81,8 +81,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
     const parsed = createTransactionSchema.safeParse(body)
 
     if (!parsed.success) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const message = (parsed as any).error.errors[0]?.message ?? 'Dados inválidos'
+      const message = parsed.error.issues[0]?.message ?? 'Dados inválidos'
       return NextResponse.json(
         { data: null, error: message },
         { status: 400 }

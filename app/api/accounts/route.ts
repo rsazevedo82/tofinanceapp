@@ -41,14 +41,13 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<A
     const body = await request.json()
     const parsed = createAccountSchema.safeParse(body)
 
-if (!parsed.success) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const message = (parsed as any).error.errors[0]?.message ?? 'Dados inválidos'
-  return NextResponse.json(
-    { data: null, error: message },
-    { status: 400 }
-  )
-}
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? 'Dados inválidos'
+      return NextResponse.json(
+        { data: null, error: message },
+        { status: 400 }
+      )
+    }
 
     const { data, error } = await supabase
       .from('accounts')

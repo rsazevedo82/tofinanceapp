@@ -24,9 +24,9 @@ export async function PATCH(
     const body = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
 
+    // Mesma substituição
     if (!parsed.success) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const message = (parsed as any).error.errors[0]?.message ?? 'Dados inválidos'
+      const message = parsed.error.issues[0]?.message ?? 'Dados inválidos'
       return NextResponse.json({ data: null, error: message }, { status: 400 })
     }
 
