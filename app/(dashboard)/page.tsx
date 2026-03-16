@@ -15,7 +15,7 @@ export default async function DashboardPage() {
       *, account:accounts!transactions_account_id_fkey(id,name,color,icon),
       category:categories(id,name,color,icon)
     `).gte('date', start).lte('date', end).eq('status', 'confirmed')
-      .is('deleted_at', null).order('date', { ascending: false }),
+      .is('deleted_at', null).order('date', { ascending: false }).limit(500),
   ])
 
   const accounts = accountsResult.data ?? []

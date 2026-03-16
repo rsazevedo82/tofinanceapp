@@ -44,7 +44,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
       .is('deleted_at', null)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(100)
+      .limit(500)
 
     if (startDate) dbQuery = dbQuery.gte('date', startDate)
     if (endDate)   dbQuery = dbQuery.lte('date', endDate)

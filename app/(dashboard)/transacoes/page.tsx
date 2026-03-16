@@ -15,6 +15,7 @@ export default async function TransacoesPage() {
     .gte('date', start).lte('date', end)
     .is('deleted_at', null)
     .order('date', { ascending: false })
+    .limit(500)
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
