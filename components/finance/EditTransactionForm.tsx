@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useUpdateTransaction, useDeleteTransaction } from '@/hooks/useTransactions'
 import { useAccounts } from '@/hooks/useAccounts'
 import { useCategories } from '@/hooks/useCategories'
@@ -13,8 +14,9 @@ interface EditTransactionFormProps {
 }
 
 export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTransactionFormProps) {
-  const [error, setError]               = useState('')
+  const [error, setError]                 = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const router = useRouter()
 
   const { data: accounts   = [] } = useAccounts()
   const { data: categories = [] } = useCategories()
@@ -47,7 +49,10 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
         },
       },
       {
-        onSuccess: () => onSuccess(),
+        onSuccess: () => {
+          onSuccess()
+          router.refresh()
+        },
         onError: (err) => setError(err.message),
       }
     )
@@ -60,7 +65,10 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
     }
 
     deleteTransaction.mutate(transaction.id, {
-      onSuccess: () => onDelete(),
+      onSuccess: () => {
+        onDelete()
+        router.refresh()
+      },
       onError: (err) => setError(err.message),
     })
   }
@@ -147,14 +155,15 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
       </div>
 
       {error && (
-        <p className="text-red-400 text-sm bg-red-500/10 px-4 py-2.5 rounded-xl">
+        <p className="text-xs px-3 py-2 rounded-lg"
+          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
           {error}
         </p>
       )}
 
       <button
         type="submit"
-        className="btn-primary w-full py-3"
+        className="btn-primary w-full justify-center py-2.5"
         disabled={updateTransaction.isPending}
       >
         {updateTransaction.isPending ? 'Salvando...' : 'Salvar alterações'}
@@ -164,7 +173,7 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
         type="button"
         onClick={handleDelete}
         disabled={deleteTransaction.isPending}
-        className={`w-full py-3 rounded-xl text-sm font-medium transition-colors ${
+        className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
           confirmDelete
             ? 'bg-red-500 text-white hover:bg-red-600'
             : 'bg-transparent text-red-400 border border-red-500/30 hover:bg-red-500/10'
@@ -181,7 +190,8 @@ export function EditTransactionForm({ transaction, onSuccess, onDelete }: EditTr
         <button
           type="button"
           onClick={() => setConfirmDelete(false)}
-          className="w-full py-2 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+          className="w-full py-2 text-xs transition-colors"
+          style={{ color: 'rgba(200,198,190,0.35)' }}
         >
           Cancelar exclusão
         </button>

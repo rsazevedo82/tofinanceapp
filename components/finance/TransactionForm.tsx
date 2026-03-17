@@ -1,14 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useCreateTransaction } from '@/hooks/useTransactions'
 import { useAccounts } from '@/hooks/useAccounts'
 import { useCategories } from '@/hooks/useCategories'
 
 export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState('')
+  const router = useRouter()
 
-  const { data: accounts  = [] } = useAccounts()
+  const { data: accounts   = [] } = useAccounts()
   const { data: categories = [] } = useCategories()
   const createTransaction = useCreateTransaction()
 
@@ -35,7 +37,10 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
         category_id: form.category_id || undefined,
       },
       {
-        onSuccess: () => onSuccess(),
+        onSuccess: () => {
+          onSuccess()
+          router.refresh() // revalida Server Components sem reload completo
+        },
         onError: (err) => setError(err.message),
       }
     )
@@ -123,14 +128,15 @@ export function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       {error && (
-        <p className="text-red-400 text-sm bg-red-500/10 px-4 py-2.5 rounded-xl">
+        <p className="text-xs px-3 py-2 rounded-lg"
+          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
           {error}
         </p>
       )}
 
       <button
         type="submit"
-        className="btn-primary w-full py-3"
+        className="btn-primary w-full justify-center py-2.5"
         disabled={createTransaction.isPending}
       >
         {createTransaction.isPending ? 'Salvando...' : 'Salvar transação'}
