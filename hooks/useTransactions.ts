@@ -39,7 +39,7 @@ export function useCreateTransaction() {
       return json.data
     },
     onSuccess: () => {
-      // Invalida e revalida todas as queries relacionadas
+      // Criar sempre afeta saldo — invalida tudo
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
@@ -61,10 +61,21 @@ export function useUpdateTransaction() {
       if (json.error) throw new Error(json.error)
       return json.data
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Sempre invalida a lista de transações
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+
+      // Invalida contas e dashboard apenas se o saldo pode ter mudado
+      const affectsBalance =
+        variables.body.amount     !== undefined ||
+        variables.body.type       !== undefined ||
+        variables.body.account_id !== undefined ||
+        variables.body.status     !== undefined
+
+      if (affectsBalance) {
+        queryClient.invalidateQueries({ queryKey: ['accounts'] })
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      }
     },
   })
 }
@@ -79,6 +90,7 @@ export function useDeleteTransaction() {
       if (json.error) throw new Error(json.error)
     },
     onSuccess: () => {
+      // Deletar sempre afeta saldo — invalida tudo
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
