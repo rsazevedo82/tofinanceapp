@@ -14,7 +14,8 @@ export default function CadastroPage() {
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true); setError('')
-    if (password.length < 6) { setError('Senha deve ter pelo menos 6 caracteres'); setLoading(false); return }
+    if (password.length < 10) { setError('Senha deve ter pelo menos 10 caracteres'); setLoading(false); return }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) { setError('Senha deve conter letras e números'); setLoading(false); return }
     const supabase = createClient()
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) { setError('Erro ao criar conta. Tente novamente.'); setLoading(false); return }
@@ -43,7 +44,7 @@ export default function CadastroPage() {
           </div>
           <div>
             <label className="label">Senha</label>
-            <input type="password" className="input" placeholder="mínimo 6 caracteres"
+            <input type="password" className="input" placeholder="mínimo 10 caracteres, letras e números"
               value={password} onChange={e => setPassword(e.target.value)} required />
           </div>
           {error && (
