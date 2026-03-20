@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createTransactionSchema } from '@/lib/validations/schemas'
-import { rateLimit } from '@/lib/rateLimit'
+import { ratelimit } from '@/lib/rateLimit'
 import { headers } from 'next/headers'
 import type { ApiResponse, Transaction } from '@/types'
 import { NextResponse } from 'next/server'
@@ -13,12 +13,12 @@ const transactionSelect = `
 
 async function getIP(): Promise<string> {
   const headersList = await headers()
-  return headersList.get('x-forwarded-for') ?? 'anonymous'
+  return headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1'
 }
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Transaction[]>>> {
   try {
-    const { allowed } = rateLimit(await getIP())
+    const { success: allowed } = await ratelimit.limit(await getIP())
     if (!allowed) {
       return NextResponse.json(
         { data: null, error: 'Muitas requisições. Tente novamente em 1 minuto.' },
@@ -63,7 +63,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<Transaction>>> {
   try {
-    const { allowed } = rateLimit(await getIP())
+    const { success: allowed } = await ratelimit.limit(await getIP())
     if (!allowed) {
       return NextResponse.json(
         { data: null, error: 'Muitas requisições. Tente novamente em 1 minuto.' },

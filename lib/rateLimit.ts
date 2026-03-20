@@ -1,24 +1,12 @@
-const requests = new Map<string, { count: number; resetAt: number }>()
+import { Redis } from '@upstash/redis'
+import { Ratelimit } from '@upstash/ratelimit'
 
-const WINDOW_MS = 60 * 1000  // 1 minuto
-const MAX_REQUESTS = 60       // 60 requisições por minuto por IP
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+})
 
-export function rateLimit(ip: string): { allowed: boolean; remaining: number } {
-  const now = Date.now()
-  const record = requests.get(ip)
-
-  // Janela expirada ou primeiro acesso
-  if (!record || now > record.resetAt) {
-    requests.set(ip, { count: 1, resetAt: now + WINDOW_MS })
-    return { allowed: true, remaining: MAX_REQUESTS - 1 }
-  }
-
-  // Limite atingido
-  if (record.count >= MAX_REQUESTS) {
-    return { allowed: false, remaining: 0 }
-  }
-
-  // Incrementa contador
-  record.count++
-  return { allowed: true, remaining: MAX_REQUESTS - record.count }
-}
+export const ratelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(60, '1 m'),
+})
