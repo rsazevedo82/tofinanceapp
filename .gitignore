@@ -38,3 +38,8 @@ next-env.d.ts
 # Documentos gerados
 *.docx
 *.pdf
+# Scripts PowerShell locais
+*.ps1
+
+# Migrations locais
+supabase/migrations/
