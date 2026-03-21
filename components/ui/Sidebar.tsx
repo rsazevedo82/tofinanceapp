@@ -1,11 +1,12 @@
 ﻿'use client'
 
-import Link from 'next/link'
+import Link      from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import { createClient }           from '@/lib/supabase/client'
+import { useAccounts }            from '@/hooks/useAccounts'
+import { useState }               from 'react'
 
-const navItems = [
+const baseNavItems = [
   { href: '/',           label: 'Dashboard',  icon: '⊞' },
   { href: '/transacoes', label: 'Transacoes', icon: '↕' },
   { href: '/contas',     label: 'Contas',     icon: '◫' },
@@ -18,11 +19,23 @@ export function Sidebar() {
   const router   = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  const { data: accounts = [] } = useAccounts()
+  const hasCards = accounts.some(a => a.type === 'credit' && a.is_active)
+
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
   }
+
+  // Injeta item Cartoes entre Contas e Categorias apenas se houver cartoes
+  const navItems = hasCards
+    ? [
+        ...baseNavItems.slice(0, 3),
+        { href: '/cartoes', label: 'Cartoes', icon: '💳' },
+        ...baseNavItems.slice(3),
+      ]
+    : baseNavItems
 
   const NavContent = () => (
     <>
@@ -41,7 +54,9 @@ export function Sidebar() {
       <nav className="flex-1 px-1 space-y-0.5">
         <p className="section-heading px-2 pt-2">Menu</p>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+          const isActive =
+            pathname === item.href ||
+            (item.href !== '/' && pathname.startsWith(item.href))
           return (
             <Link
               key={item.href}
@@ -81,8 +96,8 @@ export function Sidebar() {
       <aside
         className="hidden md:flex fixed left-0 top-0 h-full w-56 flex-col z-30"
         style={{
-          background:   'rgba(255,255,255,0.015)',
-          borderRight:  '0.5px solid rgba(255,255,255,0.06)',
+          background:  'rgba(255,255,255,0.015)',
+          borderRight: '0.5px solid rgba(255,255,255,0.06)',
         }}
       >
         <NavContent />

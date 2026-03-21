@@ -1,12 +1,14 @@
 ﻿// app/(dashboard)/fatura/[id]/page.tsx
 'use client'
 
-import { useParams, useRouter }    from 'next/navigation'
-import { useState }                from 'react'
+import { useParams, useRouter }       from 'next/navigation'
+import { useState }                   from 'react'
 import { useInvoices, usePayInvoice } from '@/hooks/useInvoices'
-import { useAccounts }             from '@/hooks/useAccounts'
-import { useQuery }                from '@tanstack/react-query'
-import { formatCurrency }          from '@/lib/utils/format'
+import { useAccounts }                from '@/hooks/useAccounts'
+import { useQuery }                   from '@tanstack/react-query'
+import { formatCurrency }             from '@/lib/utils/format'
+import { Modal }                      from '@/components/ui/Modal'
+import { TransactionForm }            from '@/components/finance/TransactionForm'
 import type { Transaction, ApiResponse } from '@/types'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -25,9 +27,9 @@ export default function FaturaPage() {
   const { id: accountId } = useParams<{ id: string }>()
   const router            = useRouter()
 
-  const { data: accounts = [] } = useAccounts()
-  const { data: invoices = [], isLoading } = useInvoices(accountId)
-  const payInvoice = usePayInvoice()
+  const { data: accounts = [] }                  = useAccounts()
+  const { data: invoices = [], isLoading }        = useInvoices(accountId)
+  const payInvoice                                = usePayInvoice()
 
   const account = accounts.find(a => a.id === accountId)
 
@@ -36,16 +38,17 @@ export default function FaturaPage() {
   const [paymentDate,       setPaymentDate]        = useState(
     new Date().toISOString().split('T')[0]
   )
-  const [error, setError] = useState('')
+  const [showNewTx, setShowNewTx] = useState(false)
+  const [error,     setError]     = useState('')
 
   const selectedInvoice = invoices.find(i => i.id === selectedInvoiceId) ?? invoices[0] ?? null
 
   // Transacoes da fatura selecionada
-  const { data: transactions = [] } = useQuery({
+  const { data: transactions = [], refetch: refetchTx } = useQuery({
     queryKey: ['transactions', 'invoice', selectedInvoice?.id],
     enabled:  !!selectedInvoice?.id,
     queryFn:  async (): Promise<Transaction[]> => {
-      const res  = await fetch(`/api/transactions?invoice_id=${selectedInvoice!.id}`)
+      const res  = await fetch(`/api/transactions?invoice_id=${selectedInvoice!.id}&limit=200`)
       const json: ApiResponse<Transaction[]> = await res.json()
       if (json.error) throw new Error(json.error)
       return json.data ?? []
@@ -54,16 +57,18 @@ export default function FaturaPage() {
 
   const payableAccounts = accounts.filter(a => a.type !== 'credit' && a.is_active)
 
+  // Total calculado a partir das transacoes (fonte da verdade)
+  const calculatedTotal = transactions.reduce((sum, t) => sum + Number(t.amount), 0)
+
   async function handlePay() {
     if (!selectedInvoice || !paymentAccountId) return
     setError('')
-
     payInvoice.mutate(
       {
         invoiceId: selectedInvoice.id,
         body: {
           payment_account_id: paymentAccountId,
-          amount:             selectedInvoice.total_amount,
+          amount:             calculatedTotal,
           payment_date:       paymentDate,
         },
       },
@@ -80,22 +85,30 @@ export default function FaturaPage() {
     <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <button
-          onClick={() => router.back()}
-          className="text-xs px-2 py-1 rounded-lg transition-colors"
-          style={{ color: 'rgba(200,198,190,0.5)', background: 'rgba(255,255,255,0.04)' }}
-        >
-          ← voltar
-        </button>
-        <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
-            {account.name}
-          </h1>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            Fecha dia {account.closing_day} · Vence dia {account.due_day}
-          </p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="text-xs px-2 py-1 rounded-lg transition-colors"
+            style={{ color: 'rgba(200,198,190,0.5)', background: 'rgba(255,255,255,0.04)' }}
+          >
+            ← voltar
+          </button>
+          <div>
+            <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+              {account.name}
+            </h1>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(200,198,190,0.35)' }}>
+              Fecha dia {account.closing_day} · Vence dia {account.due_day}
+            </p>
+          </div>
         </div>
+
+        {/* Botao Nova Transacao */}
+        <button onClick={() => setShowNewTx(true)} className="btn-primary text-xs">
+          <span className="opacity-60">+</span>
+          Nova transacao
+        </button>
       </div>
 
       {/* Limite */}
@@ -118,7 +131,9 @@ export default function FaturaPage() {
             <p className="text-lg font-semibold text-[#6ee7b7]">
               {formatCurrency(
                 account.credit_limit -
-                invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + Number(i.total_amount), 0)
+                invoices
+                  .filter(i => i.status !== 'paid')
+                  .reduce((s, i) => s + Number(i.total_amount), 0)
               )}
             </p>
           </div>
@@ -132,7 +147,7 @@ export default function FaturaPage() {
           <p className="section-heading">Faturas</p>
           {isLoading ? (
             <div className="space-y-1">
-              {[1,2,3].map(i => (
+              {[1, 2, 3].map(i => (
                 <div key={i} className="db-row px-2 py-3 animate-pulse">
                   <div className="h-3 bg-white/5 rounded w-full" />
                 </div>
@@ -140,36 +155,38 @@ export default function FaturaPage() {
             </div>
           ) : invoices.length === 0 ? (
             <p className="text-xs py-8 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
-              Nenhuma fatura ainda
+              Nenhuma fatura ainda.
+              Adicione uma transacao para comecar.
             </p>
           ) : (
             <div className="space-y-0.5">
-              {invoices.map(invoice => (
-                <div
-                  key={invoice.id}
-                  onClick={() => setSelectedInvoiceId(invoice.id)}
-                  className={`db-row flex items-center justify-between px-2 py-3 ${
-                    (selectedInvoice?.id ?? invoices[0]?.id) === invoice.id
-                      ? 'bg-white/5'
-                      : ''
-                  }`}
-                >
-                  <div>
-                    <p className="text-sm text-[#e8e6e1]">{invoice.reference_month}</p>
-                    <p className="text-[10px]" style={{ color: STATUS_COLOR[invoice.status] }}>
-                      {STATUS_LABEL[invoice.status]}
+              {invoices.map(invoice => {
+                const isSelected = (selectedInvoice?.id ?? invoices[0]?.id) === invoice.id
+                return (
+                  <div
+                    key={invoice.id}
+                    onClick={() => setSelectedInvoiceId(invoice.id)}
+                    className={`db-row flex items-center justify-between px-2 py-3 ${
+                      isSelected ? 'bg-white/[0.05]' : ''
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm text-[#e8e6e1]">{invoice.reference_month}</p>
+                      <p className="text-[10px] font-medium" style={{ color: STATUS_COLOR[invoice.status] }}>
+                        {STATUS_LABEL[invoice.status]}
+                      </p>
+                    </div>
+                    <p className="text-sm font-semibold text-[#f0ede8]">
+                      {formatCurrency(Number(invoice.total_amount))}
                     </p>
                   </div>
-                  <p className="text-sm font-semibold text-[#f0ede8]">
-                    {formatCurrency(Number(invoice.total_amount))}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
 
-        {/* Detalhe da fatura selecionada */}
+        {/* Detalhe da fatura */}
         <div className="md:col-span-2">
           {selectedInvoice ? (
             <>
@@ -177,16 +194,18 @@ export default function FaturaPage() {
                 <p className="section-heading mb-0">
                   Lancamentos · {selectedInvoice.reference_month}
                 </p>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                   style={{
-                    color:       STATUS_COLOR[selectedInvoice.status],
-                    background:  `${STATUS_COLOR[selectedInvoice.status]}18`,
-                  }}>
+                    color:      STATUS_COLOR[selectedInvoice.status],
+                    background: `${STATUS_COLOR[selectedInvoice.status]}18`,
+                  }}
+                >
                   {STATUS_LABEL[selectedInvoice.status]}
                 </span>
               </div>
 
-              {/* Transacoes */}
+              {/* Lista de transacoes */}
               <div className="space-y-0.5 mb-4">
                 {transactions.length === 0 ? (
                   <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
@@ -199,8 +218,7 @@ export default function FaturaPage() {
                         <p className="text-sm text-[#e8e6e1]">{tx.description}</p>
                         <p className="text-[10px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
                           {new Date(tx.date + 'T12:00:00').toLocaleDateString('pt-BR')}
-                          {tx.installment_number && tx.installment_group_id &&
-                            ` · Parcela ${tx.installment_number}`}
+                          {tx.installment_number ? ` · Parcela ${tx.installment_number}` : ''}
                         </p>
                       </div>
                       <p className="text-sm font-medium text-[#fca5a5]">
@@ -211,19 +229,23 @@ export default function FaturaPage() {
                 )}
               </div>
 
-              {/* Total */}
-              <div className="flex items-center justify-between px-2 py-2 border-t"
-                style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                <p className="text-sm text-[#e8e6e1]">Total da fatura</p>
+              {/* Total calculado pelas transacoes */}
+              <div
+                className="flex items-center justify-between px-2 py-2.5 rounded-lg mb-4"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}
+              >
+                <p className="text-sm font-medium text-[#e8e6e1]">Total da fatura</p>
                 <p className="text-sm font-semibold text-[#f0ede8]">
-                  {formatCurrency(Number(selectedInvoice.total_amount))}
+                  {formatCurrency(calculatedTotal)}
                 </p>
               </div>
 
               {/* Pagar fatura */}
               {selectedInvoice.status === 'closed' && (
-                <div className="mt-4 p-4 rounded-xl space-y-3"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
+                <div
+                  className="p-4 rounded-xl space-y-3"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)' }}
+                >
                   <p className="text-sm font-medium text-[#e8e6e1]">Pagar fatura</p>
 
                   <div>
@@ -264,18 +286,31 @@ export default function FaturaPage() {
                   >
                     {payInvoice.isPending
                       ? 'Processando...'
-                      : `Pagar ${formatCurrency(Number(selectedInvoice.total_amount))}`}
+                      : `Pagar ${formatCurrency(calculatedTotal)}`}
                   </button>
                 </div>
               )}
             </>
           ) : (
-            <p className="text-xs py-16 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
-              Selecione uma fatura
-            </p>
+            <div className="py-16 text-center">
+              <p className="text-3xl mb-3">🧾</p>
+              <p className="text-sm" style={{ color: 'rgba(200,198,190,0.35)' }}>
+                Selecione uma fatura ou adicione uma transacao
+              </p>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Modal nova transacao pre-selecionando o cartao */}
+      <Modal isOpen={showNewTx} onClose={() => setShowNewTx(false)} title="Nova transacao">
+        <TransactionForm
+          onSuccess={() => {
+            setShowNewTx(false)
+            refetchTx()
+          }}
+        />
+      </Modal>
     </div>
   )
 }
