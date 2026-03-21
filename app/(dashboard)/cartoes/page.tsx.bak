@@ -1,48 +1,27 @@
 ﻿// app/(dashboard)/cartoes/page.tsx
 'use client'
 
-import { useState }       from 'react'
 import { useRouter }      from 'next/navigation'
 import { useAccounts }    from '@/hooks/useAccounts'
 import { useInvoices }    from '@/hooks/useInvoices'
 import { formatCurrency } from '@/lib/utils/format'
-import { Modal }          from '@/components/ui/Modal'
-import { AccountForm }    from '@/components/finance/AccountForm'
 import type { Account }   from '@/types'
 
 export default function CartoesPage() {
   const router                              = useRouter()
   const { data: accounts = [], isLoading } = useAccounts()
 
-  const [showCreate, setShowCreate] = useState(false)
-  const [editing,    setEditing]    = useState<Account | null>(null)
-
   const creditCards = accounts.filter(a => a.type === 'credit' && a.is_active)
-
-  function handleRowClick(card: Account) {
-    router.push(`/fatura/${card.id}`)
-  }
-
-  function handleEditClick(e: React.MouseEvent, card: Account) {
-    e.stopPropagation()   // nao navega para a fatura
-    setEditing(card)
-  }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Cartoes</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            {creditCards.length} cartao{creditCards.length !== 1 ? 'es' : ''} ativo{creditCards.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span>
-          Novo cartao
-        </button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Cartoes</h1>
+        <p className="text-xs mt-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          {creditCards.length} cartao{creditCards.length !== 1 ? 'es' : ''} ativo{creditCards.length !== 1 ? 's' : ''}
+        </p>
       </div>
 
       {isLoading ? (
@@ -56,11 +35,13 @@ export default function CartoesPage() {
           <p className="text-4xl mb-4">💳</p>
           <p className="text-sm font-medium text-[#e8e6e1] mb-1">Nenhum cartao cadastrado</p>
           <p className="text-xs mb-6" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            Adicione seu primeiro cartao de credito
+            Adicione um cartao de credito em Contas
           </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
-            <span className="opacity-60">+</span>
-            Adicionar cartao
+          <button
+            onClick={() => router.push('/contas')}
+            className="btn-primary text-xs mx-auto"
+          >
+            Ir para Contas
           </button>
         </div>
       ) : (
@@ -69,45 +50,18 @@ export default function CartoesPage() {
             <CardItem
               key={card.id}
               card={card}
-              onClick={() => handleRowClick(card)}
-              onEdit={e => handleEditClick(e, card)}
+              onClick={() => router.push(`/fatura/${card.id}`)}
             />
           ))}
         </div>
       )}
-
-      {/* Modal novo cartao — pre-selecionado como credito */}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Novo cartao">
-        <AccountForm
-          defaultType="credit"
-          onSuccess={() => setShowCreate(false)}
-        />
-      </Modal>
-
-      {/* Modal editar cartao */}
-      <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Editar cartao">
-        {editing && (
-          <AccountForm
-            account={editing}
-            onSuccess={() => setEditing(null)}
-          />
-        )}
-      </Modal>
     </div>
   )
 }
 
 // ── Card individual ───────────────────────────────────────────────────────────
 
-function CardItem({
-  card,
-  onClick,
-  onEdit,
-}: {
-  card:    Account
-  onClick: () => void
-  onEdit:  (e: React.MouseEvent) => void
-}) {
+function CardItem({ card, onClick }: { card: Account; onClick: () => void }) {
   const { data: invoices = [] } = useInvoices(card.id)
 
   const openInvoice   = invoices.find(i => i.status === 'open')
@@ -117,8 +71,8 @@ function CardItem({
     .filter(i => i.status !== 'paid')
     .reduce((sum, i) => sum + Number(i.total_amount), 0)
 
-  const available   = (card.credit_limit ?? 0) - usedAmount
-  const usedPercent = card.credit_limit
+  const available      = (card.credit_limit ?? 0) - usedAmount
+  const usedPercent    = card.credit_limit
     ? Math.min((usedAmount / card.credit_limit) * 100, 100)
     : 0
 
@@ -128,7 +82,7 @@ function CardItem({
       className="card cursor-pointer transition-all duration-150 hover:border-white/[0.12]"
       style={{ borderColor: card.color ? `${card.color}30` : undefined }}
     >
-      {/* Header */}
+      {/* Header do card */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
@@ -139,26 +93,12 @@ function CardItem({
             Fecha dia {card.closing_day} · Vence dia {card.due_day}
           </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          {/* Botao editar */}
-          <button
-            onClick={onEdit}
-            className="text-[10px] px-2 py-1 rounded-lg transition-colors"
-            style={{
-              color:      'rgba(200,198,190,0.4)',
-              background: 'rgba(255,255,255,0.04)',
-            }}
-          >
-            Editar
-          </button>
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            style={{ color: 'rgba(129,140,248,0.8)', background: 'rgba(129,140,248,0.1)' }}
-          >
-            Ver fatura →
-          </span>
-        </div>
+        <span
+          className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+          style={{ color: 'rgba(129,140,248,0.8)', background: 'rgba(129,140,248,0.1)' }}
+        >
+          Ver fatura →
+        </span>
       </div>
 
       {/* Valores */}
@@ -186,7 +126,7 @@ function CardItem({
         </div>
       </div>
 
-      {/* Barra de uso */}
+      {/* Barra de uso do limite */}
       <div className="h-1 rounded-full overflow-hidden"
         style={{ background: 'rgba(255,255,255,0.06)' }}>
         <div
@@ -212,7 +152,7 @@ function CardItem({
           style={{ background: 'rgba(251,146,60,0.08)', border: '0.5px solid rgba(251,146,60,0.2)' }}
         >
           <p className="text-xs" style={{ color: '#fb923c' }}>
-            Fatura {closedInvoice.reference_month} aguardando pagamento
+            Fatura {closedInvoice.reference_month} fechada — aguardando pagamento
           </p>
           <p className="text-xs font-semibold" style={{ color: '#fb923c' }}>
             {formatCurrency(Number(closedInvoice.total_amount))}

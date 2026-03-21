@@ -23,8 +23,9 @@ const ACCOUNT_TYPES = [
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 
 interface AccountFormProps {
-  account?: Account
-  onSuccess: () => void
+  account?:     Account
+  defaultType?: 'checking' | 'savings' | 'credit' | 'investment' | 'wallet'
+  onSuccess:    () => void
 }
 
 export function AccountForm({ account, onSuccess }: AccountFormProps) {
