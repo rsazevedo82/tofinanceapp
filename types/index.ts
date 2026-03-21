@@ -82,3 +82,62 @@ export interface ApiResponse<T> {
   data:  T | null
   error: string | null
 }
+
+// ── Reports ───────────────────────────────────────────────────────────────────
+
+export interface CategoryData {
+  category_id:    string | null
+  category_name:  string
+  category_color: string | null
+  total:          number
+  percent:        number
+  count:          number
+}
+
+export interface MonthlyData {
+  month:   string
+  label:   string
+  income:  number
+  expense: number
+  net:     number
+}
+
+export interface DailyFlowData {
+  date:    string
+  label:   string
+  income:  number
+  expense: number
+  balance: number
+}
+
+export interface CardLimitData {
+  account_id:   string
+  name:         string
+  color:        string | null
+  credit_limit: number
+  used:         number
+  available:    number
+  percent:      number
+}
+
+export interface ProjectionData {
+  month:               string
+  label:               string
+  projected_income:    number
+  projected_expense:   number
+  projected_balance:   number
+  is_projection:       boolean
+}
+
+export interface ReportsPayload {
+  categories:  CategoryData[]
+  monthly:     MonthlyData[]
+  daily_flow:  DailyFlowData[]
+  card_limits: CardLimitData[]
+  projection:  ProjectionData[]
+  period: {
+    start: string
+    end:   string
+    month: string
+  }
+}

@@ -1,7 +1,6 @@
 ﻿// hooks/useReports.ts
-import { useQuery }                from '@tanstack/react-query'
-import type { ApiResponse }        from '@/types'
-import type { ReportsPayload }     from '@/app/api/reports/route'
+import { useQuery }                         from '@tanstack/react-query'
+import type { ApiResponse, ReportsPayload } from '@/types'
 
 export function useReports(month: string) {
   return useQuery({
