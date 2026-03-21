@@ -9,21 +9,6 @@ import { Modal }          from '@/components/ui/Modal'
 import { AccountForm }    from '@/components/finance/AccountForm'
 import type { Account }   from '@/types'
 
-const TYPE_LABELS: Record<string, string> = {
-  checking:   'Conta corrente',
-  savings:    'Poupanca',
-  credit:     'Cartao de credito',
-  investment: 'Investimento',
-  wallet:     'Carteira',
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  checking:   '🏦',
-  savings:    '🐷',
-  credit:     '💳',
-  investment: '📈',
-  wallet:     '👛',
-}
 
 export default function ContasPage() {
   const router                              = useRouter()

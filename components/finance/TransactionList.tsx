@@ -74,7 +74,7 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
               </div>
               <div>
                 <span className="tag tag-neutral truncate max-w-full">
-                  {(t as any).category?.name ?? '—'}
+                  {t.category?.name ?? '—'}
                 </span>
               </div>
               <div className="text-xs" style={{ color: 'rgba(200,198,190,0.35)' }}>
@@ -118,7 +118,7 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
               <div>
                 <p className="text-sm font-medium text-[#e8e6e1]">{t.description}</p>
                 <p className="text-xs" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                  {(t as any).category?.name ?? '—'} · {formatDate(t.date)}
+                  {t.category?.name ?? '—'} · {formatDate(t.date)}
                 </p>
               </div>
             </div>

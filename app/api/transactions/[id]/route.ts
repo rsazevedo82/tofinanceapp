@@ -28,7 +28,7 @@ export async function PATCH(
 
     // Remove campos que nao existem na tabela transactions
     // installments e logica de aplicacao — so usado no POST para criar parcelas
-    const { installments, ...rest } = body
+    const { installments: _bodyInstallments, ...rest } = body
 
     const parsed = createTransactionSchema.safeParse({ ...rest, installments: 1 })
 
@@ -51,10 +51,7 @@ export async function PATCH(
     }
 
     // Extrai apenas os campos editaveis — installments nao vai para o banco
-    const {
-      installments: _installments,
-      ...updateData
-    } = parsed.data
+    const { installments: _inst, ...updateData } = parsed.data
 
     const { data, error } = await supabase
       .from('transactions')

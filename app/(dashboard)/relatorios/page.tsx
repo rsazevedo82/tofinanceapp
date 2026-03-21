@@ -45,13 +45,16 @@ function MonthSelector({
 }
 
 // Tooltip customizado para recharts
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayloadEntry { name: string; value: number; color: string }
+interface TooltipProps { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (!active || !payload?.length) return null
   return (
     <div className="px-3 py-2 rounded-lg text-xs shadow-xl"
       style={{ background: '#1c1c1a', border: '0.5px solid rgba(255,255,255,0.1)' }}>
       <p className="font-medium text-[#e8e6e1] mb-1">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }}>
           {p.name}: {fmtCur(p.value)}
         </p>

@@ -88,7 +88,7 @@ function monthRange(ym: string): { start: string; end: string } {
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<ReportsPayload>>> {
   const limited = await checkRateLimit()
-  if (limited) return limited as any
+  if (limited) return limited as NextResponse<ApiResponse<ReportsPayload>>
 
   try {
     const supabase = await createClient()
