@@ -88,7 +88,8 @@ function monthRange(ym: string): { start: string; end: string } {
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<ReportsPayload>>> {
   const limited = await checkRateLimit()
-  if (limited) return limited as NextResponse<ApiResponse<ReportsPayload>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (limited) return limited as any
 
   try {
     const supabase = await createClient()
