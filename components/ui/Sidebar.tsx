@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -6,16 +6,16 @@ import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 
 const navItems = [
-  { href: '/',              label: 'Dashboard',   icon: '⊞' },
-  { href: '/transacoes',    label: 'Transações',  icon: '↕' },
-  { href: '/contas',        label: 'Contas',      icon: '◫' },
-  { href: '/categorias',    label: 'Categorias',  icon: '◈' },
-  { href: '/relatorios',    label: 'Relatórios',  icon: '▤' },
+  { href: '/',           label: 'Dashboard',  icon: '⊞' },
+  { href: '/transacoes', label: 'Transacoes', icon: '↕' },
+  { href: '/contas',     label: 'Contas',     icon: '◫' },
+  { href: '/categorias', label: 'Categorias', icon: '◈' },
+  { href: '/relatorios', label: 'Relatorios', icon: '▤' },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
-  const router = useRouter()
+  const router   = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   async function handleLogout() {
@@ -28,8 +28,10 @@ export function Sidebar() {
     <>
       {/* Logo */}
       <div className="flex items-center gap-2 px-3 py-4 mb-2">
-        <div className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
-          style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}>
+        <div
+          className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+          style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
+        >
           F
         </div>
         <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">FinanceApp</span>
@@ -39,19 +41,21 @@ export function Sidebar() {
       <nav className="flex-1 px-1 space-y-0.5">
         <p className="section-heading px-2 pt-2">Menu</p>
         {navItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
           return (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`db-row gap-2 text-sm w-full ${
+              className={`db-row gap-2 text-sm w-full transition-colors ${
                 isActive
                   ? 'text-[#e8e6e1] font-medium bg-white/[0.06]'
-                  : 'text-[#c8c6be]/50 hover:text-[#e8e6e1]'
+                  : 'text-[#9ca3af] hover:text-[#e8e6e1] hover:bg-white/[0.03]'
               }`}
             >
-              <span className="text-[13px] w-4 text-center opacity-60">{item.icon}</span>
+              <span className={`text-[13px] w-4 text-center ${isActive ? 'opacity-90' : 'opacity-70'}`}>
+                {item.icon}
+              </span>
               {item.label}
             </Link>
           )
@@ -62,9 +66,9 @@ export function Sidebar() {
       <div className="px-1 pb-3 border-t border-white/[0.05] pt-3">
         <button
           onClick={handleLogout}
-          className="db-row gap-2 text-sm w-full text-[#c8c6be]/35 hover:text-[#e8e6e1]"
+          className="db-row gap-2 text-sm w-full text-[#9ca3af] hover:text-[#e8e6e1] transition-colors"
         >
-          <span className="text-[13px] w-4 text-center opacity-50">→</span>
+          <span className="text-[13px] w-4 text-center opacity-70">→</span>
           Sair
         </button>
       </div>
@@ -74,21 +78,36 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-56 flex-col z-30"
-        style={{ background: 'rgba(255,255,255,0.015)', borderRight: '0.5px solid rgba(255,255,255,0.06)' }}>
+      <aside
+        className="hidden md:flex fixed left-0 top-0 h-full w-56 flex-col z-30"
+        style={{
+          background:   'rgba(255,255,255,0.015)',
+          borderRight:  '0.5px solid rgba(255,255,255,0.06)',
+        }}
+      >
         <NavContent />
       </aside>
 
       {/* Mobile header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-12 flex items-center justify-between px-4 z-30"
-        style={{ background: 'rgba(17,17,16,0.8)', backdropFilter: 'blur(12px)', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+      <header
+        className="md:hidden fixed top-0 left-0 right-0 h-12 flex items-center justify-between px-4 z-30"
+        style={{
+          background:     'rgba(17,17,16,0.8)',
+          backdropFilter: 'blur(12px)',
+          borderBottom:   '0.5px solid rgba(255,255,255,0.06)',
+        }}
+      >
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
-            style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}>F</div>
+          <div
+            className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+            style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
+          >F</div>
           <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">FinanceApp</span>
         </div>
-        <button onClick={() => setMobileOpen(true)}
-          className="text-[#c8c6be]/50 hover:text-[#e8e6e1] transition-colors p-1">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-[#9ca3af] hover:text-[#e8e6e1] transition-colors p-1"
+        >
           ☰
         </button>
       </header>
@@ -96,11 +115,18 @@ export function Sidebar() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <div className="relative w-56 flex flex-col h-full"
-            style={{ background: '#161614', borderRight: '0.5px solid rgba(255,255,255,0.06)' }}>
-            <button onClick={() => setMobileOpen(false)}
-              className="absolute top-3 right-3 text-[#c8c6be]/40 hover:text-[#e8e6e1] text-sm p-1">✕</button>
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div
+            className="relative w-56 flex flex-col h-full"
+            style={{ background: '#161614', borderRight: '0.5px solid rgba(255,255,255,0.06)' }}
+          >
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-3 right-3 text-[#9ca3af] hover:text-[#e8e6e1] text-sm p-1"
+            >✕</button>
             <NavContent />
           </div>
         </div>

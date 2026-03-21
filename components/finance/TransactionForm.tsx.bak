@@ -1,0 +1,277 @@
+﻿// components/finance/TransactionForm.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useAccounts }         from '@/hooks/useAccounts'
+import { useCategories }       from '@/hooks/useCategories'
+import { useQueryClient }      from '@tanstack/react-query'
+import type { Transaction }    from '@/types'
+
+interface TransactionFormProps {
+  transaction?: Transaction
+  onSuccess:    () => void
+}
+
+const INSTALLMENT_OPTIONS = [1,2,3,4,5,6,7,8,9,10,11,12,18,24,36,48]
+
+export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
+  const isEditing    = !!transaction
+  const queryClient  = useQueryClient()
+
+  const { data: accounts   = [] } = useAccounts()
+  const { data: categories = [] } = useCategories()
+
+  const [form, setForm] = useState({
+    account_id:   transaction?.account_id  ?? '',
+    category_id:  transaction?.category_id ?? '',
+    type:         transaction?.type        ?? 'expense',
+    amount:       transaction?.amount?.toString() ?? '',
+    description:  transaction?.description ?? '',
+    notes:        transaction?.notes       ?? '',
+    date:         transaction?.date        ?? new Date().toLocaleDateString('en-CA'),
+    status:       transaction?.status      ?? 'confirmed',
+    installments: '1',
+  })
+
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+
+  // Conta selecionada
+  const selectedAccount = accounts.find(a => a.id === form.account_id)
+  const isCreditCard    = selectedAccount?.type === 'credit'
+
+  // Filtra categorias pelo tipo de transacao
+  const filteredCategories = categories.filter(c =>
+    form.type === 'transfer' ? true : c.type === form.type
+  )
+
+  // Se trocar de conta para nao-cartao, reseta parcelas
+  useEffect(() => {
+    if (!isCreditCard) {
+      setForm(f => ({ ...f, installments: '1' }))
+    }
+  }, [isCreditCard])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const body: Record<string, unknown> = {
+        account_id:   form.account_id,
+        type:         form.type,
+        amount:       parseFloat(form.amount),
+        description:  form.description,
+        date:         form.date,
+        status:       form.status,
+        installments: parseInt(form.installments),
+      }
+
+      if (form.category_id) body.category_id = form.category_id
+      if (form.notes.trim()) body.notes       = form.notes
+
+      const url    = isEditing ? `/api/transactions/${transaction.id}` : '/api/transactions'
+      const method = isEditing ? 'PATCH' : 'POST'
+
+      const res  = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      })
+      const json = await res.json()
+
+      if (json.error) throw new Error(json.error)
+
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+
+      onSuccess()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* Tipo */}
+      {!isEditing && (
+        <div className="grid grid-cols-3 gap-2">
+          {(['expense','income','transfer'] as const).map(t => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setForm(f => ({ ...f, type: t, category_id: '' }))}
+              className={`py-2 rounded-xl text-xs font-medium transition-colors ${
+                form.type === t
+                  ? t === 'income'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    : t === 'expense'
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                  : 'bg-slate-800 text-slate-400 border border-transparent'
+              }`}
+            >
+              {t === 'income' ? '↑ Receita' : t === 'expense' ? '↓ Despesa' : '⇄ Transferencia'}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Conta */}
+      <div>
+        <label className="label">Conta</label>
+        <select
+          className="input"
+          value={form.account_id}
+          onChange={e => setForm(f => ({ ...f, account_id: e.target.value }))}
+          required
+        >
+          <option value="">Selecione uma conta...</option>
+          {accounts.map(a => (
+            <option key={a.id} value={a.id}>
+              {a.name}{a.type === 'credit' ? ' (Cartao)' : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Valor */}
+      <div>
+        <label className="label">Valor (R$)</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0.01"
+          className="input"
+          placeholder="0,00"
+          value={form.amount}
+          onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+          required
+        />
+      </div>
+
+      {/* Parcelamento — somente para cartao de credito em modo criacao */}
+      {isCreditCard && !isEditing && form.type === 'expense' && (
+        <div>
+          <label className="label">Parcelas</label>
+          <select
+            className="input"
+            value={form.installments}
+            onChange={e => setForm(f => ({ ...f, installments: e.target.value }))}
+          >
+            {INSTALLMENT_OPTIONS.map(n => (
+              <option key={n} value={n}>
+                {n === 1
+                  ? 'A vista'
+                  : `${n}x de ${
+                      form.amount
+                        ? `R$ ${(parseFloat(form.amount) / n).toFixed(2)}`
+                        : `${n} parcelas`
+                    }`}
+              </option>
+            ))}
+          </select>
+          {parseInt(form.installments) > 1 && form.amount && (
+            <p className="mt-1 text-[11px]" style={{ color: 'rgba(200,198,190,0.4)' }}>
+              Total: R$ {parseFloat(form.amount).toFixed(2)} em {form.installments}x de R$ {(parseFloat(form.amount) / parseInt(form.installments)).toFixed(2)}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Descricao */}
+      <div>
+        <label className="label">Descricao</label>
+        <input
+          type="text"
+          className="input"
+          placeholder="Ex: Supermercado, Salario..."
+          value={form.description}
+          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+          required
+        />
+      </div>
+
+      {/* Categoria */}
+      {form.type !== 'transfer' && (
+        <div>
+          <label className="label">Categoria</label>
+          <select
+            className="input"
+            value={form.category_id}
+            onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}
+          >
+            <option value="">Sem categoria</option>
+            {filteredCategories.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Data */}
+      <div>
+        <label className="label">Data</label>
+        <input
+          type="date"
+          className="input"
+          value={form.date}
+          onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+          required
+        />
+      </div>
+
+      {/* Status */}
+      <div>
+        <label className="label">Status</label>
+        <select
+          className="input"
+          value={form.status}
+          onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+        >
+          <option value="confirmed">Confirmado</option>
+          <option value="pending">Pendente</option>
+        </select>
+      </div>
+
+      {/* Observacoes */}
+      <div>
+        <label className="label">Observacoes (opcional)</label>
+        <textarea
+          className="input resize-none"
+          rows={2}
+          placeholder="Informacoes adicionais..."
+          value={form.notes}
+          onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+        />
+      </div>
+
+      {error && (
+        <p className="text-xs px-3 py-2 rounded-lg"
+          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        className="btn-primary w-full justify-center py-2.5"
+        disabled={loading}
+      >
+        {loading
+          ? 'Salvando...'
+          : isEditing
+          ? 'Salvar alteracoes'
+          : parseInt(form.installments) > 1
+          ? `Criar ${form.installments} parcelas`
+          : 'Criar transacao'}
+      </button>
+    </form>
+  )
+}
