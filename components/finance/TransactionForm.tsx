@@ -12,7 +12,7 @@ interface TransactionFormProps {
   onSuccess:    () => void
 }
 
-// ── Select customizado (resolve problema de contraste no dropdown nativo) ─────
+// ── Select customizado ────────────────────────────────────────────────────────
 
 interface SelectOption { value: string; label: string }
 
@@ -21,17 +21,18 @@ function CustomSelect({
   onChange,
   options,
   placeholder = 'Selecione...',
+  disabled = false,
 }: {
-  value:       string
-  onChange:    (v: string) => void
-  options:     SelectOption[]
+  value:        string
+  onChange:     (v: string) => void
+  options:      SelectOption[]
   placeholder?: string
+  disabled?:    boolean
 }) {
-  const [open, setOpen]   = useState(false)
-  const ref               = useRef<HTMLDivElement>(null)
-  const selected          = options.find(o => o.value === value)
+  const [open, setOpen] = useState(false)
+  const ref             = useRef<HTMLDivElement>(null)
+  const selected        = options.find(o => o.value === value)
 
-  // Fecha ao clicar fora
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -44,17 +45,23 @@ function CustomSelect({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen(o => !o)}
+        onClick={() => !disabled && setOpen(o => !o)}
         className="input w-full text-left flex items-center justify-between"
-        style={{ color: selected ? '#e8e6e1' : 'rgba(200,198,190,0.35)' }}
+        style={{
+          color:   selected ? '#e8e6e1' : 'rgba(200,198,190,0.35)',
+          opacity: disabled ? 0.5 : 1,
+          cursor:  disabled ? 'not-allowed' : 'pointer',
+        }}
       >
-        <span>{selected ? selected.label : placeholder}</span>
-        <span className="text-[10px] opacity-40 ml-2">{open ? '▲' : '▼'}</span>
+        <span className="truncate">{selected ? selected.label : placeholder}</span>
+        {!disabled && (
+          <span className="text-[10px] opacity-40 ml-2 flex-shrink-0">{open ? '▲' : '▼'}</span>
+        )}
       </button>
 
-      {open && (
+      {open && !disabled && (
         <div
-          className="absolute z-50 w-full mt-1 rounded-xl overflow-hidden shadow-xl"
+          className="absolute z-50 w-full mt-1 rounded-xl shadow-xl"
           style={{
             background: '#1c1c1a',
             border:     '0.5px solid rgba(255,255,255,0.1)',
@@ -84,9 +91,15 @@ function CustomSelect({
   )
 }
 
-// ── Formulario principal ──────────────────────────────────────────────────────
+// ── Formulario ────────────────────────────────────────────────────────────────
 
 const INSTALLMENT_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+const TYPE_CONFIG = {
+  expense:  { label: '↓ Despesa',      bg: 'rgba(252,165,165,0.15)', color: '#fca5a5', border: 'rgba(252,165,165,0.3)' },
+  income:   { label: '↑ Receita',      bg: 'rgba(110,231,183,0.15)', color: '#6ee7b7', border: 'rgba(110,231,183,0.3)' },
+  transfer: { label: '⇄ Transferencia',bg: 'rgba(129,140,248,0.15)', color: '#818cf8', border: 'rgba(129,140,248,0.3)' },
+}
 
 export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
   const isEditing   = !!transaction
@@ -96,17 +109,18 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
   const { data: categories = [] } = useCategories()
 
   const [form, setForm] = useState({
-    account_id:  transaction?.account_id  ?? '',
-    category_id: transaction?.category_id ?? '',
-    type:        (transaction?.type ?? 'expense') as 'income' | 'expense' | 'transfer',
-    amount:      transaction?.amount?.toString() ?? '',
-    description: transaction?.description ?? '',
-    notes:       transaction?.notes       ?? '',
-    date:        transaction?.date        ?? new Date().toLocaleDateString('en-CA'),
-    status:      transaction?.status      ?? 'confirmed',
-    installments: '1',
-    customInstallments: '',
+    account_id:            transaction?.account_id            ?? '',
+    category_id:           transaction?.category_id           ?? '',
+    type:                  (transaction?.type ?? 'expense')   as 'income' | 'expense' | 'transfer',
+    amount:                transaction?.amount?.toString()    ?? '',
+    description:           transaction?.description           ?? '',
+    notes:                 transaction?.notes                 ?? '',
+    date:                  transaction?.date                  ?? new Date().toLocaleDateString('en-CA'),
+    status:                transaction?.status                ?? 'confirmed',
+    installments:          '1',
+    customInstallments:    '',
     useCustomInstallments: false,
+    showExtras:            false,   // campos secundarios colapsados por padrao
   })
 
   const [loading, setLoading] = useState(false)
@@ -114,24 +128,21 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
   const selectedAccount = accounts.find(a => a.id === form.account_id)
   const isCreditCard    = selectedAccount?.type === 'credit'
+  const amountValue     = parseFloat(form.amount) || 0
 
   const effectiveInstallments = form.useCustomInstallments
     ? parseInt(form.customInstallments) || 1
     : parseInt(form.installments)
 
-  const amountValue = parseFloat(form.amount) || 0
-
   useEffect(() => {
     if (!isCreditCard) setForm(f => ({ ...f, installments: '1', useCustomInstallments: false }))
   }, [isCreditCard])
 
-  // Opcoes de conta para CustomSelect
   const accountOptions: SelectOption[] = accounts.map(a => ({
     value: a.id,
-    label: `${a.name}${a.type === 'credit' ? ' (Cartao)' : ''}`,
+    label: `${a.name}${a.type === 'credit' ? ' · Cartao' : ''}`,
   }))
 
-  // Opcoes de categoria
   const filteredCategories = categories.filter(c =>
     form.type === 'transfer' ? true : c.type === form.type
   )
@@ -140,7 +151,6 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     ...filteredCategories.map(c => ({ value: c.id, label: c.name })),
   ]
 
-  // Opcoes de parcelas
   const installmentOptions: SelectOption[] = [
     ...INSTALLMENT_PRESETS.map(n => ({
       value: String(n),
@@ -201,32 +211,63 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     }
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+  const cfg = TYPE_CONFIG[form.type]
 
-      {/* Tipo */}
-      {!isEditing && (
-        <div className="grid grid-cols-3 gap-2">
-          {(['expense', 'income', 'transfer'] as const).map(t => (
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+
+      {/* Tipo — sempre visivel, inclusive na edicao */}
+      <div className="grid grid-cols-3 gap-1.5">
+        {(['expense', 'income', 'transfer'] as const).map(t => {
+          const c   = TYPE_CONFIG[t]
+          const sel = form.type === t
+          return (
             <button
               key={t}
               type="button"
               onClick={() => setForm(f => ({ ...f, type: t, category_id: '' }))}
-              className={`py-2 rounded-xl text-xs font-medium transition-colors ${
-                form.type === t
-                  ? t === 'income'
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : t === 'expense'
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'bg-slate-800 text-slate-400 border border-transparent'
-              }`}
+              className="py-2 rounded-xl text-xs font-medium transition-all"
+              style={{
+                background: sel ? c.bg      : 'rgba(255,255,255,0.03)',
+                color:      sel ? c.color   : 'rgba(200,198,190,0.4)',
+                border:     sel ? `0.5px solid ${c.border}` : '0.5px solid rgba(255,255,255,0.06)',
+              }}
             >
-              {t === 'income' ? '↑ Receita' : t === 'expense' ? '↓ Despesa' : '⇄ Transf.'}
+              {c.label}
             </button>
-          ))}
-        </div>
-      )}
+          )
+        })}
+      </div>
+
+      {/* Valor — primeiro campo apos tipo */}
+      <div>
+        <label className="label">Valor (R$)</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0.01"
+          className="input text-lg font-semibold"
+          placeholder="0,00"
+          style={{ color: cfg.color }}
+          value={form.amount}
+          onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+          required
+          autoFocus={!isEditing}
+        />
+      </div>
+
+      {/* Descricao */}
+      <div>
+        <label className="label">Descricao</label>
+        <input
+          type="text"
+          className="input"
+          placeholder="Ex: Supermercado, Salario..."
+          value={form.description}
+          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+          required
+        />
+      </div>
 
       {/* Conta */}
       <div>
@@ -236,21 +277,6 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           onChange={v => setForm(f => ({ ...f, account_id: v }))}
           options={accountOptions}
           placeholder="Selecione uma conta..."
-        />
-      </div>
-
-      {/* Valor */}
-      <div>
-        <label className="label">Valor (R$)</label>
-        <input
-          type="number"
-          step="0.01"
-          min="0.01"
-          className="input"
-          placeholder="0,00"
-          value={form.amount}
-          onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-          required
         />
       </div>
 
@@ -269,44 +295,25 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             }}
             options={installmentOptions}
           />
-
-          {/* Input customizado */}
           {form.useCustomInstallments && (
-            <div className="mt-2">
-              <input
-                type="number"
-                min="13"
-                max="360"
-                className="input"
-                placeholder="Numero de parcelas (minimo 13)"
-                value={form.customInstallments}
-                onChange={e => setForm(f => ({ ...f, customInstallments: e.target.value }))}
-                autoFocus
-              />
-            </div>
+            <input
+              type="number"
+              min="13"
+              max="360"
+              className="input mt-2"
+              placeholder="Numero de parcelas (minimo 13)"
+              value={form.customInstallments}
+              onChange={e => setForm(f => ({ ...f, customInstallments: e.target.value }))}
+              autoFocus
+            />
           )}
-
-          {/* Resumo */}
           {effectiveInstallments > 1 && amountValue > 0 && (
-            <p className="mt-1.5 text-[11px]" style={{ color: 'rgba(200,198,190,0.4)' }}>
-              Total R$ {amountValue.toFixed(2)} em {effectiveInstallments}x de R$ {(amountValue / effectiveInstallments).toFixed(2)}
+            <p className="mt-1 text-[11px]" style={{ color: 'rgba(200,198,190,0.4)' }}>
+              {effectiveInstallments}x de R$ {(amountValue / effectiveInstallments).toFixed(2)} · Total R$ {amountValue.toFixed(2)}
             </p>
           )}
         </div>
       )}
-
-      {/* Descricao */}
-      <div>
-        <label className="label">Descricao</label>
-        <input
-          type="text"
-          className="input"
-          placeholder="Ex: Supermercado, Salario..."
-          value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-          required
-        />
-      </div>
 
       {/* Categoria */}
       {form.type !== 'transfer' && (
@@ -333,30 +340,42 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
         />
       </div>
 
-      {/* Status */}
-      <div>
-        <label className="label">Status</label>
-        <CustomSelect
-          value={form.status}
-          onChange={v => setForm(f => ({ ...f, status: v }))}
-          options={[
-            { value: 'confirmed', label: 'Confirmado' },
-            { value: 'pending',   label: 'Pendente'   },
-          ]}
-        />
-      </div>
+      {/* Campos secundarios — colapsaveis */}
+      <button
+        type="button"
+        onClick={() => setForm(f => ({ ...f, showExtras: !f.showExtras }))}
+        className="w-full text-left text-[11px] py-1 transition-colors flex items-center gap-1"
+        style={{ color: 'rgba(200,198,190,0.35)' }}
+      >
+        <span>{form.showExtras ? '▲' : '▼'}</span>
+        {form.showExtras ? 'Menos opcoes' : 'Mais opcoes (status, observacoes)'}
+      </button>
 
-      {/* Observacoes */}
-      <div>
-        <label className="label">Observacoes (opcional)</label>
-        <textarea
-          className="input resize-none"
-          rows={2}
-          placeholder="Informacoes adicionais..."
-          value={form.notes}
-          onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-        />
-      </div>
+      {form.showExtras && (
+        <div className="space-y-3 pt-1">
+          <div>
+            <label className="label">Status</label>
+            <CustomSelect
+              value={form.status}
+              onChange={v => setForm(f => ({ ...f, status: v }))}
+              options={[
+                { value: 'confirmed', label: 'Confirmado' },
+                { value: 'pending',   label: 'Pendente'   },
+              ]}
+            />
+          </div>
+          <div>
+            <label className="label">Observacoes</label>
+            <textarea
+              className="input resize-none"
+              rows={2}
+              placeholder="Informacoes adicionais..."
+              value={form.notes}
+              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            />
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="text-xs px-3 py-2 rounded-lg"
@@ -367,8 +386,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
       <button
         type="submit"
-        className="btn-primary w-full justify-center py-2.5"
+        className="btn-primary w-full justify-center py-2.5 mt-1"
         disabled={loading}
+        style={{
+          background:  cfg.bg,
+          color:       cfg.color,
+          borderColor: cfg.border,
+        }}
       >
         {loading
           ? 'Salvando...'
@@ -376,7 +400,11 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           ? 'Salvar alteracoes'
           : effectiveInstallments > 1
           ? `Criar ${effectiveInstallments} parcelas`
-          : 'Criar transacao'}
+          : form.type === 'income'
+          ? 'Registrar receita'
+          : form.type === 'transfer'
+          ? 'Registrar transferencia'
+          : 'Registrar despesa'}
       </button>
     </form>
   )

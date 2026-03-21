@@ -102,10 +102,8 @@ export default function DashboardPage() {
                 <p className="text-[10px] mb-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
                   Taxa de poupanca
                 </p>
-                <p className="text-lg font-semibold text-[#818cf8]">
-                  {data.income_month > 0
-                    ? `${Math.round((data.net_month / data.income_month) * 100)}%`
-                    : '—'}
+                <p className={`text-lg font-semibold ${data.net_month >= 0 ? "text-[#818cf8]" : "text-[#fca5a5]"}`}>
+                  {data.income_month > 0 ? `${Math.round((data.net_month / data.income_month) * 100)}%` : "—"}
                 </p>
               </div>
             )}

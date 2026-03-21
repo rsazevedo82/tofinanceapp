@@ -1,26 +1,26 @@
-// app/(dashboard)/categorias/page.tsx
+﻿// app/(dashboard)/categorias/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { useCategories } from '@/hooks/useCategories'
-import { Modal } from '@/components/ui/Modal'
-import { CategoryForm } from '@/components/finance/CategoryForm'
-import type { Category } from '@/types'
+import { useState }         from 'react'
+import { useCategories }    from '@/hooks/useCategories'
+import { Modal }            from '@/components/ui/Modal'
+import { CategoryForm }     from '@/components/finance/CategoryForm'
+import type { Category }    from '@/types'
 
 export default function CategoriasPage() {
   const { data: categories = [], isLoading } = useCategories()
 
-  const [showCreate, setShowCreate]           = useState(false)
-  const [defaultType, setDefaultType]         = useState<'income' | 'expense'>('expense')
-  const [editing, setEditing]                 = useState<Category | null>(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense')
+  const [editing, setEditing]       = useState<Category | null>(null)
 
   const systemCategories = categories.filter(c => c.user_id === null)
   const userCategories   = categories.filter(c => c.user_id !== null)
 
-  const incomeSystem   = systemCategories.filter(c => c.type === 'income')
-  const expenseSystem  = systemCategories.filter(c => c.type === 'expense')
-  const incomeUser     = userCategories.filter(c => c.type === 'income')
-  const expenseUser    = userCategories.filter(c => c.type === 'expense')
+  const incomeSystem  = systemCategories.filter(c => c.type === 'income')
+  const expenseSystem = systemCategories.filter(c => c.type === 'expense')
+  const incomeUser    = userCategories.filter(c => c.type === 'income')
+  const expenseUser   = userCategories.filter(c => c.type === 'expense')
 
   function openCreate(type: 'income' | 'expense') {
     setDefaultType(type)
@@ -28,7 +28,6 @@ export default function CategoriasPage() {
   }
 
   function handleEdit(cat: Category) {
-    // Categorias do sistema não são editáveis
     if (cat.user_id === null) return
     setEditing(cat)
   }
@@ -36,11 +35,10 @@ export default function CategoriasPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Categorias</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
             {systemCategories.length} do sistema · {userCategories.length} suas
           </p>
         </div>
@@ -61,7 +59,7 @@ export default function CategoriasPage() {
         </div>
       ) : (
         <>
-          {/* ── SUAS CATEGORIAS ── */}
+          {/* Suas categorias */}
           {userCategories.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-3">
@@ -84,7 +82,6 @@ export default function CategoriasPage() {
                 </div>
               </div>
 
-              {/* Receitas do usuário */}
               {incomeUser.length > 0 && (
                 <div className="mb-3">
                   <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
@@ -97,7 +94,6 @@ export default function CategoriasPage() {
                 </div>
               )}
 
-              {/* Despesas do usuário */}
               {expenseUser.length > 0 && (
                 <div>
                   <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
@@ -112,17 +108,16 @@ export default function CategoriasPage() {
             </div>
           )}
 
-          {/* ── CATEGORIAS DO SISTEMA ── */}
+          {/* Categorias do sistema */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <p className="section-heading mb-0">Categorias padrão</p>
+              <p className="section-heading mb-0">Categorias padrao</p>
               <span className="text-[10px] px-2 py-0.5 rounded"
-                style={{ color: 'rgba(200,198,190,0.35)', background: 'rgba(255,255,255,0.04)' }}>
+                style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}>
                 somente leitura
               </span>
             </div>
 
-            {/* Receitas do sistema */}
             {incomeSystem.length > 0 && (
               <div className="mb-3">
                 <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
@@ -135,7 +130,6 @@ export default function CategoriasPage() {
               </div>
             )}
 
-            {/* Despesas do sistema */}
             {expenseSystem.length > 0 && (
               <div>
                 <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
@@ -149,14 +143,13 @@ export default function CategoriasPage() {
             )}
           </div>
 
-          {/* Empty state — nenhuma categoria do usuário */}
           {userCategories.length === 0 && (
             <div className="py-8 text-center border rounded-xl"
-              style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <p className="text-2xl mb-2">🏷️</p>
-              <p className="text-sm font-medium text-[#e8e6e1] mb-1">Crie suas próprias categorias</p>
-              <p className="text-xs mb-4" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                Personalize além das categorias padrão
+              <p className="text-sm font-medium text-[#e8e6e1] mb-1">Crie suas proprias categorias</p>
+              <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+                Personalize alem das categorias padrao
               </p>
               <button onClick={() => openCreate('expense')} className="btn-primary text-xs mx-auto">
                 <span className="opacity-60">+</span>
@@ -167,52 +160,37 @@ export default function CategoriasPage() {
         </>
       )}
 
-      {/* Modal criação */}
-      <Modal
-        isOpen={showCreate}
-        onClose={() => setShowCreate(false)}
-        title="Nova categoria"
-      >
-        <CategoryForm
-          defaultType={defaultType}
-          onSuccess={() => setShowCreate(false)}
-        />
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Nova categoria">
+        <CategoryForm defaultType={defaultType} onSuccess={() => setShowCreate(false)} />
       </Modal>
 
-      {/* Modal edição */}
-      <Modal
-        isOpen={!!editing}
-        onClose={() => setEditing(null)}
-        title="Editar categoria"
-      >
+      <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Editar categoria">
         {editing && (
-          <CategoryForm
-            category={editing}
-            onSuccess={() => setEditing(null)}
-          />
+          <CategoryForm category={editing} onSuccess={() => setEditing(null)} />
         )}
       </Modal>
     </div>
   )
 }
 
-// ── Componente auxiliar ────────────────────────────────────────────────────────
+// ── CategoryRow com group correto ─────────────────────────────────────────────
 
 function CategoryRow({
   category,
   onClick,
   editable = false,
 }: {
-  category: Category
-  onClick?: () => void
+  category:  Category
+  onClick?:  () => void
   editable?: boolean
 }) {
   return (
     <div
       onClick={onClick}
-      className={`db-row flex items-center gap-3 px-2 py-2 ${
-        editable ? 'cursor-pointer' : 'cursor-default opacity-70'
+      className={`group db-row flex items-center gap-3 px-2 py-2 ${
+        editable ? 'cursor-pointer' : 'cursor-default'
       }`}
+      style={{ opacity: editable ? 1 : 0.65 }}
     >
       <div
         className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
@@ -220,8 +198,10 @@ function CategoryRow({
       />
       <span className="text-sm text-[#e8e6e1] flex-1">{category.name}</span>
       {editable && (
-        <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: 'rgba(200,198,190,0.4)' }}>
+        <span
+          className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ color: 'rgba(200,198,190,0.5)' }}
+        >
           editar →
         </span>
       )}
