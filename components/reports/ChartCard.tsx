@@ -30,7 +30,7 @@ export function ChartCard({ title, subtitle, children, action }: ChartCardProps)
 
 // ── Tabela de dados generica ──────────────────────────────────────────────────
 
-interface TableRow { [key: string]: string | number | null }
+type TableRow = Record<string, unknown>
 
 interface DataTableProps {
   columns: { key: string; label: string; align?: 'left' | 'right' }[]
