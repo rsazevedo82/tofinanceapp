@@ -1,14 +1,32 @@
 ﻿// app/api/transactions/route.ts
-import { createClient }                                          from '@/lib/supabase/server'
-import { createTransactionSchema }                               from '@/lib/validations/schemas'
-import { getReferenceMonth, getDueDate, getInstallmentDates }   from '@/lib/domain/invoices'
-import type { ApiResponse, Transaction }                         from '@/types'
-import { NextResponse }                                          from 'next/server'
+// Com os triggers no banco, nao precisamos mais atualizar
+// saldo e total de fatura manualmente — o banco faz isso atomicamente.
+
+import { createClient }                                        from '@/lib/supabase/server'
+import { createTransactionSchema }                             from '@/lib/validations/schemas'
+import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
+import { ratelimit }                                           from '@/lib/rateLimit'
+import { headers }                                             from 'next/headers'
+import type { ApiResponse, Transaction }                       from '@/types'
+import { NextResponse }                                        from 'next/server'
+
+async function getIP(): Promise<string> {
+  const h = await headers()
+  return h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1'
+}
 
 // ── GET /api/transactions ─────────────────────────────────────────────────────
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Transaction[]>>> {
   try {
+    const { success: allowed } = await ratelimit.limit(await getIP())
+    if (!allowed) {
+      return NextResponse.json(
+        { data: null, error: 'Muitas requisicoes. Tente novamente em 1 minuto.' },
+        { status: 429 }
+      )
+    }
+
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -18,19 +36,28 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get('account_id')
     const invoiceId = searchParams.get('invoice_id')
-    const limit     = Math.min(parseInt(searchParams.get('limit') ?? '50'), 200)
+    const start     = searchParams.get('start')
+    const end       = searchParams.get('end')
+    const limit     = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500)
     const offset    = parseInt(searchParams.get('offset') ?? '0')
 
     let query = supabase
       .from('transactions')
-      .select('*')
+      .select(`
+        *,
+        account:accounts!transactions_account_id_fkey(id, name, color, icon),
+        category:categories(id, name, color, icon)
+      `)
       .eq('user_id', user.id)
       .is('deleted_at', null)
       .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
     if (accountId) query = query.eq('account_id', accountId)
     if (invoiceId) query = query.eq('invoice_id', invoiceId)
+    if (start)     query = query.gte('date', start)
+    if (end)       query = query.lte('date', end)
 
     const { data, error } = await query
     if (error) throw error
@@ -42,14 +69,14 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers de fatura ─────────────────────────────────────────────────────────
 
 async function getOrCreateInvoice(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  accountId:  string,
-  userId:     string,
+  accountId:      string,
+  userId:         string,
   referenceMonth: string,
-  dueDate:    string
+  dueDate:        string
 ): Promise<string> {
   const { data: existing } = await supabase
     .from('credit_invoices')
@@ -77,35 +104,20 @@ async function getOrCreateInvoice(
   return created.id
 }
 
-async function addToInvoiceTotal(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  invoiceId: string,
-  amount:    number
-): Promise<void> {
-  // Atualiza o total da fatura diretamente (sem depender de RPC)
-  const { data: invoice } = await supabase
-    .from('credit_invoices')
-    .select('total_amount')
-    .eq('id', invoiceId)
-    .single()
-
-  if (!invoice) return
-
-  await supabase
-    .from('credit_invoices')
-    .update({
-      total_amount: Number(invoice.total_amount) + amount,
-      updated_at:   new Date().toISOString(),
-    })
-    .eq('id', invoiceId)
-}
-
 // ── POST /api/transactions ────────────────────────────────────────────────────
 
 export async function POST(
   request: Request
 ): Promise<NextResponse<ApiResponse<Transaction | Transaction[]>>> {
   try {
+    const { success: allowed } = await ratelimit.limit(await getIP())
+    if (!allowed) {
+      return NextResponse.json(
+        { data: null, error: 'Muitas requisicoes. Tente novamente em 1 minuto.' },
+        { status: 429 }
+      )
+    }
+
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -123,10 +135,10 @@ export async function POST(
 
     const { installments, ...txData } = parsed.data
 
-    // Busca a conta
+    // Busca conta
     const { data: account, error: accountError } = await supabase
       .from('accounts')
-      .select('id, type, closing_day, due_day, credit_limit, balance')
+      .select('id, type, closing_day, due_day, credit_limit')
       .eq('id', txData.account_id)
       .eq('user_id', user.id)
       .single()
@@ -145,30 +157,21 @@ export async function POST(
         const purchaseDate   = new Date(txData.date + 'T12:00:00')
         const referenceMonth = getReferenceMonth(purchaseDate, account.closing_day)
         const dueDate        = getDueDate(referenceMonth, account.closing_day, account.due_day)
-
-        invoiceId = await getOrCreateInvoice(
-          supabase, account.id, user.id, referenceMonth, dueDate
-        )
-        await addToInvoiceTotal(supabase, invoiceId, txData.amount)
+        invoiceId = await getOrCreateInvoice(supabase, account.id, user.id, referenceMonth, dueDate)
       }
 
+      // Insere transacao — o trigger cuida do saldo e do total da fatura
       const { data, error } = await supabase
         .from('transactions')
         .insert({ ...txData, user_id: user.id, invoice_id: invoiceId })
-        .select()
+        .select(`
+          *,
+          account:accounts!transactions_account_id_fkey(id, name, color, icon),
+          category:categories(id, name, color, icon)
+        `)
         .single()
 
       if (error) throw error
-
-      // Atualiza saldo apenas para contas nao-cartao
-      if (!isCreditCard) {
-        const delta = txData.type === 'income' ? txData.amount : -txData.amount
-        await supabase
-          .from('accounts')
-          .update({ balance: Number(account.balance) + delta })
-          .eq('id', account.id)
-      }
-
       return NextResponse.json({ data, error: null }, { status: 201 })
     }
 
@@ -187,10 +190,9 @@ export async function POST(
       )
     }
 
-    // Valor por parcela com centavos corretos
-    const baseAmount      = Math.floor((txData.amount / installments) * 100) / 100
-    const remainder       = Math.round((txData.amount - baseAmount * installments) * 100)
-    const purchaseDate    = new Date(txData.date + 'T12:00:00')
+    const baseAmount       = Math.floor((txData.amount / installments) * 100) / 100
+    const remainder        = Math.round((txData.amount - baseAmount * installments) * 100)
+    const purchaseDate     = new Date(txData.date + 'T12:00:00')
     const installmentDates = getInstallmentDates(purchaseDate, installments, account.closing_day)
 
     // Cria grupo de parcelamento
@@ -208,45 +210,37 @@ export async function POST(
 
     if (groupError) throw groupError
 
-    // Cria uma transacao por parcela
-    const toInsert = []
-    for (let i = 0; i < installments; i++) {
-      const { referenceMonth, date } = installmentDates[i]
-      const dueDate   = getDueDate(referenceMonth, account.closing_day, account.due_day)
-      const invoiceId = await getOrCreateInvoice(
-        supabase, account.id, user.id, referenceMonth, dueDate
-      )
+    // Monta todas as parcelas
+    const toInsert = await Promise.all(
+      installmentDates.map(async ({ referenceMonth, date }, i) => {
+        const dueDate   = getDueDate(referenceMonth, account.closing_day!, account.due_day!)
+        const invoiceId = await getOrCreateInvoice(supabase, account.id, user.id, referenceMonth, dueDate)
+        const amount    = i === installments - 1 ? baseAmount + remainder / 100 : baseAmount
 
-      // Ultima parcela absorve diferenca de arredondamento
-      const amount = i === installments - 1
-        ? baseAmount + remainder / 100
-        : baseAmount
-
-      await addToInvoiceTotal(supabase, invoiceId, amount)
-
-      toInsert.push({
-        user_id:              user.id,
-        account_id:           account.id,
-        category_id:          txData.category_id ?? null,
-        invoice_id:           invoiceId,
-        installment_group_id: group.id,
-        installment_number:   i + 1,
-        type:                 'expense' as const,
-        amount,
-        description:          `${txData.description} (${i + 1}/${installments})`,
-        notes:                txData.notes ?? null,
-        date,
-        status:               'confirmed' as const,
+        return {
+          user_id:              user.id,
+          account_id:           account.id,
+          category_id:          txData.category_id ?? null,
+          invoice_id:           invoiceId,
+          installment_group_id: group.id,
+          installment_number:   i + 1,
+          type:                 'expense' as const,
+          amount,
+          description:          `${txData.description} (${i + 1}/${installments})`,
+          notes:                txData.notes ?? null,
+          date,
+          status:               'confirmed' as const,
+        }
       })
-    }
+    )
 
+    // Insere todas — triggers cuidam do total de cada fatura
     const { data: created, error: insertError } = await supabase
       .from('transactions')
       .insert(toInsert)
       .select()
 
     if (insertError) throw insertError
-
     return NextResponse.json({ data: created, error: null }, { status: 201 })
   } catch (err) {
     console.error('[POST /api/transactions]', err)

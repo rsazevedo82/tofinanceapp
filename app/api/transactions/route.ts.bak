@@ -1,9 +1,11 @@
 ﻿// app/api/transactions/route.ts
-import { createClient } from '@/lib/supabase/server'
-import { createTransactionSchema } from '@/lib/validations/schemas'
-import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
-import type { ApiResponse, Transaction } from '@/types'
-import { NextResponse } from 'next/server'
+import { createClient }                                          from '@/lib/supabase/server'
+import { createTransactionSchema }                               from '@/lib/validations/schemas'
+import { getReferenceMonth, getDueDate, getInstallmentDates }   from '@/lib/domain/invoices'
+import type { ApiResponse, Transaction }                         from '@/types'
+import { NextResponse }                                          from 'next/server'
+
+// ── GET /api/transactions ─────────────────────────────────────────────────────
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Transaction[]>>> {
   try {
@@ -40,7 +42,69 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
   }
 }
 
-export async function POST(request: Request): Promise<NextResponse<ApiResponse<Transaction | Transaction[]>>> {
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function getOrCreateInvoice(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  accountId:  string,
+  userId:     string,
+  referenceMonth: string,
+  dueDate:    string
+): Promise<string> {
+  const { data: existing } = await supabase
+    .from('credit_invoices')
+    .select('id')
+    .eq('account_id', accountId)
+    .eq('reference_month', referenceMonth)
+    .single()
+
+  if (existing) return existing.id
+
+  const { data: created, error } = await supabase
+    .from('credit_invoices')
+    .insert({
+      account_id:      accountId,
+      user_id:         userId,
+      reference_month: referenceMonth,
+      due_date:        dueDate,
+      status:          'open',
+      total_amount:    0,
+    })
+    .select('id')
+    .single()
+
+  if (error) throw error
+  return created.id
+}
+
+async function addToInvoiceTotal(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  invoiceId: string,
+  amount:    number
+): Promise<void> {
+  // Atualiza o total da fatura diretamente (sem depender de RPC)
+  const { data: invoice } = await supabase
+    .from('credit_invoices')
+    .select('total_amount')
+    .eq('id', invoiceId)
+    .single()
+
+  if (!invoice) return
+
+  await supabase
+    .from('credit_invoices')
+    .update({
+      total_amount: Number(invoice.total_amount) + amount,
+      updated_at:   new Date().toISOString(),
+    })
+    .eq('id', invoiceId)
+}
+
+// ── POST /api/transactions ────────────────────────────────────────────────────
+
+export async function POST(
+  request: Request
+): Promise<NextResponse<ApiResponse<Transaction | Transaction[]>>> {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -51,15 +115,18 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
     const body   = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' }, { status: 400 })
+      return NextResponse.json(
+        { data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' },
+        { status: 400 }
+      )
     }
 
     const { installments, ...txData } = parsed.data
 
-    // Busca a conta para verificar se e cartao
+    // Busca a conta
     const { data: account, error: accountError } = await supabase
       .from('accounts')
-      .select('id, type, closing_day, due_day, credit_limit')
+      .select('id, type, closing_day, due_day, credit_limit, balance')
       .eq('id', txData.account_id)
       .eq('user_id', user.id)
       .single()
@@ -70,7 +137,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
 
     const isCreditCard = account.type === 'credit'
 
-    // ── Transacao simples (sem parcelamento) ──────────────────────────────────
+    // ── Transacao simples ─────────────────────────────────────────────────────
     if (installments === 1) {
       let invoiceId: string | null = null
 
@@ -79,39 +146,10 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
         const referenceMonth = getReferenceMonth(purchaseDate, account.closing_day)
         const dueDate        = getDueDate(referenceMonth, account.closing_day, account.due_day)
 
-        // Busca ou cria a fatura do mes
-        const { data: existing } = await supabase
-          .from('credit_invoices')
-          .select('id')
-          .eq('account_id', account.id)
-          .eq('reference_month', referenceMonth)
-          .single()
-
-        if (existing) {
-          invoiceId = existing.id
-        } else {
-          const { data: newInvoice, error: invoiceError } = await supabase
-            .from('credit_invoices')
-            .insert({
-              account_id:      account.id,
-              user_id:         user.id,
-              reference_month: referenceMonth,
-              due_date:        dueDate,
-              status:          'open',
-              total_amount:    0,
-            })
-            .select('id')
-            .single()
-
-          if (invoiceError) throw invoiceError
-          invoiceId = newInvoice.id
-        }
-
-        // Atualiza total da fatura
-        await supabase.rpc('increment_invoice_total', {
-          p_invoice_id: invoiceId,
-          p_amount:     txData.amount,
-        }).maybeSingle()
+        invoiceId = await getOrCreateInvoice(
+          supabase, account.id, user.id, referenceMonth, dueDate
+        )
+        await addToInvoiceTotal(supabase, invoiceId, txData.amount)
       }
 
       const { data, error } = await supabase
@@ -122,12 +160,12 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
 
       if (error) throw error
 
-      // Atualiza saldo da conta (somente para nao-cartao)
+      // Atualiza saldo apenas para contas nao-cartao
       if (!isCreditCard) {
         const delta = txData.type === 'income' ? txData.amount : -txData.amount
         await supabase
           .from('accounts')
-          .update({ balance: supabase.rpc('accounts_balance_increment', { p_id: account.id, p_delta: delta }) })
+          .update({ balance: Number(account.balance) + delta })
           .eq('id', account.id)
       }
 
@@ -149,11 +187,13 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
       )
     }
 
-    const installmentAmount = Math.round((txData.amount / installments) * 100) / 100
-    const purchaseDate      = new Date(txData.date + 'T12:00:00')
-    const installmentDates  = getInstallmentDates(purchaseDate, installments, account.closing_day)
+    // Valor por parcela com centavos corretos
+    const baseAmount      = Math.floor((txData.amount / installments) * 100) / 100
+    const remainder       = Math.round((txData.amount - baseAmount * installments) * 100)
+    const purchaseDate    = new Date(txData.date + 'T12:00:00')
+    const installmentDates = getInstallmentDates(purchaseDate, installments, account.closing_day)
 
-    // Cria o grupo de parcelamento
+    // Cria grupo de parcelamento
     const { data: group, error: groupError } = await supabase
       .from('installment_groups')
       .insert({
@@ -169,42 +209,22 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
     if (groupError) throw groupError
 
     // Cria uma transacao por parcela
-    const transactions = []
+    const toInsert = []
     for (let i = 0; i < installments; i++) {
       const { referenceMonth, date } = installmentDates[i]
-      const dueDate = getDueDate(referenceMonth, account.closing_day, account.due_day)
+      const dueDate   = getDueDate(referenceMonth, account.closing_day, account.due_day)
+      const invoiceId = await getOrCreateInvoice(
+        supabase, account.id, user.id, referenceMonth, dueDate
+      )
 
-      // Busca ou cria fatura do mes
-      let invoiceId: string
+      // Ultima parcela absorve diferenca de arredondamento
+      const amount = i === installments - 1
+        ? baseAmount + remainder / 100
+        : baseAmount
 
-      const { data: existing } = await supabase
-        .from('credit_invoices')
-        .select('id')
-        .eq('account_id', account.id)
-        .eq('reference_month', referenceMonth)
-        .single()
+      await addToInvoiceTotal(supabase, invoiceId, amount)
 
-      if (existing) {
-        invoiceId = existing.id
-      } else {
-        const { data: newInvoice, error: invoiceError } = await supabase
-          .from('credit_invoices')
-          .insert({
-            account_id:      account.id,
-            user_id:         user.id,
-            reference_month: referenceMonth,
-            due_date:        dueDate,
-            status:          'open',
-            total_amount:    0,
-          })
-          .select('id')
-          .single()
-
-        if (invoiceError) throw invoiceError
-        invoiceId = newInvoice!.id
-      }
-
-      transactions.push({
+      toInsert.push({
         user_id:              user.id,
         account_id:           account.id,
         category_id:          txData.category_id ?? null,
@@ -212,17 +232,17 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<T
         installment_group_id: group.id,
         installment_number:   i + 1,
         type:                 'expense' as const,
-        amount:               installmentAmount,
+        amount,
         description:          `${txData.description} (${i + 1}/${installments})`,
         notes:                txData.notes ?? null,
-        date:                 date,
+        date,
         status:               'confirmed' as const,
       })
     }
 
     const { data: created, error: insertError } = await supabase
       .from('transactions')
-      .insert(transactions)
+      .insert(toInsert)
       .select()
 
     if (insertError) throw insertError
