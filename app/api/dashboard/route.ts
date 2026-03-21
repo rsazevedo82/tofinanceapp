@@ -1,98 +1,183 @@
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentMonthRange } from '@/lib/utils/format'
-import type { ApiResponse, DashboardSummary } from '@/types'
-import { NextResponse } from 'next/server'
+﻿// app/api/dashboard/route.ts
+import { createClient }          from '@/lib/supabase/server'
+import { getCurrentMonthRange }  from '@/lib/utils/format'
+import type { ApiResponse }      from '@/types'
+import { NextResponse }          from 'next/server'
 
-export async function GET(): Promise<NextResponse<ApiResponse<DashboardSummary>>> {
+export interface DashboardData {
+  // Saldo real (apenas contas, sem cartoes)
+  total_balance:     number
+  // Mes atual
+  income_month:      number
+  expense_month:     number
+  net_month:         number
+  // Cartoes
+  cards: {
+    id:           string
+    name:         string
+    color:        string | null
+    credit_limit: number
+    open_invoice: number
+    available:    number
+    closing_day:  number
+    due_day:      number
+  }[]
+  // Transacoes recentes
+  recent_transactions: {
+    id:          string
+    description: string
+    amount:      number
+    type:        string
+    date:        string
+    category_name: string | null
+    category_color: string | null
+    account_name:  string | null
+  }[]
+  // Top categorias do mes
+  top_categories: {
+    name:    string
+    color:   string | null
+    total:   number
+    percent: number
+  }[]
+  period: { start: string; end: string }
+}
+
+export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
   try {
     const supabase = await createClient()
-
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
 
     const { start, end } = getCurrentMonthRange()
 
-    // Busca em paralelo para melhor performance
-    const [accountsResult, transactionsResult] = await Promise.all([
+    // Busca tudo em paralelo
+    const [accountsRes, txRes, invoicesRes, catsRes] = await Promise.all([
       supabase
         .from('accounts')
-        .select('*')
+        .select('id, name, type, balance, color, credit_limit, closing_day, due_day')
+        .eq('user_id', user.id)
         .eq('is_active', true)
         .is('deleted_at', null)
         .order('name'),
 
       supabase
         .from('transactions')
-        .select(`
-          *,
-          account:accounts(id, name, color, icon),
-          category:categories(id, name, color, icon)
-        `)
+        .select('id, type, amount, date, description, account_id, category_id')
+        .eq('user_id', user.id)
         .gte('date', start)
         .lte('date', end)
         .eq('status', 'confirmed')
-        .order('date', { ascending: false }),
+        .is('deleted_at', null)
+        .order('date', { ascending: false })
+        .limit(200),
+
+      supabase
+        .from('credit_invoices')
+        .select('account_id, total_amount, status')
+        .eq('user_id', user.id)
+        .neq('status', 'paid'),
+
+      supabase
+        .from('categories')
+        .select('id, name, color')
+        .or(`user_id.is.null,user_id.eq.${user.id}`),
     ])
 
-    if (accountsResult.error) throw accountsResult.error
-    if (transactionsResult.error) throw transactionsResult.error
+    const accounts = accountsRes.data ?? []
+    const txs      = txRes.data      ?? []
+    const invoices = invoicesRes.data ?? []
+    const cats     = catsRes.data    ?? []
 
-    const accounts = accountsResult.data ?? []
-    const transactions = transactionsResult.data ?? []
+    const catMap = Object.fromEntries(cats.map(c => [c.id, c]))
+    const accMap = Object.fromEntries(accounts.map(a => [a.id, a]))
 
-    // Calcular totais do mês
-    const income_this_month = transactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
-
-    const expense_this_month = transactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
-
+    // Saldo real: apenas contas nao-cartao
     const total_balance = accounts
-      .reduce((sum, a) => sum + Number(a.balance), 0)
+      .filter(a => a.type !== 'credit')
+      .reduce((s, a) => s + Number(a.balance), 0)
 
-    // Gastos agrupados por categoria
-    const categoryMap = new Map<string, {
-      category_id: string
-      category_name: string
-      category_color: string | null
-      total: number
-    }>()
+    // Totais do mes
+    const income_month  = txs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+    const expense_month = txs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
 
-    transactions
-      .filter(t => t.type === 'expense' && t.category)
-      .forEach(t => {
-        const cat = t.category!
-        const existing = categoryMap.get(cat.id)
-        if (existing) {
-          existing.total += Number(t.amount)
-        } else {
-          categoryMap.set(cat.id, {
-            category_id: cat.id,
-            category_name: cat.name,
-            category_color: cat.color,
-            total: Number(t.amount),
-          })
+    // Fatura aberta por cartao
+    const openByCard = new Map<string, number>()
+    for (const inv of invoices) {
+      const prev = openByCard.get(inv.account_id) ?? 0
+      openByCard.set(inv.account_id, prev + Number(inv.total_amount))
+    }
+
+    // Cartoes
+    const cards = accounts
+      .filter(a => a.type === 'credit' && a.credit_limit)
+      .map(a => {
+        const open      = openByCard.get(a.id) ?? 0
+        const limit     = Number(a.credit_limit)
+        return {
+          id:           a.id,
+          name:         a.name,
+          color:        a.color,
+          credit_limit: limit,
+          open_invoice: open,
+          available:    limit - open,
+          closing_day:  a.closing_day ?? 0,
+          due_day:      a.due_day     ?? 0,
         }
       })
 
-    const expenses_by_category = Array.from(categoryMap.values())
-      .sort((a, b) => b.total - a.total)
+    // Transacoes recentes (8 mais recentes)
+    const recent_transactions = txs.slice(0, 8).map(t => ({
+      id:             t.id,
+      description:    t.description,
+      amount:         Number(t.amount),
+      type:           t.type,
+      date:           t.date,
+      category_name:  t.category_id ? catMap[t.category_id]?.name  ?? null : null,
+      category_color: t.category_id ? catMap[t.category_id]?.color ?? null : null,
+      account_name:   accMap[t.account_id]?.name ?? null,
+    }))
 
-    const summary: DashboardSummary = {
-      total_balance,
-      income_this_month,
-      expense_this_month,
-      net_this_month: income_this_month - expense_this_month,
-      accounts,
-      recent_transactions: transactions.slice(0, 5),
-      expenses_by_category,
+    // Top categorias (despesas do mes)
+    const catTotals = new Map<string, { name: string; color: string | null; total: number }>()
+    for (const t of txs.filter(t => t.type === 'expense')) {
+      const key  = t.category_id ?? '__none__'
+      const cat  = t.category_id ? catMap[t.category_id] : null
+      const prev = catTotals.get(key)
+      if (prev) {
+        prev.total += Number(t.amount)
+      } else {
+        catTotals.set(key, {
+          name:  cat?.name  ?? 'Sem categoria',
+          color: cat?.color ?? '#94a3b8',
+          total: Number(t.amount),
+        })
+      }
     }
 
-    return NextResponse.json({ data: summary, error: null })
+    const top_categories = Array.from(catTotals.values())
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+      .map(c => ({
+        ...c,
+        percent: expense_month > 0 ? Math.round((c.total / expense_month) * 100) : 0,
+      }))
+
+    return NextResponse.json({
+      data: {
+        total_balance,
+        income_month,
+        expense_month,
+        net_month: income_month - expense_month,
+        cards,
+        recent_transactions,
+        top_categories,
+        period: { start, end },
+      },
+      error: null,
+    })
   } catch (err) {
     console.error('[GET /api/dashboard]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
