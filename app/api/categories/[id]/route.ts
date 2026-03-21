@@ -1,95 +1,99 @@
-import { createClient } from '@/lib/supabase/server'
-import { updateCategorySchema } from '@/lib/validations/schemas'
+﻿// app/api/categories/[id]/route.ts
+import { createClient }          from '@/lib/supabase/server'
+import { updateCategorySchema }  from '@/lib/validations/schemas'
+import { checkRateLimit }        from '@/lib/apiHelpers'
 import type { ApiResponse, Category } from '@/types'
-import { NextResponse } from 'next/server'
-
-type Params = { params: Promise<{ id: string }> }
+import { NextResponse }          from 'next/server'
 
 export async function PATCH(
   request: Request,
-  { params }: Params
+  { params }: { params: { id: string } }
 ): Promise<NextResponse<ApiResponse<Category>>> {
-  try {
-    const { id } = await params
-    const supabase = await createClient()
+  const limited = await checkRateLimit()
+  if (limited) return limited
 
+  try {
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body   = await request.json()
     const parsed = updateCategorySchema.safeParse(body)
-
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? 'Dados inválidos'
+      const message = parsed.error.issues[0]?.message ?? 'Dados invalidos'
       return NextResponse.json({ data: null, error: message }, { status: 400 })
     }
 
-    // Apenas categorias do próprio usuário podem ser editadas
-    const { data: existing } = await supabase
+    const { data: existing, error: findError } = await supabase
       .from('categories')
       .select('id')
-      .eq('id', id)
+      .eq('id', params.id)
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .single()
 
-    if (!existing) {
-      return NextResponse.json({ data: null, error: 'Categoria não encontrada' }, { status: 404 })
+    if (findError || !existing) {
+      return NextResponse.json(
+        { data: null, error: 'Categoria nao encontrada ou nao pode ser editada.' },
+        { status: 404 }
+      )
     }
 
     const { data, error } = await supabase
       .from('categories')
       .update(parsed.data)
-      .eq('id', id)
-      .eq('user_id', user.id)
+      .eq('id', params.id)
       .select()
       .single()
 
     if (error) throw error
-
     return NextResponse.json({ data, error: null })
   } catch (err) {
-    console.error('[PATCH /api/categories/[id]]', err)
+    console.error('[PATCH /api/categories/:id]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
   }
 }
 
 export async function DELETE(
   _request: Request,
-  { params }: Params
+  { params }: { params: { id: string } }
 ): Promise<NextResponse<ApiResponse<null>>> {
-  try {
-    const { id } = await params
-    const supabase = await createClient()
+  const limited = await checkRateLimit()
+  if (limited) return limited
 
+  try {
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
 
-    const { data: existing } = await supabase
+    const { data: existing, error: findError } = await supabase
       .from('categories')
       .select('id')
-      .eq('id', id)
+      .eq('id', params.id)
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .single()
 
-    if (!existing) {
-      return NextResponse.json({ data: null, error: 'Categoria não encontrada' }, { status: 404 })
+    if (findError || !existing) {
+      return NextResponse.json(
+        { data: null, error: 'Categoria nao encontrada ou nao pode ser excluida.' },
+        { status: 404 }
+      )
     }
 
     const { error } = await supabase
       .from('categories')
-      .update({ is_active: false })
-      .eq('id', id)
-      .eq('user_id', user.id)
+      .update({ deleted_at: new Date().toISOString(), is_active: false })
+      .eq('id', params.id)
 
     if (error) throw error
-
     return NextResponse.json({ data: null, error: null })
   } catch (err) {
-    console.error('[DELETE /api/categories/[id]]', err)
+    console.error('[DELETE /api/categories/:id]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
   }
 }

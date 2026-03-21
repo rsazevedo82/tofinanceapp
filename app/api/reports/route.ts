@@ -1,6 +1,7 @@
 ﻿// app/api/reports/route.ts
 import { createClient }        from '@/lib/supabase/server'
 import { NextResponse }        from 'next/server'
+import { checkRateLimit }      from '@/lib/apiHelpers'
 import type { ApiResponse }    from '@/types'
 
 // ── Tipos de retorno ──────────────────────────────────────────────────────────
@@ -86,6 +87,9 @@ function monthRange(ym: string): { start: string; end: string } {
 // ── Handler principal ─────────────────────────────────────────────────────────
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<ReportsPayload>>> {
+  const limited = await checkRateLimit()
+  if (limited) return limited as any
+
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()

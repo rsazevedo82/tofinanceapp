@@ -1,14 +1,17 @@
 ﻿// app/api/invoices/[id]/route.ts
-import { createClient } from '@/lib/supabase/server'
+import { createClient }    from '@/lib/supabase/server'
 import { payInvoiceSchema } from '@/lib/validations/schemas'
+import { checkRateLimit }  from '@/lib/apiHelpers'
 import type { ApiResponse, CreditInvoice } from '@/types'
-import { NextResponse } from 'next/server'
+import { NextResponse }    from 'next/server'
 
-// POST /api/invoices/[id]/pay  →  pagar fatura
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ): Promise<NextResponse<ApiResponse<CreditInvoice>>> {
+  const limited = await checkRateLimit()
+  if (limited) return limited
+
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -19,13 +22,15 @@ export async function POST(
     const body   = await request.json()
     const parsed = payInvoiceSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' }, { status: 400 })
+      return NextResponse.json(
+        { data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' },
+        { status: 400 }
+      )
     }
 
-    // Busca a fatura
     const { data: invoice, error: findError } = await supabase
       .from('credit_invoices')
-      .select('*, accounts(id, name)')
+      .select('*')
       .eq('id', params.id)
       .eq('user_id', user.id)
       .single()
@@ -39,10 +44,12 @@ export async function POST(
     }
 
     if (invoice.status === 'open') {
-      return NextResponse.json({ data: null, error: 'Fatura ainda esta aberta - feche antes de pagar' }, { status: 409 })
+      return NextResponse.json(
+        { data: null, error: 'Fatura ainda esta aberta - feche antes de pagar' },
+        { status: 409 }
+      )
     }
 
-    // Cria transacao de pagamento na conta de origem
     const { error: txError } = await supabase
       .from('transactions')
       .insert({
@@ -58,7 +65,6 @@ export async function POST(
 
     if (txError) throw txError
 
-    // Marca fatura como paga
     const { data: updated, error: updateError } = await supabase
       .from('credit_invoices')
       .update({ status: 'paid', paid_at: new Date().toISOString() })
@@ -67,10 +73,9 @@ export async function POST(
       .single()
 
     if (updateError) throw updateError
-
     return NextResponse.json({ data: updated, error: null })
   } catch (err) {
-    console.error('[POST /api/invoices/:id/pay]', err)
+    console.error('[POST /api/invoices/:id]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
   }
 }
