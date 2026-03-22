@@ -1,4 +1,4 @@
-﻿// components/finance/AccountForm.tsx
+// components/finance/AccountForm.tsx
 'use client'
 
 import { useState } from 'react'
@@ -123,7 +123,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         <select
           className="input"
           value={form.type}
-          onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
+          onChange={e => setForm(f => ({ ...f, type: e.target.value as AccountType }))}
         >
           {ACCOUNT_TYPES.map(t => (
             <option key={t.value} value={t.value}>{t.label}</option>

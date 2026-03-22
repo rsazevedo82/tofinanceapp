@@ -1,4 +1,4 @@
-﻿// app/api/transactions/[id]/route.ts
+// app/api/transactions/[id]/route.ts
 import { createClient }             from '@/lib/supabase/server'
 import { createTransactionSchema }  from '@/lib/validations/schemas'
 import type { ApiResponse, Transaction } from '@/types'
@@ -28,7 +28,7 @@ export async function PATCH(
 
     // Remove campos que nao existem na tabela transactions
     // installments e logica de aplicacao — so usado no POST para criar parcelas
-    const { installments: _bodyInstallments, ...rest } = body
+    const { installments: _b, ...rest } = body; void _b
 
     const parsed = createTransactionSchema.safeParse({ ...rest, installments: 1 })
 
@@ -51,7 +51,7 @@ export async function PATCH(
     }
 
     // Extrai apenas os campos editaveis — installments nao vai para o banco
-    const { installments: _inst, ...updateData } = parsed.data
+    const { installments: _i, ...updateData } = parsed.data; void _i
 
     const { data, error } = await supabase
       .from('transactions')
