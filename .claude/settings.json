@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+      "serena": {
+        "command": "uv",
+        "args": [
+          "--directory", "C:\\serena",
+          "run", "serena",
+          "start-mcp-server",
+          "--project", "E:\\MyProjects\\tofinanceapp",
+          "--context", "claude-code"
+        ]
+      }
+    }
+  }

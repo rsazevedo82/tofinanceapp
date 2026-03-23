@@ -1,0 +1,8 @@
+project_name: tofinanceapp
+  languages:
+    - typescript
+    - javascript
+  ignore_all_files_in_gitignore: true
+  ignored_paths:
+    - ".next"
+    - "node_modules"
