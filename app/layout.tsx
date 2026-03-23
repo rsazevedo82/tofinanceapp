@@ -1,13 +1,10 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist } from 'next/font/google'
+import { Geist } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import './globals.css'
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({ subsets: ['latin'] })
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
   title: 'FinanceApp',
@@ -31,8 +28,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
-      <body className={inter.className}>
+    <html lang="pt-BR" suppressHydrationWarning className={`dark ${geist.variable} font-sans`}>
+      <body>
         <QueryProvider>
           {children}
         </QueryProvider>
