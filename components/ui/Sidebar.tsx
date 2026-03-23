@@ -14,6 +14,7 @@ const baseNavItems = [
   { href: '/contas',     label: 'Contas',       icon: '◫' },
   { href: '/categorias', label: 'Categorias',   icon: '◈' },
   { href: '/relatorios', label: 'Relatorios',   icon: '▤' },
+  { href: '/objetivos',  label: 'Objetivos',    icon: '🎯' },
   { href: '/casal',      label: 'Perfil Casal', icon: '💑' },
 ]
 

@@ -115,6 +115,45 @@ export interface CoupleInvitation {
   created_at:    string
 }
 
+// ── Goals ─────────────────────────────────────────────────────────────────────
+
+export type GoalStatus   = 'active' | 'completed' | 'archived'
+export type GoalCategory =
+  | 'travel' | 'property' | 'emergency' | 'education'
+  | 'vehicle' | 'wedding' | 'family' | 'tech' | 'health' | 'custom'
+
+export interface Goal {
+  id:            string
+  user_id:       string
+  couple_id:     string | null
+  title:         string
+  description:   string | null
+  icon:          string
+  color:         string
+  category:      GoalCategory
+  account_id:    string | null
+  target_amount: number
+  deadline:      string | null
+  status:        GoalStatus
+  created_at:    string
+  updated_at:    string
+  // computed
+  current_amount?: number
+  contributions?:  GoalContribution[]
+}
+
+export interface GoalContribution {
+  id:         string
+  goal_id:    string
+  user_id:    string
+  amount:     number
+  notes:      string | null
+  date:       string
+  created_at: string
+  // join
+  user_profile?: UserProfile
+}
+
 // ── Notifications ──────────────────────────────────────────────────────────────
 
 export type NotificationType =

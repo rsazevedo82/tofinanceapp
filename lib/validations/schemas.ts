@@ -100,6 +100,38 @@ export const payInvoiceSchema = z.object({
   payment_date:       isoDate,
 })
 
+// ── Goals ─────────────────────────────────────────────────────────────────────
+
+export const createGoalSchema = z.object({
+  title:         safeString(100).min(1, 'Título é obrigatório'),
+  description:   safeString(500).optional(),
+  icon:          safeString(10).default('⭐'),
+  color:         hexColor.default('#818cf8' as `#${string}`),
+  category:      z.enum(['travel','property','emergency','education','vehicle','wedding','family','tech','health','custom']).default('custom'),
+  account_id:    z.string().uuid().optional(),
+  target_amount: z.number().positive('Valor alvo deve ser maior que zero').max(999999999),
+  deadline:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  couple_id:     z.string().uuid().optional(),
+})
+
+export const updateGoalSchema = z.object({
+  title:         safeString(100).min(1).optional(),
+  description:   safeString(500).optional(),
+  icon:          safeString(10).optional(),
+  color:         hexColor,
+  category:      z.enum(['travel','property','emergency','education','vehicle','wedding','family','tech','health','custom']).optional(),
+  account_id:    z.string().uuid().optional().nullable(),
+  target_amount: z.number().positive().max(999999999).optional(),
+  deadline:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  status:        z.enum(['active','completed','archived']).optional(),
+})
+
+export const addContributionSchema = z.object({
+  amount: z.number().positive('Valor deve ser maior que zero').max(999999999),
+  notes:  safeString(255).optional(),
+  date:   isoDate,
+})
+
 // ── Tipos exportados ──────────────────────────────────────────────────────────
 
 export type CreateAccountInput     = z.infer<typeof createAccountSchema>
@@ -107,4 +139,7 @@ export type UpdateAccountInput     = z.infer<typeof updateAccountSchema>
 export type CreateCategoryInput    = z.infer<typeof createCategorySchema>
 export type UpdateCategoryInput    = z.infer<typeof updateCategorySchema>
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>
+export type CreateGoalInput        = z.infer<typeof createGoalSchema>
+export type UpdateGoalInput        = z.infer<typeof updateGoalSchema>
+export type AddContributionInput   = z.infer<typeof addContributionSchema>
 export type PayInvoiceInput        = z.infer<typeof payInvoiceSchema>
