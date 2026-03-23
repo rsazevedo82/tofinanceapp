@@ -12,10 +12,8 @@ const transactionSelect = `
 
 // ── PATCH /api/transactions/:id ───────────────────────────────────────────────
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse<ApiResponse<Transaction>>> {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<Transaction>>> {
+  const params = await props.params;
   try {
     const supabase = await createClient()
 
@@ -81,10 +79,8 @@ export async function PATCH(
 
 // ── DELETE /api/transactions/:id ──────────────────────────────────────────────
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse<ApiResponse<null>>> {
+export async function DELETE(_request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<null>>> {
+  const params = await props.params;
   try {
     const supabase = await createClient()
 

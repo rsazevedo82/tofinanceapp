@@ -5,10 +5,8 @@ import { checkRateLimit }  from '@/lib/apiHelpers'
 import type { ApiResponse, CreditInvoice } from '@/types'
 import { NextResponse }    from 'next/server'
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse<ApiResponse<CreditInvoice>>> {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<CreditInvoice>>> {
+  const params = await props.params;
   const limited = await checkRateLimit()
   if (limited) return limited
 

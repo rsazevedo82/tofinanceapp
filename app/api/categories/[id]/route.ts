@@ -5,10 +5,8 @@ import { checkRateLimit }        from '@/lib/apiHelpers'
 import type { ApiResponse, Category } from '@/types'
 import { NextResponse }          from 'next/server'
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse<ApiResponse<Category>>> {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<Category>>> {
+  const params = await props.params;
   const limited = await checkRateLimit()
   if (limited) return limited
 
@@ -56,10 +54,8 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<NextResponse<ApiResponse<null>>> {
+export async function DELETE(_request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<null>>> {
+  const params = await props.params;
   const limited = await checkRateLimit()
   if (limited) return limited
 

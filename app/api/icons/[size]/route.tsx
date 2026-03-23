@@ -5,10 +5,8 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { size: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ size: string }> }) {
+  const params = await props.params;
   const dim = Math.max(16, Math.min(1024, parseInt(params.size) || 192))
 
   const radius     = Math.round(dim * 0.22)
