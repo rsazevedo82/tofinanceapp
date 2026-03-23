@@ -1,9 +1,15 @@
 // components/finance/CategoryForm.tsx
 'use client'
 
-import { useState } from 'react'
-import { useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories'
-import type { Category } from '@/types'
+import { useForm }                                                  from 'react-hook-form'
+import { zodResolver }                                              from '@hookform/resolvers/zod'
+import { z }                                                        from 'zod'
+import { useState }                                                 from 'react'
+import { useCreateCategory, useUpdateCategory, useDeleteCategory }  from '@/hooks/useCategories'
+import { createCategorySchema }                                     from '@/lib/validations/schemas'
+import type { Category }                                            from '@/types'
+
+type FormValues = z.infer<typeof createCategorySchema>
 
 const COLOR_PRESETS = [
   '#6ee7b7', '#34d399', '#10b981',
@@ -13,9 +19,9 @@ const COLOR_PRESETS = [
 ]
 
 interface CategoryFormProps {
-  category?: Category    // se passado, modo edição
+  category?:    Category
   defaultType?: 'income' | 'expense'
-  onSuccess: () => void
+  onSuccess:    () => void
 }
 
 export function CategoryForm({ category, defaultType = 'expense', onSuccess }: CategoryFormProps) {
@@ -25,56 +31,52 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
   const updateCategory = useUpdateCategory()
   const deleteCategory = useDeleteCategory()
 
-  const [form, setForm] = useState({
-    name:  category?.name  ?? '',
-    type:  category?.type  ?? defaultType,
-    color: category?.color ?? '#fca5a5',
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [apiError,      setApiError]      = useState('')
+
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
+    resolver:      zodResolver(createCategorySchema),
+    defaultValues: {
+      name:  category?.name  ?? '',
+      type:  category?.type  ?? defaultType,
+      color: category?.color ?? '#fca5a5',
+    },
   })
 
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [error, setError]                 = useState('')
+  const currentType  = watch('type')
+  const currentColor = watch('color')
+  const currentName  = watch('name')
 
-  // ── Submit ──────────────────────────────────────────────────────────────────
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-
-    const payload = { name: form.name, type: form.type, color: form.color }
+  function onSubmit(data: FormValues) {
+    setApiError('')
+    const payload = { name: data.name, type: data.type, color: data.color }
 
     if (isEditing) {
       updateCategory.mutate(
         { id: category.id, body: payload },
-        {
-          onSuccess: () => onSuccess(),
-          onError:   (err) => setError(err.message),
-        }
+        { onSuccess: () => onSuccess(), onError: (err) => setApiError(err.message) }
       )
     } else {
       createCategory.mutate(payload, {
         onSuccess: () => onSuccess(),
-        onError:   (err) => setError(err.message),
+        onError:   (err) => setApiError(err.message),
       })
     }
   }
 
-  // ── Delete ──────────────────────────────────────────────────────────────────
-
-  async function handleDelete() {
+  function handleDelete() {
     if (!confirmDelete) { setConfirmDelete(true); return }
-
     deleteCategory.mutate(category!.id, {
       onSuccess: () => onSuccess(),
-      onError:   (err) => setError(err.message),
+      onError:   (err) => setApiError(err.message),
     })
   }
 
-  const isPending = createCategory.isPending || updateCategory.isPending
-
-  // ── Render ──────────────────────────────────────────────────────────────────
+  const isPending    = createCategory.isPending || updateCategory.isPending
+  const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
       {/* Tipo — só no modo criação */}
       {!isEditing && (
@@ -83,9 +85,9 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             <button
               key={type}
               type="button"
-              onClick={() => setForm(f => ({ ...f, type }))}
+              onClick={() => setValue('type', type)}
               className={`py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                form.type === type
+                currentType === type
                   ? type === 'income'
                     ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
@@ -102,12 +104,10 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
       <div>
         <label className="label">Nome da categoria</label>
         <input
+          {...register('name')}
           type="text"
           className="input"
           placeholder="Ex: Alimentação, Salário..."
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          required
         />
       </div>
 
@@ -119,13 +119,13 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             <button
               key={color}
               type="button"
-              onClick={() => setForm(f => ({ ...f, color }))}
+              onClick={() => setValue('color', color)}
               className="w-7 h-7 rounded-full transition-all duration-150"
               style={{
                 background:    color,
-                outline:       form.color === color ? `2px solid ${color}` : 'none',
+                outline:       currentColor === color ? `2px solid ${color}` : 'none',
                 outlineOffset: '2px',
-                opacity:       form.color === color ? 1 : 0.5,
+                opacity:       currentColor === color ? 1 : 0.5,
               }}
               aria-label={`Cor ${color}`}
             />
@@ -137,35 +137,30 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
       <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
         style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
         <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-          style={{ background: form.color }} />
+          style={{ background: currentColor }} />
         <span className="text-sm text-[#e8e6e1]">
-          {form.name || 'Nome da categoria'}
+          {currentName || 'Nome da categoria'}
         </span>
         <span className="ml-auto tag tag-neutral text-[10px]">
-          {form.type === 'income' ? 'Receita' : 'Despesa'}
+          {currentType === 'income' ? 'Receita' : 'Despesa'}
         </span>
       </div>
 
-      {/* Erro */}
-      {error && (
+      {displayError && (
         <p className="text-xs px-3 py-2 rounded-lg"
           style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
-          {error}
+          {displayError}
         </p>
       )}
 
-      {/* Salvar */}
       <button
         type="submit"
         className="btn-primary w-full justify-center py-2.5"
         disabled={isPending}
       >
-        {isPending
-          ? 'Salvando...'
-          : isEditing ? 'Salvar alterações' : 'Criar categoria'}
+        {isPending ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Criar categoria'}
       </button>
 
-      {/* Excluir — somente edição de categoria do usuário */}
       {isEditing && (
         <>
           <button

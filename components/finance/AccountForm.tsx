@@ -1,10 +1,16 @@
 // components/finance/AccountForm.tsx
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCreateAccount, useUpdateAccount, useDeleteAccount } from '@/hooks/useAccounts'
-import type { Account } from '@/types'
+import { useForm }                                                    from 'react-hook-form'
+import { zodResolver }                                                from '@hookform/resolvers/zod'
+import { z }                                                          from 'zod'
+import { useState }                                                   from 'react'
+import { useRouter }                                                  from 'next/navigation'
+import { useCreateAccount, useUpdateAccount, useDeleteAccount }       from '@/hooks/useAccounts'
+import { createAccountSchema }                                        from '@/lib/validations/schemas'
+import type { Account }                                               from '@/types'
+
+type FormValues = z.infer<typeof createAccountSchema>
 
 const COLOR_PRESETS = [
   '#6ee7b7', '#34d399', '#60a5fa', '#818cf8',
@@ -13,19 +19,18 @@ const COLOR_PRESETS = [
 ]
 
 const ACCOUNT_TYPES = [
-  { value: 'checking',   label: 'Conta corrente'    },
-  { value: 'savings',    label: 'Poupanca'           },
-  { value: 'credit',     label: 'Cartao de credito'  },
-  { value: 'investment', label: 'Investimento'       },
-  { value: 'wallet',     label: 'Carteira'           },
+  { value: 'checking',   label: 'Conta corrente'   },
+  { value: 'savings',    label: 'Poupanca'          },
+  { value: 'credit',     label: 'Cartao de credito' },
+  { value: 'investment', label: 'Investimento'      },
+  { value: 'wallet',     label: 'Carteira'          },
 ]
 
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 
 interface AccountFormProps {
-  account?:     Account
-  defaultType?: 'checking' | 'savings' | 'credit' | 'investment' | 'wallet'
-  onSuccess:    () => void
+  account?:  Account
+  onSuccess: () => void
 }
 
 export function AccountForm({ account, onSuccess }: AccountFormProps) {
@@ -36,95 +41,86 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
   const updateAccount = useUpdateAccount()
   const deleteAccount = useDeleteAccount()
 
-  const [form, setForm] = useState({
-    name:            account?.name             ?? '',
-    type:            account?.type             ?? 'checking',
-    color:           account?.color            ?? '#6ee7b7',
-    initial_balance: '',
-    credit_limit:    account?.credit_limit?.toString()  ?? '',
-    closing_day:     account?.closing_day?.toString()   ?? '25',
-    due_day:         account?.due_day?.toString()        ?? '5',
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [apiError,      setApiError]      = useState('')
+
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
+    resolver:      zodResolver(createAccountSchema),
+    defaultValues: {
+      name:         account?.name                       ?? '',
+      type:         account?.type                       ?? 'checking',
+      color:        account?.color                      ?? '#6ee7b7',
+      credit_limit: account?.credit_limit               ?? undefined,
+      closing_day:  account?.closing_day                ?? 25,
+      due_day:      account?.due_day                    ?? 5,
+    },
   })
 
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [error, setError]                 = useState('')
+  const currentType  = watch('type')
+  const currentColor = watch('color')
+  const isCreditCard = currentType === 'credit'
 
-  const isCreditCard = form.type === 'credit'
+  function onSubmit(data: FormValues) {
+    setApiError('')
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-
-    const base: Record<string, unknown> = {
-      name:  form.name,
-      type:  form.type,
-      color: form.color,
+    const body: Record<string, unknown> = {
+      name:  data.name,
+      type:  data.type,
+      color: data.color,
     }
 
     if (isCreditCard) {
-      if (!form.credit_limit || !form.closing_day || !form.due_day) {
-        setError('Preencha limite, dia de fechamento e vencimento.')
-        return
-      }
-      base.credit_limit = parseFloat(form.credit_limit)
-      base.closing_day  = parseInt(form.closing_day)
-      base.due_day      = parseInt(form.due_day)
+      body.credit_limit = data.credit_limit
+      body.closing_day  = data.closing_day
+      body.due_day      = data.due_day
     }
 
     if (isEditing) {
       updateAccount.mutate(
-        { id: account.id, body: base },
+        { id: account.id, body },
         {
           onSuccess: () => { onSuccess(); router.refresh() },
-          onError:   (err) => setError(err.message),
+          onError:   (err) => setApiError(err.message),
         }
       )
     } else {
-      const initialValue = parseFloat(form.initial_balance)
-      if (!isNaN(initialValue) && initialValue > 0) {
-        base.initial_balance = initialValue
-      }
-      createAccount.mutate(base, {
+      if (data.initial_balance) body.initial_balance = data.initial_balance
+      createAccount.mutate(body, {
         onSuccess: () => { onSuccess(); router.refresh() },
-        onError:   (err) => setError(err.message),
+        onError:   (err) => setApiError(err.message),
       })
     }
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!confirmDelete) { setConfirmDelete(true); return }
     deleteAccount.mutate(account!.id, {
       onSuccess: () => { onSuccess(); router.refresh() },
-      onError:   (err) => setError(err.message),
+      onError:   (err) => setApiError(err.message),
     })
   }
 
-  const isPending = createAccount.isPending || updateAccount.isPending
+  const isPending    = createAccount.isPending || updateAccount.isPending
+  const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
       {/* Nome */}
       <div>
         <label className="label">Nome da conta</label>
         <input
+          {...register('name')}
           type="text"
           className="input"
           placeholder="Ex: Nubank, Itau, Carteira..."
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          required
         />
       </div>
 
       {/* Tipo */}
       <div>
         <label className="label">Tipo</label>
-        <select
-          className="input"
-          value={form.type}
-          onChange={e => setForm(f => ({ ...f, type: e.target.value as AccountType }))}
-        >
+        <select {...register('type')} className="input">
           {ACCOUNT_TYPES.map(t => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
@@ -140,29 +136,24 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             Configuracoes do cartao
           </p>
 
-          {/* Limite */}
           <div>
             <label className="label">Limite total (R$)</label>
             <input
+              {...register('credit_limit', { setValueAs: (v) => v === '' ? undefined : Number(v) })}
               type="number"
               step="0.01"
               min="0"
               className="input"
               placeholder="Ex: 5000,00"
-              value={form.credit_limit}
-              onChange={e => setForm(f => ({ ...f, credit_limit: e.target.value }))}
-              required={isCreditCard}
             />
           </div>
 
-          {/* Dia de fechamento e vencimento */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="label">Dia de fechamento</label>
               <select
+                {...register('closing_day', { setValueAs: (v) => parseInt(v) })}
                 className="input"
-                value={form.closing_day}
-                onChange={e => setForm(f => ({ ...f, closing_day: e.target.value }))}
               >
                 {DAYS.map(d => (
                   <option key={d} value={d}>Dia {d}</option>
@@ -172,9 +163,8 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             <div>
               <label className="label">Dia de vencimento</label>
               <select
+                {...register('due_day', { setValueAs: (v) => parseInt(v) })}
                 className="input"
-                value={form.due_day}
-                onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
               >
                 {DAYS.map(d => (
                   <option key={d} value={d}>Dia {d}</option>
@@ -190,13 +180,12 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         <div>
           <label className="label">Saldo inicial (R$)</label>
           <input
+            {...register('initial_balance', { setValueAs: (v) => v === '' ? undefined : Number(v) })}
             type="number"
             step="0.01"
             min="0"
             className="input"
             placeholder="0,00 - deixe vazio se nao souber"
-            value={form.initial_balance}
-            onChange={e => setForm(f => ({ ...f, initial_balance: e.target.value }))}
           />
           <p className="mt-1 text-[11px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
             Sera registrado como uma transacao de receita inicial.
@@ -212,23 +201,23 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             <button
               key={color}
               type="button"
-              onClick={() => setForm(f => ({ ...f, color }))}
+              onClick={() => setValue('color', color)}
               className="w-7 h-7 rounded-full transition-all duration-150"
               style={{
                 background:    color,
-                outline:       form.color === color ? `2px solid ${color}` : 'none',
+                outline:       currentColor === color ? `2px solid ${color}` : 'none',
                 outlineOffset: '2px',
-                opacity:       form.color === color ? 1 : 0.5,
+                opacity:       currentColor === color ? 1 : 0.5,
               }}
             />
           ))}
         </div>
       </div>
 
-      {error && (
+      {displayError && (
         <p className="text-xs px-3 py-2 rounded-lg"
           style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
-          {error}
+          {displayError}
         </p>
       )}
 
