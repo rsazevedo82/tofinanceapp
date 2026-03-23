@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.1",
+    "@tailwindcss/postcss": "^4.2.2",
     "@tanstack/react-query": "^5.90.21",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
@@ -23,6 +24,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.72.0",
     "recharts": "^3.8.0",
+    "tailwindcss": "^4.2.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -36,7 +38,6 @@
     "eslint-config-next": "^15.5.14",
     "jsdom": "^28.1.0",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "vitest": "^4.1.0"
   }

@@ -1,6 +1,16 @@
-﻿@tailwind base;
-@tailwind components;
-@tailwind utilities;
+﻿@import "tailwindcss";
+
+@theme {
+  --color-notion-bg:      #111110;
+  --color-notion-surface: #161614;
+  --color-notion-text:    #e8e6e1;
+  --color-notion-income:  #6ee7b7;
+  --color-notion-expense: #fca5a5;
+
+  --font-family-sans: -apple-system, Inter, ui-sans-serif, system-ui;
+
+  --radius-notion: 6px;
+}
 
 @layer base {
   :root {

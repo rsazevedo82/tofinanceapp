@@ -1,8 +1,8 @@
-# CLAUDE.md
+# CLAUDE.md – FinanceApp (Controle Financeiro Pessoal)
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## 0. Commands
 
 ```bash
 npm run dev          # Development server (port 3000)
@@ -12,48 +12,82 @@ npm run test         # Vitest in watch mode
 npm run test:run     # Vitest single run
 ```
 
-## Tech Stack
+## 1. Visão Geral do Produto
+Aplicação web de controle financeiro pessoal.  
+Objetivo principal: gerenciar contas, transações e categorias com dashboard claro e resumo mensal.  
+Público-alvo: pessoas físicas no Brasil (usuários comuns, não empresas).  
+Idioma prioritário: Português Brasileiro (interface, mensagens, validações, logs).
 
-- **Next.js 14** (App Router) + **React 18** + **Tailwind CSS 3.4**
-- **Supabase** — PostgreSQL database, auth, and Row-Level Security
-- **TanStack React Query v5** — client-side data fetching and cache
-- **Zod v4** — input validation schemas
-- **Upstash Redis** — rate limiting (60 req/min per IP, sliding window)
-- **Recharts** — financial charts
-- **Vitest** + React Testing Library — unit tests in `/tests/`
+## 2. Stack Tecnológica (obrigatória)
+- Framework: Next.js 14 (App Router)
+- Frontend: React 18 + Tailwind CSS 3.4
+- UI components: shadcn/ui (quando aplicável) + componentes custom em /components/finance e /components/ui
+- Banco de dados & Auth: Supabase (PostgreSQL + Auth + RLS)
+- Gerenciamento de estado assíncrono: TanStack React Query v5
+- Validação de formulários: Zod v4
+- Rate limiting: Upstash Redis (sliding window – 60 req/min por IP em rotas críticas)
+- Gráficos: Recharts
+- Analytics: Vercel Analytics
+- Testes: Vitest + React Testing Library
+- Deploy: Vercel
 
-## Architecture
+## 3. Regras de Autenticação e Segurança (sempre respeitar)
+- Sessão: Supabase SSR + cookies HttpOnly
+- Middleware: middleware.ts protege todas rotas privadas → redireciona para /login se não autenticado
+- RLS (Row Level Security): usuário só vê seus próprios dados (user_id)
+- CSRF: valida header Origin em todas rotas mutantes (POST/PATCH/DELETE)
+- Senhas: mínimo 10 caracteres, deve conter letras e números
+- Rate limiting: 60 req/min por IP nas rotas /api/transactions e /api/accounts (Upstash Redis)
+- Soft delete: transações usam deleted_at (nunca DELETE físico)
+- Headers de segurança: CSP, HSTS, X-Frame-Options (já configurados em next.config.mjs)
+- Nunca expor chaves Supabase no client-side (usar NEXT_PUBLIC_ apenas para url e anon key)
 
-### Route Structure
+## 4. Convenções de Código
+- TypeScript strict mode
+- Arquivos: kebab-case (ex: use-transactions.ts)
+- Componentes: PascalCase (ex: TransactionForm.tsx)
+- Commits: Conventional Commits (feat:, fix:, chore:, refactor:, test:, docs:)
+- Pastas principais:
+  - /app/(auth)       → login, cadastro
+  - /app/(dashboard)  → /, /transacoes, /contas, /categorias, /relatorios
+  - /api              → accounts, categories, dashboard, transactions
+  - /components/finance, /components/ui, /components/providers
+  - /hooks            → useAccounts, useCategories, useTransactions + mutations
+  - /lib/supabase     → client.ts, server.ts
+  - /lib/utils        → formatCurrency, formatDate, getCurrentMonthRange
+  - /lib/validations  → schemas Zod
+  - /types            → Account, Category, Transaction, DashboardSummary
 
-```
-app/
-  (auth)/          # Login, register pages
-  (dashboard)/     # Protected layout + pages: dashboard, transactions,
-                   # accounts, categories, credit-cards, invoices, reports
-  api/             # Server-side route handlers
-```
+## 5. Fluxo de Trabalho Obrigatório
+1. **Sempre comece invocando** a skill /product-orchestrator para planejar qualquer tarefa significativa (nova feature, refatoração, correção, otimização).
+2. Nunca comece codificando ou alterando arquivos sem um plano validado.
+3. Ordem típica de delegação:
+   - /product-orchestrator → planeja e delega
+   - /system-architect     → define arquitetura / trade-offs (se necessário)
+   - /ui-ux-architect      → wireframes, user flows, componentes
+   - /ui-designer          → visual + assets
+   - /copywriter           → textos de interface, mensagens de erro, tooltips
+   - /frontend-engineer    → código React/Next.js/Tailwind
+   - /backend-engineer     → Supabase queries, RLS, funções edge, API routes
+   - /ai-llm-engineer      → se precisar de prompt engineering ou integração AI
+   - /qa-engineer          → testes unitários + E2E
+   - /revisor-tecnico      → code review final
+   - /technical-writer     → README, docs, CLAUDE.md updates
+   - /cro-specialist       → otimização de conversão / usabilidade (cadastro, login, dashboard)
+   - /web-performance-engineer → Lighthouse, Core Web Vitals
+   - /devops-cloud         → deploy Vercel, env vars, CI/CD
+4. Após qualquer alteração significativa: peça /qa-engineer + /revisor-tecnico antes de commit.
 
-### Data Flow
+## 6. Regras Adicionais (referenciadas)
+- Convenções detalhadas de código e commit → .claude/rules/code-style.md
+- Padrões de teste → .claude/rules/testing.md
+- Checklist de segurança → .claude/rules/security-checklist.md
 
-1. **React component** → custom hook (`/hooks/use*.ts`) → `fetch` to `/api/*`
-2. **API route** → CSRF check → rate limit → auth verify → Zod validation → Supabase query → `{ data, error }` response
-3. **TanStack Query** caches results; mutations invalidate related queries on success
+## 7. Preferências do Usuário (Robson)
+- Respostas em português brasileiro informal
+- Código limpo, comentado quando complexo
+- Sempre mostre diffs ou trechos alterados quando sugerir mudanças
+- Pergunte se houver dúvida sobre requisitos ou intenção
+- Priorize simplicidade e manutenibilidade sobre features avançadas desnecessárias
 
-All API responses follow the contract: `{ data: T | null, error: string | null }`.
-
-### Key Patterns
-
-- **Authentication:** `middleware.ts` guards all `/(dashboard)` routes via Supabase SSR cookies. All API routes independently call `supabase.auth.getUser()`.
-- **CSRF:** Origin header validated for all mutating requests (POST/PATCH/PUT/DELETE).
-- **Supabase clients:** `lib/supabase/client.ts` (browser) vs `lib/supabase/server.ts` (server/API routes). Always use the server client in API routes.
-- **Soft deletes:** Transactions are marked with `deleted_at`; never physically deleted.
-- **Query invalidation:** Transaction mutations invalidate `['transactions']`, `['accounts']`, and `['dashboard']` keys. Account mutations invalidate `['accounts']` and `['dashboard']`.
-- **Validation schemas:** Live in `/lib/validations/`. Reused in both API routes and frontend forms.
-- **Domain logic:** Invoice calculations and installment logic isolated in `/lib/domain/`.
-
-### Important Configuration
-
-- `next.config.mjs` has `ignoreBuildErrors: true` and `ignoreDuringBuilds: true` — TypeScript and ESLint errors do not fail the Vercel build.
-- Security headers (CSP, HSTS, X-Frame-Options) are set in `next.config.mjs`.
-- TypeScript path alias: `@/*` maps to the repository root.
+Última atualização: Março 2026
