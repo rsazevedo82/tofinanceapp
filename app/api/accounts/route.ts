@@ -5,7 +5,7 @@ import { checkRateLimit }      from '@/lib/apiHelpers'
 import type { ApiResponse, Account } from '@/types'
 import { NextResponse }        from 'next/server'
 
-export async function GET(): Promise<NextResponse<ApiResponse<Account[]>>> {
+export async function GET(request: Request): Promise<NextResponse<ApiResponse<Account[]>>> {
   const limited = await checkRateLimit()
   if (limited) return limited
 
@@ -16,10 +16,14 @@ export async function GET(): Promise<NextResponse<ApiResponse<Account[]>>> {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
 
+    // Suporte a visão do parceiro — RLS valida se o acesso é permitido
+    const { searchParams } = new URL(request.url)
+    const targetUserId = searchParams.get('user_id') ?? user.id
+
     const { data, error } = await supabase
       .from('accounts')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', targetUserId)
       .eq('is_active', true)
       .is('deleted_at', null)
       .order('name')

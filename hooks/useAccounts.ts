@@ -4,11 +4,12 @@ import type { Account, ApiResponse } from '@/types'
 
 // ── Buscar todas as contas ────────────────────────────────────────────────────
 
-export function useAccounts() {
+export function useAccounts(userId?: string) {
+  const url = userId ? `/api/accounts?user_id=${userId}` : '/api/accounts'
   return useQuery({
-    queryKey: ['accounts'],
+    queryKey: ['accounts', userId ?? 'me'],
     queryFn: async (): Promise<Account[]> => {
-      const res = await fetch('/api/accounts')
+      const res = await fetch(url)
       const json: ApiResponse<Account[]> = await res.json()
       if (json.error) throw new Error(json.error)
       return json.data ?? []

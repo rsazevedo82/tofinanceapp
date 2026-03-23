@@ -83,6 +83,38 @@ export interface ApiResponse<T> {
   error: string | null
 }
 
+// ── Couple ────────────────────────────────────────────────────────────────────
+
+export interface UserProfile {
+  id:         string
+  name:       string | null
+  avatar_url: string | null
+  updated_at: string
+}
+
+export interface CoupleProfile {
+  id:        string
+  user_id_1: string
+  user_id_2: string
+  linked_at: string
+  created_at: string
+  // join
+  partner?:  UserProfile
+}
+
+export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
+
+export interface CoupleInvitation {
+  id:            string
+  inviter_id:    string
+  invitee_email: string
+  invitee_id:    string | null
+  token:         string
+  status:        InvitationStatus
+  expires_at:    string
+  created_at:    string
+}
+
 // ── Notifications ──────────────────────────────────────────────────────────────
 
 export type NotificationType =

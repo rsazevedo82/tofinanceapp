@@ -2,14 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Transaction, ApiResponse } from '@/types'
 
 export function useTransactions(params?: {
-  start?: string
-  end?: string
+  start?:      string
+  end?:        string
   account_id?: string
+  user_id?:    string   // visão do parceiro
 }) {
   const searchParams = new URLSearchParams()
-  if (params?.start)      searchParams.set('start', params.start)
-  if (params?.end)        searchParams.set('end', params.end)
+  if (params?.start)      searchParams.set('start',      params.start)
+  if (params?.end)        searchParams.set('end',        params.end)
   if (params?.account_id) searchParams.set('account_id', params.account_id)
+  if (params?.user_id)    searchParams.set('user_id',    params.user_id)
 
   const query = searchParams.toString()
 

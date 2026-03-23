@@ -34,12 +34,14 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
     }
 
     const { searchParams } = new URL(request.url)
-    const accountId = searchParams.get('account_id')
-    const invoiceId = searchParams.get('invoice_id')
-    const start     = searchParams.get('start')
-    const end       = searchParams.get('end')
-    const limit     = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500)
-    const offset    = parseInt(searchParams.get('offset') ?? '0')
+    const accountId    = searchParams.get('account_id')
+    const invoiceId    = searchParams.get('invoice_id')
+    const start        = searchParams.get('start')
+    const end          = searchParams.get('end')
+    const limit        = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500)
+    const offset       = parseInt(searchParams.get('offset') ?? '0')
+    // Suporte a visão do parceiro — RLS valida se o acesso é permitido
+    const targetUserId = searchParams.get('user_id') ?? user.id
 
     let query = supabase
       .from('transactions')
@@ -48,7 +50,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Tr
         account:accounts!transactions_account_id_fkey(id, name, color, icon),
         category:categories(id, name, color, icon)
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', targetUserId)
       .is('deleted_at', null)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })

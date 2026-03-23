@@ -6,13 +6,15 @@ import { createClient }           from '@/lib/supabase/client'
 import { useAccounts }            from '@/hooks/useAccounts'
 import { NotificationBell }       from '@/components/ui/NotificationBell'
 import { useState }               from 'react'
+import { useCouple }              from '@/hooks/useCouple'
 
 const baseNavItems = [
-  { href: '/',           label: 'Dashboard',  icon: '⊞' },
-  { href: '/transacoes', label: 'Transacoes', icon: '↕' },
-  { href: '/contas',     label: 'Contas',     icon: '◫' },
-  { href: '/categorias', label: 'Categorias', icon: '◈' },
-  { href: '/relatorios', label: 'Relatorios', icon: '▤' },
+  { href: '/',           label: 'Dashboard',    icon: '⊞' },
+  { href: '/transacoes', label: 'Transacoes',   icon: '↕' },
+  { href: '/contas',     label: 'Contas',       icon: '◫' },
+  { href: '/categorias', label: 'Categorias',   icon: '◈' },
+  { href: '/relatorios', label: 'Relatorios',   icon: '▤' },
+  { href: '/casal',      label: 'Perfil Casal', icon: '💑' },
 ]
 
 export function Sidebar() {

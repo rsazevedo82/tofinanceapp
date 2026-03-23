@@ -1,0 +1,138 @@
+// app/api/couple/invite/route.ts
+
+import { createClient }   from '@/lib/supabase/server'
+import { adminClient }    from '@/lib/supabase/admin'
+import { ratelimit }      from '@/lib/rateLimit'
+import { headers }        from 'next/headers'
+import { NextResponse }   from 'next/server'
+import { z }              from 'zod'
+import type { ApiResponse, CoupleInvitation } from '@/types'
+
+const inviteSchema = z.object({
+  email: z.string().email('Email inválido'),
+})
+
+async function getIP() {
+  const h = await headers()
+  return h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1'
+}
+
+// ── POST /api/couple/invite ───────────────────────────────────────────────────
+
+export async function POST(request: Request): Promise<NextResponse<ApiResponse<CoupleInvitation>>> {
+  try {
+    const { success: allowed } = await ratelimit.limit(await getIP())
+    if (!allowed) {
+      return NextResponse.json(
+        { data: null, error: 'Muitas requisições. Tente novamente em 1 minuto.' },
+        { status: 429 }
+      )
+    }
+
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
+    }
+
+    const body   = await request.json()
+    const parsed = inviteSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { data: null, error: parsed.error.issues[0]?.message ?? 'Email inválido' },
+        { status: 400 }
+      )
+    }
+
+    const { email } = parsed.data
+
+    // Não pode convidar a si mesmo
+    if (email.toLowerCase() === user.email?.toLowerCase()) {
+      return NextResponse.json(
+        { data: null, error: 'Você não pode se convidar' },
+        { status: 400 }
+      )
+    }
+
+    // Verifica se já tem vínculo ativo
+    const { data: existingCouple } = await adminClient
+      .from('couple_profiles')
+      .select('id')
+      .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
+      .maybeSingle()
+
+    if (existingCouple) {
+      return NextResponse.json(
+        { data: null, error: 'Você já possui um perfil de casal ativo' },
+        { status: 400 }
+      )
+    }
+
+    // Verifica se já enviou convite pendente para este email
+    const { data: existingInvite } = await adminClient
+      .from('couple_invitations')
+      .select('id')
+      .eq('inviter_id', user.id)
+      .eq('invitee_email', email.toLowerCase())
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (existingInvite) {
+      return NextResponse.json(
+        { data: null, error: 'Já existe um convite pendente para este email' },
+        { status: 400 }
+      )
+    }
+
+    // Busca se o invitee já tem conta
+    const { data: { users: existingUsers } } = await adminClient.auth.admin.listUsers()
+    const inviteeUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase())
+
+    // Cria o convite
+    const { data: invitation, error: inviteError } = await adminClient
+      .from('couple_invitations')
+      .insert({
+        inviter_id:    user.id,
+        invitee_email: email.toLowerCase(),
+        invitee_id:    inviteeUser?.id ?? null,
+        status:        'pending',
+      })
+      .select()
+      .single()
+
+    if (inviteError) throw inviteError
+
+    // Busca nome do inviter para a notificação
+    const { data: inviterProfile } = await adminClient
+      .from('user_profiles')
+      .select('name')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const inviterName = inviterProfile?.name ?? user.email?.split('@')[0] ?? 'Alguém'
+
+    if (inviteeUser) {
+      // Usuário existente → notificação in-app
+      await adminClient.from('notifications').insert({
+        user_id: inviteeUser.id,
+        type:    'couple_invite',
+        title:   'Convite de perfil de casal',
+        body:    `${inviterName} convidou você para criar um perfil de casal.`,
+        payload: { invitation_id: invitation.id, token: invitation.token, inviter_id: user.id },
+      })
+    } else {
+      // Usuário novo → cria conta e envia email via Supabase
+      await adminClient.auth.admin.inviteUserByEmail(email, {
+        data: {
+          couple_invitation_token: invitation.token,
+          invited_by:              inviterName,
+        },
+      })
+    }
+
+    return NextResponse.json({ data: invitation, error: null }, { status: 201 })
+  } catch (err) {
+    console.error('[POST /api/couple/invite]', err)
+    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
+  }
+}
