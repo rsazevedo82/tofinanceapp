@@ -83,6 +83,26 @@ export interface ApiResponse<T> {
   error: string | null
 }
 
+// ── Notifications ──────────────────────────────────────────────────────────────
+
+export type NotificationType =
+  | 'couple_invite'
+  | 'couple_accepted'
+  | 'couple_unlinked'
+  | 'goal_reached'
+  | 'invoice_closed'
+
+export interface Notification {
+  id:         string
+  user_id:    string
+  type:       NotificationType
+  title:      string
+  body:       string
+  payload:    Record<string, unknown>
+  read_at:    string | null
+  created_at: string
+}
+
 // ── Reports ───────────────────────────────────────────────────────────────────
 
 export interface CategoryData {

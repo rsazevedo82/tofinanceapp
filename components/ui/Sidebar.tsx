@@ -4,6 +4,7 @@ import Link      from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient }           from '@/lib/supabase/client'
 import { useAccounts }            from '@/hooks/useAccounts'
+import { NotificationBell }       from '@/components/ui/NotificationBell'
 import { useState }               from 'react'
 
 const baseNavItems = [
@@ -40,14 +41,17 @@ export function Sidebar() {
   const NavContent = () => (
     <>
       {/* Logo */}
-      <div className="flex items-center gap-2 px-3 py-4 mb-2">
-        <div
-          className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
-          style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
-        >
-          F
+      <div className="flex items-center justify-between px-3 py-4 mb-2">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+            style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
+          >
+            N
+          </div>
+          <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
         </div>
-        <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
+        <NotificationBell />
       </div>
 
       {/* Nav */}
@@ -116,15 +120,18 @@ export function Sidebar() {
           <div
             className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
             style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
-          >F</div>
+          >N</div>
           <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
         </div>
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="text-[#9ca3af] hover:text-[#e8e6e1] transition-colors p-1"
-        >
-          ☰
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="text-[#9ca3af] hover:text-[#e8e6e1] transition-colors p-1"
+          >
+            ☰
+          </button>
+        </div>
       </header>
 
       {/* Mobile drawer */}

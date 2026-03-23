@@ -1,14 +1,16 @@
 ﻿// app/(dashboard)/page.tsx
 'use client'
 
-import { useQuery }           from '@tanstack/react-query'
-import { useRouter }          from 'next/navigation'
-import { formatCurrency }     from '@/lib/utils/format'
-import { Modal }              from '@/components/ui/Modal'
-import { TransactionForm }    from '@/components/finance/TransactionForm'
-import { useState }           from 'react'
-import type { ApiResponse }   from '@/types'
-import type { DashboardData } from '@/app/api/dashboard/route'
+import { useQuery }                              from '@tanstack/react-query'
+import { useRouter }                             from 'next/navigation'
+import { formatCurrency }                        from '@/lib/utils/format'
+import { Modal }                                 from '@/components/ui/Modal'
+import { TransactionForm }                       from '@/components/finance/TransactionForm'
+import { useState }                              from 'react'
+import { useNotifications, useMarkAllAsRead }    from '@/hooks/useNotifications'
+import type { ApiResponse }                      from '@/types'
+import type { Notification }                     from '@/types'
+import type { DashboardData }                    from '@/app/api/dashboard/route'
 
 function formatDate(date: string) {
   return new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
@@ -16,9 +18,22 @@ function formatDate(date: string) {
   })
 }
 
+const TYPE_ICONS: Record<string, string> = {
+  couple_invite:   '💌',
+  couple_accepted: '💑',
+  couple_unlinked: '💔',
+  goal_reached:    '🎯',
+  invoice_closed:  '💳',
+}
+
 export default function DashboardPage() {
-  const router          = useRouter()
+  const router              = useRouter()
   const [showTx, setShowTx] = useState(false)
+
+  const { data: notifications = [] } = useNotifications()
+  const markAllAsRead                = useMarkAllAsRead()
+
+  const unread = notifications.filter((n: Notification) => !n.read_at)
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
@@ -53,6 +68,46 @@ export default function DashboardPage() {
           Nova transacao
         </button>
       </div>
+
+      {/* ── Painel de notificações não lidas ── */}
+      {unread.length > 0 && (
+        <div className="mb-6 rounded-xl overflow-hidden"
+          style={{ border: '0.5px solid rgba(129,140,248,0.2)', background: 'rgba(129,140,248,0.04)' }}>
+
+          <div className="flex items-center justify-between px-4 py-3"
+            style={{ borderBottom: '0.5px solid rgba(129,140,248,0.1)' }}>
+            <p className="text-xs font-semibold text-[#e8e6e1]">
+              {unread.length} notificaç{unread.length === 1 ? 'ão' : 'ões'} não lida{unread.length !== 1 ? 's' : ''}
+            </p>
+            <button
+              onClick={() => markAllAsRead.mutate()}
+              disabled={markAllAsRead.isPending}
+              className="text-[10px] transition-colors"
+              style={{ color: 'rgba(129,140,248,0.7)' }}
+            >
+              Marcar todas como lidas
+            </button>
+          </div>
+
+          <div>
+            {unread.slice(0, 3).map((n: Notification) => (
+              <div key={n.id} className="flex items-start gap-3 px-4 py-3"
+                style={{ borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}>
+                <span className="text-base flex-shrink-0">{TYPE_ICONS[n.type] ?? '🔔'}</span>
+                <div>
+                  <p className="text-xs font-medium text-[#e8e6e1]">{n.title}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(200,198,190,0.5)' }}>{n.body}</p>
+                </div>
+              </div>
+            ))}
+            {unread.length > 3 && (
+              <p className="px-4 py-2 text-[10px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
+                +{unread.length - 3} notificações no sino acima
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-4">

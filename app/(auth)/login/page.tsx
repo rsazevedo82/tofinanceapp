@@ -42,10 +42,10 @@ export default function LoginPage() {
             className="rounded-2xl"
             priority
           />
-          <div className="text-center">
-            <p className="text-sm" style={{ color: 'rgba(200,198,190,0.4)' }}>
-              Finanças do casal, juntos e de verdade.
-            </p>
+          <div className="text-center space-y-1">
+            <p className="text-lg font-semibold text-[#f0ede8] tracking-tight">Nós Dois Reais</p>
+            <p className="text-sm" style={{ color: 'rgba(200,198,190,0.5)' }}>Sem brigas por dinheiro.</p>
+            <p className="text-sm" style={{ color: 'rgba(200,198,190,0.4)' }}>Organizem a vida financeira juntos.</p>
           </div>
         </div>
         {/* Divisor vertical */}
