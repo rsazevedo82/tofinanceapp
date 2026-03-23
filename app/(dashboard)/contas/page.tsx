@@ -124,15 +124,22 @@ export default function ContasPage() {
         </>
       )}
 
-      {/* Modal criacao */}
+      {/* Modal criacao — apenas contas (nao-cartao) */}
       <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Nova conta">
-        <AccountForm onSuccess={() => setShowCreate(false)} />
+        <AccountForm
+          allowedTypes={['checking', 'savings', 'investment', 'wallet']}
+          onSuccess={() => setShowCreate(false)}
+        />
       </Modal>
 
       {/* Modal edicao — apenas para nao-cartao */}
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Editar conta">
         {editing && (
-          <AccountForm account={editing} onSuccess={() => setEditing(null)} />
+          <AccountForm
+            account={editing}
+            allowedTypes={['checking', 'savings', 'investment', 'wallet']}
+            onSuccess={() => setEditing(null)}
+          />
         )}
       </Modal>
     </div>

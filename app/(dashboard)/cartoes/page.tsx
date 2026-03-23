@@ -76,19 +76,20 @@ export default function CartoesPage() {
         </div>
       )}
 
-      {/* Modal novo cartao — pre-selecionado como credito */}
+      {/* Modal novo cartao — restrito a credito */}
       <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Novo cartao">
         <AccountForm
-          defaultType="credit"
+          allowedTypes={['credit']}
           onSuccess={() => setShowCreate(false)}
         />
       </Modal>
 
-      {/* Modal editar cartao */}
+      {/* Modal editar cartao — restrito a credito */}
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Editar cartao">
         {editing && (
           <AccountForm
             account={editing}
+            allowedTypes={['credit']}
             onSuccess={() => setEditing(null)}
           />
         )}

@@ -1,6 +1,6 @@
-# FinanceApp
+# Nós Dois Reais
 
-Aplicação de controle financeiro pessoal. Permite gerenciar contas, transações e categorias com dashboard de resumo mensal.
+Aplicação de controle financeiro para casais. Permite gerenciar contas, transações e categorias com dashboard de resumo mensal.
 
 ---
 

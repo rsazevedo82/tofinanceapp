@@ -24,16 +24,19 @@ const ACCOUNT_TYPES = [
   { value: 'credit',     label: 'Cartao de credito' },
   { value: 'investment', label: 'Investimento'      },
   { value: 'wallet',     label: 'Carteira'          },
-]
+] as const
 
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 
+type AccountTypeValue = typeof ACCOUNT_TYPES[number]['value']
+
 interface AccountFormProps {
-  account?:  Account
-  onSuccess: () => void
+  account?:     Account
+  allowedTypes?: AccountTypeValue[]
+  onSuccess:    () => void
 }
 
-export function AccountForm({ account, onSuccess }: AccountFormProps) {
+export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormProps) {
   const isEditing = !!account
   const router    = useRouter()
 
@@ -44,15 +47,21 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [apiError,      setApiError]      = useState('')
 
+  const availableTypes = allowedTypes
+    ? ACCOUNT_TYPES.filter(t => allowedTypes.includes(t.value))
+    : ACCOUNT_TYPES
+
+  const defaultType = account?.type ?? availableTypes[0]?.value ?? 'checking'
+
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver:      zodResolver(createAccountSchema),
     defaultValues: {
-      name:         account?.name                       ?? '',
-      type:         account?.type                       ?? 'checking',
-      color:        account?.color                      ?? '#6ee7b7',
-      credit_limit: account?.credit_limit               ?? undefined,
-      closing_day:  account?.closing_day                ?? 25,
-      due_day:      account?.due_day                    ?? 5,
+      name:         account?.name        ?? '',
+      type:         defaultType,
+      color:        account?.color       ?? '#6ee7b7',
+      credit_limit: account?.credit_limit ?? undefined,
+      closing_day:  account?.closing_day  ?? 25,
+      due_day:      account?.due_day      ?? 5,
     },
   })
 
@@ -117,15 +126,17 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         />
       </div>
 
-      {/* Tipo */}
-      <div>
-        <label className="label">Tipo</label>
-        <select {...register('type')} className="input">
-          {ACCOUNT_TYPES.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
-      </div>
+      {/* Tipo — oculto quando só há uma opção disponível */}
+      {availableTypes.length > 1 && (
+        <div>
+          <label className="label">Tipo</label>
+          <select {...register('type')} className="input">
+            {availableTypes.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Campos especificos de cartao */}
       {isCreditCard && (

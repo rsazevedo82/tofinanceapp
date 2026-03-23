@@ -7,13 +7,13 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'FinanceApp',
-  description: 'Controle financeiro pessoal',
+  title: 'Nós Dois Reais',
+  description: 'Finanças do casal, juntos e de verdade.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'FinanceApp',
+    title: 'Nós Dois Reais',
   },
   formatDetection: { telephone: false },
 }

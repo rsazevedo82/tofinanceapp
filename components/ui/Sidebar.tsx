@@ -47,7 +47,7 @@ export function Sidebar() {
         >
           F
         </div>
-        <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">FinanceApp</span>
+        <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
       </div>
 
       {/* Nav */}
@@ -117,7 +117,7 @@ export function Sidebar() {
             className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
             style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
           >F</div>
-          <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">FinanceApp</span>
+          <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}

@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'FinanceApp',
-    short_name: 'FinanceApp',
-    description: 'Controle financeiro pessoal',
+    name: 'Nós Dois Reais',
+    short_name: 'NósDoisReais',
+    description: 'Finanças do casal, juntos e de verdade.',
     start_url: '/dashboard',
     display: 'standalone',
     orientation: 'portrait',
