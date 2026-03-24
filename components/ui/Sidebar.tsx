@@ -3,18 +3,30 @@
 import Link      from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient }           from '@/lib/supabase/client'
-import { useAccounts }            from '@/hooks/useAccounts'
 import { NotificationBell }       from '@/components/ui/NotificationBell'
 import { useState }               from 'react'
 import { useCouple }              from '@/hooks/useCouple'
+import {
+  LayoutDashboard,
+  ArrowUpDown,
+  Landmark,
+  CreditCard,
+  Tag,
+  BarChart2,
+  Target,
+  Split,
+  Users,
+  LogOut,
+  type LucideIcon,
+} from 'lucide-react'
 
 interface NavItem {
-  href:        string
-  label:       string
-  icon:        string
-  locked?:     boolean
+  href:         string
+  label:        string
+  icon:         LucideIcon
+  locked?:      boolean
   lockMessage?: string
-  lockHint?:   string  // onde ir para desbloquear
+  lockHint?:    string
 }
 
 export function Sidebar() {
@@ -23,9 +35,7 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [lockedInfo, setLockedInfo] = useState<{ label: string; message: string; hint: string } | null>(null)
 
-  const { data: accounts = [] } = useAccounts()
-  const { data: couple }        = useCouple()
-  const hasCards  = accounts.some(a => a.type === 'credit' && a.is_active)
+  const { data: couple } = useCouple()
   const hasCouple = !!couple
 
   async function handleLogout() {
@@ -35,29 +45,22 @@ export function Sidebar() {
   }
 
   const navItems: NavItem[] = [
-    { href: '/',           label: 'Dashboard',    icon: '⊞' },
-    { href: '/transacoes', label: 'Transações',   icon: '↕' },
-    { href: '/contas',     label: 'Contas',       icon: '◫' },
-    {
-      href:        '/cartoes',
-      label:       'Cartões',
-      icon:        '💳',
-      locked:      !hasCards,
-      lockMessage: 'Você ainda não tem cartão de crédito cadastrado.',
-      lockHint:    'Crie um em Contas → Nova conta → Cartão de crédito.',
-    },
-    { href: '/categorias', label: 'Categorias',   icon: '◈' },
-    { href: '/relatorios', label: 'Relatórios',   icon: '▤' },
-    { href: '/objetivos',  label: 'Objetivos',    icon: '🎯' },
+    { href: '/',           label: 'Dashboard',    icon: LayoutDashboard },
+    { href: '/transacoes', label: 'Transações',   icon: ArrowUpDown },
+    { href: '/contas',     label: 'Contas',       icon: Landmark },
+    { href: '/cartoes',    label: 'Cartões',      icon: CreditCard },
+    { href: '/categorias', label: 'Categorias',   icon: Tag },
+    { href: '/relatorios', label: 'Relatórios',   icon: BarChart2 },
+    { href: '/objetivos',  label: 'Objetivos',    icon: Target },
     {
       href:        '/divisao',
       label:       'Divisão',
-      icon:        '🤝',
+      icon:        Split,
       locked:      !hasCouple,
       lockMessage: 'A divisão de despesas só está disponível para casais vinculados.',
       lockHint:    'Acesse Perfil Casal e convide seu parceiro(a) para desbloquear.',
     },
-    { href: '/casal',      label: 'Perfil Casal', icon: '💑' },
+    { href: '/casal',      label: 'Perfil Casal', icon: Users },
   ]
 
   const NavContent = () => (
@@ -84,6 +87,8 @@ export function Sidebar() {
             pathname === item.href ||
             (item.href !== '/' && pathname.startsWith(item.href))
 
+          const Icon = item.icon
+
           if (item.locked) {
             return (
               <button
@@ -95,7 +100,7 @@ export function Sidebar() {
                 })}
                 className="db-row gap-2 text-sm w-full transition-colors text-[#9ca3af]/50 hover:text-[#9ca3af] hover:bg-white/[0.02]"
               >
-                <span className="text-[13px] w-4 text-center opacity-40">{item.icon}</span>
+                <Icon size={14} className="w-4 shrink-0 opacity-40" />
                 <span className="flex-1 text-left">{item.label}</span>
                 <span className="text-[10px] opacity-40">🔒</span>
               </button>
@@ -113,9 +118,7 @@ export function Sidebar() {
                   : 'text-[#9ca3af] hover:text-[#e8e6e1] hover:bg-white/[0.03]'
               }`}
             >
-              <span className={`text-[13px] w-4 text-center ${isActive ? 'opacity-90' : 'opacity-70'}`}>
-                {item.icon}
-              </span>
+              <Icon size={14} className={`w-4 shrink-0 ${isActive ? 'opacity-90' : 'opacity-70'}`} />
               {item.label}
             </Link>
           )
@@ -128,7 +131,7 @@ export function Sidebar() {
           onClick={handleLogout}
           className="db-row gap-2 text-sm w-full text-[#9ca3af] hover:text-[#e8e6e1] transition-colors"
         >
-          <span className="text-[13px] w-4 text-center opacity-70">→</span>
+          <LogOut size={14} className="w-4 shrink-0 opacity-70" />
           Sair
         </button>
       </div>
