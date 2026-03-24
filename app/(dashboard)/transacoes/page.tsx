@@ -8,6 +8,8 @@ import { useAccounts }                  from '@/hooks/useAccounts'
 import { formatCurrency }               from '@/lib/utils/format'
 import { Modal }                        from '@/components/ui/Modal'
 import { TransactionForm }              from '@/components/finance/TransactionForm'
+import { useCouple }                    from '@/hooks/useCouple'
+import { c }                            from '@/lib/utils/copy'
 import type { Transaction }             from '@/types'
 
 function formatDate(date: string) {
@@ -133,6 +135,8 @@ export default function TransacoesPage() {
     0
   ).toISOString().split('T')[0]
 
+  const { data: couple }                       = useCouple()
+  const isCouple                               = !!couple
   const { data: transactions = [], isLoading } = useTransactions({ start, end })
   const { data: accounts     = [] }            = useAccounts()
   const deleteTransaction                       = useDeleteTransaction()
@@ -164,16 +168,18 @@ export default function TransacoesPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Transacoes</h1>
+          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+            {c(isCouple, 'Seus gastos', 'Gastos de vocês')}
+          </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            {transactions.length} lancamento{transactions.length !== 1 ? 's' : ''} no periodo
+            {transactions.length} movimentação{transactions.length !== 1 ? 'ões' : ''} no período
           </p>
         </div>
         <div className="flex items-center gap-2">
           <MonthSelect value={selectedMonth} onChange={setSelectedMonth} options={monthOptions} />
           <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
             <span className="opacity-60">+</span>
-            Nova
+            Registrar gasto
           </button>
         </div>
       </div>
@@ -240,7 +246,9 @@ export default function TransacoesPage() {
         <div className="py-12 text-center">
           <p className="text-3xl mb-3">{activeTab === 'expense' ? '💸' : '💰'}</p>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Nenhuma {activeTab === 'expense' ? 'despesa' : 'receita'} neste periodo
+            {activeTab === 'expense'
+              ? c(isCouple, 'Nenhuma despesa registrada neste período', 'Nenhuma despesa registrada por vocês neste período')
+              : c(isCouple, 'Nenhuma receita registrada neste período', 'Nenhuma receita registrada por vocês neste período')}
           </p>
         </div>
       ) : (
@@ -270,11 +278,11 @@ export default function TransacoesPage() {
         </div>
       )}
 
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Nova transacao">
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Nova transação">
         <TransactionForm onSuccess={() => setShowCreate(false)} />
       </Modal>
 
-      <Modal isOpen={!!editing} onClose={() => { setEditing(null); setConfirmDelete(false) }} title="Editar transacao">
+      <Modal isOpen={!!editing} onClose={() => { setEditing(null); setConfirmDelete(false) }} title="Editar transação">
         {editing && (
           <div className="space-y-3">
             <TransactionForm transaction={editing} onSuccess={() => setEditing(null)} />
@@ -289,7 +297,7 @@ export default function TransacoesPage() {
                     : 'bg-transparent text-red-400 border border-red-500/30 hover:bg-red-500/10'
                 }`}
               >
-                {deleteTransaction.isPending ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusao' : 'Excluir transacao'}
+                {deleteTransaction.isPending ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusão' : 'Excluir transação'}
               </button>
               {confirmDelete && (
                 <button

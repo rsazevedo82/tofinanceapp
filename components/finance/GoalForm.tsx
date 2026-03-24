@@ -168,10 +168,10 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
               className="rounded"
               onChange={e => setValue('couple_id', e.target.checked ? couple.id : undefined)}
             />
-            <span>Meta de casal 💑</span>
+            <span>Tornar objetivo compartilhado 💑</span>
           </label>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Ambos podem contribuir e acompanhar o progresso
+            Ambos podem contribuir e acompanhar juntos
           </p>
         </div>
       )}

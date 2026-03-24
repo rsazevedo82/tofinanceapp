@@ -106,7 +106,7 @@ const INSTALLMENT_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const TYPE_CONFIG = {
   expense:  { label: '↓ Despesa',       bg: 'rgba(252,165,165,0.15)', color: '#fca5a5', border: 'rgba(252,165,165,0.3)' },
   income:   { label: '↑ Receita',       bg: 'rgba(110,231,183,0.15)', color: '#6ee7b7', border: 'rgba(110,231,183,0.3)' },
-  transfer: { label: '⇄ Transferencia', bg: 'rgba(129,140,248,0.15)', color: '#818cf8', border: 'rgba(129,140,248,0.3)' },
+  transfer: { label: '⇄ Transferência', bg: 'rgba(129,140,248,0.15)', color: '#818cf8', border: 'rgba(129,140,248,0.3)' },
 }
 
 export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
@@ -192,7 +192,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     if (useCustomInstallments) {
       const n = parseInt(customInstallments)
       if (isNaN(n) || n < 13 || n > 360) {
-        setApiError('Informe um numero de parcelas entre 13 e 360.')
+        setApiError('Informe um número de parcelas entre 13 e 360.')
         return
       }
     }
@@ -275,14 +275,14 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
         />
       </div>
 
-      {/* Descricao */}
+      {/* Descrição */}
       <div>
-        <label className="label">Descricao</label>
+        <label className="label">Descrição</label>
         <input
           {...register('description')}
           type="text"
           className="input"
-          placeholder="Ex: Supermercado, Salario..."
+          placeholder="Ex: Supermercado, Salário..."
         />
       </div>
 
@@ -326,7 +326,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
               min="13"
               max="360"
               className="input mt-2"
-              placeholder="Numero de parcelas (minimo 13)"
+              placeholder="Número de parcelas (mínimo 13)"
               value={customInstallments}
               onChange={e => setCustomInstallments(e.target.value)}
               autoFocus
@@ -377,7 +377,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
         style={{ color: 'rgba(200,198,190,0.35)' }}
       >
         <span>{showExtras ? '▲' : '▼'}</span>
-        {showExtras ? 'Menos opcoes' : 'Mais opcoes (status, observacoes)'}
+        {showExtras ? 'Menos opções' : 'Mais opções (status, observações)'}
       </button>
 
       {showExtras && (
@@ -400,12 +400,12 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             />
           </div>
           <div>
-            <label className="label">Observacoes</label>
+            <label className="label">Observações</label>
             <textarea
               {...register('notes')}
               className="input resize-none"
               rows={2}
-              placeholder="Informacoes adicionais..."
+              placeholder="Informações adicionais..."
             />
           </div>
         </div>
@@ -431,13 +431,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
         {isSubmitting
           ? 'Salvando...'
           : isEditing
-          ? 'Salvar alteracoes'
+          ? 'Salvar alterações'
           : effectiveInstallments > 1
           ? `Criar ${effectiveInstallments} parcelas`
           : watchedType === 'income'
           ? 'Registrar receita'
           : watchedType === 'transfer'
-          ? 'Registrar transferencia'
+          ? 'Registrar transferência'
           : 'Registrar despesa'}
       </button>
     </form>

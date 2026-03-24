@@ -127,8 +127,8 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
         <div className="rounded-lg bg-white/5 p-3 text-sm space-y-1">
           <p style={{ color: 'var(--text-muted)' }}>Resumo</p>
           <p className="text-[#f0ede8]">
-            {partnerName} fica devendo{' '}
-            <span className="text-amber-400 font-semibold">{formatCurrency(partnerAmount)}</span> para você
+            {partnerName} tem um valor pendente com você de{' '}
+            <span className="text-amber-400 font-semibold">{formatCurrency(partnerAmount)}</span>
           </p>
         </div>
       )}

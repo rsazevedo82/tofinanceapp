@@ -45,22 +45,22 @@ export function Sidebar() {
   }
 
   const navItems: NavItem[] = [
-    { href: '/',           label: 'Dashboard',    icon: LayoutDashboard },
-    { href: '/transacoes', label: 'Transações',   icon: ArrowUpDown },
-    { href: '/contas',     label: 'Contas',       icon: Landmark },
-    { href: '/cartoes',    label: 'Cartões',      icon: CreditCard },
-    { href: '/categorias', label: 'Categorias',   icon: Tag },
-    { href: '/relatorios', label: 'Relatórios',   icon: BarChart2 },
-    { href: '/objetivos',  label: 'Objetivos',    icon: Target },
+    { href: '/',           label: 'Visão geral',         icon: LayoutDashboard },
+    { href: '/transacoes', label: 'Gastos',               icon: ArrowUpDown },
+    { href: '/contas',     label: 'Contas',               icon: Landmark },
+    { href: '/cartoes',    label: 'Cartões',              icon: CreditCard },
+    { href: '/categorias', label: 'Categorias',           icon: Tag },
+    { href: '/relatorios', label: 'Relatórios',           icon: BarChart2 },
+    { href: '/objetivos',  label: 'Objetivos',            icon: Target },
     {
       href:        '/divisao',
-      label:       'Divisão',
+      label:       'Divisão de despesas',
       icon:        Split,
       locked:      !hasCouple,
       lockMessage: 'A divisão de despesas só está disponível para casais vinculados.',
-      lockHint:    'Acesse Perfil Casal e convide seu parceiro(a) para desbloquear.',
+      lockHint:    'Acesse Conexão do casal e convide seu parceiro(a) para desbloquear.',
     },
-    { href: '/casal',      label: 'Perfil Casal', icon: Users },
+    { href: '/casal',      label: 'Conexão do casal',    icon: Users },
   ]
 
   const NavContent = () => (

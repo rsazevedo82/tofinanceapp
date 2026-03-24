@@ -5,9 +5,13 @@ import { useState }         from 'react'
 import { useCategories }    from '@/hooks/useCategories'
 import { Modal }            from '@/components/ui/Modal'
 import { CategoryForm }     from '@/components/finance/CategoryForm'
+import { useCouple }        from '@/hooks/useCouple'
+import { c }                from '@/lib/utils/copy'
 import type { Category }    from '@/types'
 
 export default function CategoriasPage() {
+  const { data: couple }                     = useCouple()
+  const isCouple                             = !!couple
   const { data: categories = [], isLoading } = useCategories()
 
   const [showCreate, setShowCreate] = useState(false)
@@ -111,7 +115,7 @@ export default function CategoriasPage() {
           {/* Categorias do sistema */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <p className="section-heading mb-0">Categorias padrao</p>
+              <p className="section-heading mb-0">Categorias padrão</p>
               <span className="text-[10px] px-2 py-0.5 rounded"
                 style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}>
                 somente leitura
@@ -147,9 +151,11 @@ export default function CategoriasPage() {
             <div className="py-8 text-center border rounded-xl"
               style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <p className="text-2xl mb-2">🏷️</p>
-              <p className="text-sm font-medium text-[#e8e6e1] mb-1">Crie suas proprias categorias</p>
+              <p className="text-sm font-medium text-[#e8e6e1] mb-1">
+                {c(isCouple, 'Crie suas próprias categorias', 'Criem categorias que façam sentido para vocês')}
+              </p>
               <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-                Personalize alem das categorias padrao
+                {c(isCouple, 'Personalize além das categorias padrão', 'Personalizem além das categorias padrão')}
               </p>
               <button onClick={() => openCreate('expense')} className="btn-primary text-xs mx-auto">
                 <span className="opacity-60">+</span>

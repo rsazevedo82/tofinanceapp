@@ -4,6 +4,8 @@
 import { useState }        from 'react'
 import { useReports }      from '@/hooks/useReports'
 import { formatCurrency }  from '@/lib/utils/format'
+import { useCouple }       from '@/hooks/useCouple'
+import { c }               from '@/lib/utils/copy'
 import { ChartCard, DataTable } from '@/components/reports/ChartCard'
 import {
   BarChart, Bar, LineChart, Line,
@@ -67,11 +69,11 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 const TABS = [
   { key: 'categories', label: 'Categorias'   },
-  { key: 'monthly',    label: 'Evolucao'     },
-  { key: 'flow',       label: 'Fluxo diario' },
+  { key: 'monthly',    label: 'Evolução'     },
+  { key: 'flow',       label: 'Fluxo diário' },
   { key: 'compare',    label: 'Comparativo'  },
-  { key: 'cards',      label: 'Cartoes'      },
-  { key: 'projection', label: 'Projecao'     },
+  { key: 'cards',      label: 'Cartões'      },
+  { key: 'projection', label: 'Projeção'     },
 ]
 
 const chartColors = {
@@ -90,6 +92,8 @@ export default function RelatoriosPage() {
   const [month,     setMonth]     = useState(def)
   const [activeTab, setActiveTab] = useState('categories')
 
+  const { data: couple }           = useCouple()
+  const isCouple                   = !!couple
   const { data, isLoading, error } = useReports(month)
 
   return (
@@ -98,9 +102,11 @@ export default function RelatoriosPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Relatorios</h1>
+          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+            {c(isCouple, 'Seus relatórios', 'Relatórios de vocês')}
+          </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Analise detalhada das suas financas
+            {c(isCouple, 'Entenda melhor seu dinheiro', 'Entendam como vocês estão usando o dinheiro')}
           </p>
         </div>
         <MonthSelector value={month} onChange={setMonth} />
@@ -137,7 +143,7 @@ export default function RelatoriosPage() {
       {error && (
         <p className="text-xs px-4 py-3 rounded-xl"
           style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
-          Erro ao carregar relatorios: {(error as Error).message}
+          Erro ao carregar relatórios: {(error as Error).message}
         </p>
       )}
 
@@ -150,7 +156,7 @@ export default function RelatoriosPage() {
             <ChartCard title="Gastos por categoria" subtitle={`Despesas de ${data.period.month}`}>
               {data.categories.length === 0 ? (
                 <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
-                  Nenhuma despesa categorizada neste mes
+                  {c(isCouple, 'Nenhuma despesa categorizada neste mês', 'Vocês ainda não categorizaram despesas este mês')}
                 </p>
               ) : (
                 <>
@@ -193,7 +199,7 @@ export default function RelatoriosPage() {
 
           {/* ── ABA 2: EVOLUCAO ── */}
           {activeTab === 'monthly' && (
-            <ChartCard title="Evolucao mensal" subtitle="Receitas e despesas dos ultimos 6 meses">
+            <ChartCard title="Evolução mensal" subtitle="Receitas e despesas dos últimos 6 meses">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={data.monthly} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -207,7 +213,7 @@ export default function RelatoriosPage() {
               </ResponsiveContainer>
               <DataTable
                 columns={[
-                  { key: 'label',   label: 'Mes'      },
+                  { key: 'label',   label: 'Mês'      },
                   { key: 'income',  label: 'Receitas', align: 'right' },
                   { key: 'expense', label: 'Despesas', align: 'right' },
                   { key: 'net',     label: 'Saldo',    align: 'right' },
@@ -222,7 +228,7 @@ export default function RelatoriosPage() {
 
           {/* ── ABA 3: FLUXO DIARIO ── */}
           {activeTab === 'flow' && (
-            <ChartCard title="Fluxo de caixa diario" subtitle={`Entradas, saidas e saldo acumulado em ${data.period.month}`}>
+            <ChartCard title="Fluxo de caixa diário" subtitle={`Entradas, saídas e saldo acumulado em ${data.period.month}`}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={data.daily_flow}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -231,7 +237,7 @@ export default function RelatoriosPage() {
                     tickFormatter={v => `R$${(v/1000).toFixed(1)}k`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Line dataKey="income"  name="Entrada" stroke={chartColors.income}  dot={false} strokeWidth={2} />
-                  <Line dataKey="expense" name="Saida"   stroke={chartColors.expense} dot={false} strokeWidth={2} />
+                  <Line dataKey="expense" name="Saída"   stroke={chartColors.expense} dot={false} strokeWidth={2} />
                   <Line dataKey="balance" name="Saldo"   stroke={chartColors.balance} dot={false} strokeWidth={2} strokeDasharray="4 2" />
                 </LineChart>
               </ResponsiveContainer>
@@ -239,7 +245,7 @@ export default function RelatoriosPage() {
                 columns={[
                   { key: 'label',   label: 'Dia'        },
                   { key: 'income',  label: 'Entrada',    align: 'right' },
-                  { key: 'expense', label: 'Saida',      align: 'right' },
+                  { key: 'expense', label: 'Saída',      align: 'right' },
                   { key: 'balance', label: 'Acumulado',  align: 'right' },
                 ]}
                 rows={data.daily_flow.filter(d => d.income > 0 || d.expense > 0) as unknown as Record<string, unknown>[]}
@@ -252,7 +258,7 @@ export default function RelatoriosPage() {
 
           {/* ── ABA 4: COMPARATIVO ── */}
           {activeTab === 'compare' && (
-            <ChartCard title="Comparativo mensal" subtitle="Mes atual vs mes anterior">
+            <ChartCard title="Comparativo mensal" subtitle="Mês atual vs mês anterior">
               {data.monthly.length < 2 ? (
                 <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
                   Dados insuficientes para comparativo
@@ -307,10 +313,10 @@ export default function RelatoriosPage() {
 
           {/* ── ABA 5: CARTOES ── */}
           {activeTab === 'cards' && (
-            <ChartCard title="Limites dos cartoes" subtitle="Uso atual do limite de credito">
+            <ChartCard title="Limites dos cartões" subtitle="Uso atual do limite de crédito">
               {data.card_limits.length === 0 ? (
                 <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
-                  Nenhum cartao de credito cadastrado
+                  Nenhum cartão de crédito cadastrado
                 </p>
               ) : (
                 <>
@@ -336,17 +342,17 @@ export default function RelatoriosPage() {
                           />
                         </div>
                         <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                          {card.percent}% utilizado · {fmtCur(card.available)} disponivel
+                          {card.percent}% utilizado · {fmtCur(card.available)} disponível
                         </p>
                       </div>
                     ))}
                   </div>
                   <DataTable
                     columns={[
-                      { key: 'name',         label: 'Cartao'      },
+                      { key: 'name',         label: 'Cartão'      },
                       { key: 'credit_limit', label: 'Limite',     align: 'right' },
                       { key: 'used',         label: 'Utilizado',  align: 'right' },
-                      { key: 'available',    label: 'Disponivel', align: 'right' },
+                      { key: 'available',    label: 'Disponível', align: 'right' },
                       { key: 'percent',      label: '%',          align: 'right' },
                     ]}
                     rows={data.card_limits as unknown as Record<string, unknown>[]}
@@ -365,7 +371,7 @@ export default function RelatoriosPage() {
           {activeTab === 'projection' && (
             <ChartCard
               title="Projecao financeira"
-              subtitle="Saldo projetado para os proximos 3 meses com base na media historica"
+              subtitle="Saldo projetado para os próximos 3 meses com base na média histórica"
             >
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={data.projection}>
@@ -381,12 +387,12 @@ export default function RelatoriosPage() {
               </ResponsiveContainer>
 
               <p className="text-[10px] mb-3" style={{ color: 'var(--text-muted)' }}>
-                Baseado na media dos ultimos 3 meses
+                Baseado na média dos últimos 3 meses
               </p>
 
               <DataTable
                 columns={[
-                  { key: 'label',             label: 'Mes'      },
+                  { key: 'label',             label: 'Mês'      },
                   { key: 'projected_income',  label: 'Receita',  align: 'right' },
                   { key: 'projected_expense', label: 'Despesa',  align: 'right' },
                   { key: 'projected_balance', label: 'Saldo',    align: 'right' },

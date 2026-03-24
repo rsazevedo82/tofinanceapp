@@ -4,6 +4,7 @@
 import { useState }          from 'react'
 import { useGoals, useCreateGoal, useUpdateGoal } from '@/hooks/useGoals'
 import { useCouple }         from '@/hooks/useCouple'
+import { c }                 from '@/lib/utils/copy'
 import { GoalCard }          from '@/components/finance/GoalCard'
 import { GoalForm }          from '@/components/finance/GoalForm'
 import { Modal }             from '@/components/ui/Modal'
@@ -22,6 +23,7 @@ export default function ObjetivosPage() {
   const [editing, setEditing] = useState<Goal | null>(null)
 
   const { data: couple }                    = useCouple()
+  const isCouple                            = !!couple
   const { data: goals = [], isLoading }     = useGoals(scope)
   const createGoal                          = useCreateGoal()
   const updateGoal                          = useUpdateGoal(editing?.id ?? '')
@@ -53,7 +55,9 @@ export default function ObjetivosPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Objetivos</h1>
+          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+            {c(isCouple, 'Seus objetivos', 'Objetivos de vocês')}
+          </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
             {goals.length} {goals.length === 1 ? 'meta' : 'metas'} ·{' '}
             {formatCurrency(totalCurrent)} de {formatCurrency(totalTarget)} acumulados
@@ -142,10 +146,10 @@ export default function ObjetivosPage() {
         <div className="card p-10 text-center">
           <p className="text-4xl mb-3">🎯</p>
           <p className="text-[#f0ede8] font-medium mb-1">
-            {scope === 'individual' ? 'Nenhum objetivo criado ainda' : 'Nenhum objetivo de casal ainda'}
+            {scope === 'individual' ? 'Você ainda não criou nenhum objetivo' : 'Vocês ainda não definiram um objetivo em conjunto'}
           </p>
           <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
-            Defina uma meta e acompanhe seu progresso mês a mês.
+            {c(isCouple, 'Defina um objetivo e acompanhe seu progresso', 'Definam um objetivo e acompanhem juntos')}
           </p>
           <button onClick={() => setShowCreate(true)} className="btn-primary text-sm">
             Criar primeiro objetivo

@@ -9,6 +9,8 @@ import { useQuery }                   from '@tanstack/react-query'
 import { formatCurrency }             from '@/lib/utils/format'
 import { Modal }                      from '@/components/ui/Modal'
 import { TransactionForm }            from '@/components/finance/TransactionForm'
+import { useCouple }                  from '@/hooks/useCouple'
+import { c }                          from '@/lib/utils/copy'
 import type { Transaction, ApiResponse } from '@/types'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -27,6 +29,8 @@ export default function FaturaPage() {
   const { id: accountId } = useParams<{ id: string }>()
   const router            = useRouter()
 
+  const { data: couple }                         = useCouple()
+  const isCouple                                 = !!couple
   const { data: accounts = [] }                  = useAccounts()
   const { data: invoices = [], isLoading }        = useInvoices(accountId)
   const payInvoice                                = usePayInvoice()
@@ -107,7 +111,7 @@ export default function FaturaPage() {
         {/* Botao Nova Transacao */}
         <button onClick={() => setShowNewTx(true)} className="btn-primary text-xs">
           <span className="opacity-60">+</span>
-          Nova transacao
+          Nova transação
         </button>
       </div>
 
@@ -155,8 +159,7 @@ export default function FaturaPage() {
             </div>
           ) : invoices.length === 0 ? (
             <p className="text-xs py-8 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
-              Nenhuma fatura ainda.
-              Adicione uma transacao para comecar.
+              {c(isCouple, 'Nenhuma fatura ainda. Registre um gasto para começar.', 'Nenhuma fatura ainda. Registrem um gasto para começar.')}
             </p>
           ) : (
             <div className="space-y-0.5">
@@ -192,7 +195,7 @@ export default function FaturaPage() {
             <>
               <div className="flex items-center justify-between mb-3">
                 <p className="section-heading mb-0">
-                  Lancamentos · {selectedInvoice.reference_month}
+                  Lançamentos · {selectedInvoice.reference_month}
                 </p>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full font-medium"
@@ -209,7 +212,7 @@ export default function FaturaPage() {
               <div className="space-y-0.5 mb-4">
                 {transactions.length === 0 ? (
                   <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                    Nenhum lancamento nesta fatura
+                    Nenhum lançamento nesta fatura
                   </p>
                 ) : (
                   transactions.map(tx => (
@@ -295,7 +298,7 @@ export default function FaturaPage() {
             <div className="py-16 text-center">
               <p className="text-3xl mb-3">🧾</p>
               <p className="text-sm" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                Selecione uma fatura ou adicione uma transacao
+                Selecione uma fatura ou adicione uma transação
               </p>
             </div>
           )}
@@ -303,7 +306,7 @@ export default function FaturaPage() {
       </div>
 
       {/* Modal nova transacao pre-selecionando o cartao */}
-      <Modal isOpen={showNewTx} onClose={() => setShowNewTx(false)} title="Nova transacao">
+      <Modal isOpen={showNewTx} onClose={() => setShowNewTx(false)} title="Nova transação">
         <TransactionForm
           onSuccess={() => {
             setShowNewTx(false)

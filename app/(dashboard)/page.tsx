@@ -8,6 +8,8 @@ import { Modal }                                 from '@/components/ui/Modal'
 import { TransactionForm }                       from '@/components/finance/TransactionForm'
 import { useState }                              from 'react'
 import { useNotifications, useMarkAllAsRead }    from '@/hooks/useNotifications'
+import { useCouple }                             from '@/hooks/useCouple'
+import { c }                                     from '@/lib/utils/copy'
 import type { ApiResponse }                      from '@/types'
 import type { Notification }                     from '@/types'
 import type { DashboardData }                    from '@/app/api/dashboard/route'
@@ -30,6 +32,8 @@ export default function DashboardPage() {
   const router              = useRouter()
   const [showTx, setShowTx] = useState(false)
 
+  const { data: couple }             = useCouple()
+  const isCouple                     = !!couple
   const { data: notifications = [] } = useNotifications()
   const markAllAsRead                = useMarkAllAsRead()
 
@@ -58,14 +62,16 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+            {c(isCouple, 'Visão geral', 'Como vocês estão hoje')}
+          </h1>
           <p className="text-sm capitalize mt-0.5" style={{ color: 'rgba(200,198,190,0.35)' }}>
             {month}
           </p>
         </div>
         <button onClick={() => setShowTx(true)} className="btn-primary text-xs">
           <span className="opacity-60">+</span>
-          Nova transacao
+          Registrar gasto
         </button>
       </div>
 
@@ -145,7 +151,7 @@ export default function DashboardPage() {
           {/* ── Saldo do mes ── */}
           <div className="card mb-6 flex items-center justify-between">
             <div>
-              <p className="label">Saldo do mes</p>
+              <p className="label">{c(isCouple, 'Seu saldo no mês', 'Saldo de vocês no mês')}</p>
               <p className={`text-lg font-semibold ${
                 data.net_month >= 0 ? 'text-[#6ee7b7]' : 'text-[#fca5a5]'
               }`}>
@@ -236,7 +242,7 @@ export default function DashboardPage() {
             {/* ── Transacoes recentes ── */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="section-heading mb-0">Transacoes recentes</p>
+                <p className="section-heading mb-0">{c(isCouple, 'Seus últimos gastos', 'Últimos gastos de vocês')}</p>
                 <button
                   onClick={() => router.push('/transacoes')}
                   className="text-[10px] transition-colors"
@@ -249,7 +255,7 @@ export default function DashboardPage() {
               <div className="space-y-0.5">
                 {data.recent_transactions.length === 0 ? (
                   <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.3)' }}>
-                    Nenhuma transacao este mes
+                    {c(isCouple, 'Você ainda não registrou gastos este mês', 'Vocês ainda não registraram gastos este mês')}
                   </p>
                 ) : (
                   data.recent_transactions.map(tx => (
@@ -279,19 +285,19 @@ export default function DashboardPage() {
             {/* ── Top categorias ── */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="section-heading mb-0">Maiores gastos</p>
+                <p className="section-heading mb-0">{c(isCouple, 'Onde você mais gastou', 'Onde vocês mais gastaram')}</p>
                 <button
                   onClick={() => router.push('/relatorios')}
                   className="text-[10px] transition-colors"
                   style={{ color: 'rgba(200,198,190,0.4)' }}
                 >
-                  Ver relatorios →
+                  Ver relatórios →
                 </button>
               </div>
 
               {data.top_categories.length === 0 ? (
                 <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.3)' }}>
-                  Nenhum gasto categorizado este mes
+                  {c(isCouple, 'Nenhum gasto categorizado este mês', 'Vocês ainda não categorizaram gastos este mês')}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -332,7 +338,7 @@ export default function DashboardPage() {
         </>
       ) : null}
 
-      <Modal isOpen={showTx} onClose={() => setShowTx(false)} title="Nova transacao">
+      <Modal isOpen={showTx} onClose={() => setShowTx(false)} title="Nova transação">
         <TransactionForm onSuccess={() => setShowTx(false)} />
       </Modal>
     </div>

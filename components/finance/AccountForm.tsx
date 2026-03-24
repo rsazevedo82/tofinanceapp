@@ -20,8 +20,8 @@ const COLOR_PRESETS = [
 
 const ACCOUNT_TYPES = [
   { value: 'checking',   label: 'Conta corrente'   },
-  { value: 'savings',    label: 'Poupanca'          },
-  { value: 'credit',     label: 'Cartao de credito' },
+  { value: 'savings',    label: 'Poupança'          },
+  { value: 'credit',     label: 'Cartão de crédito' },
   { value: 'investment', label: 'Investimento'      },
   { value: 'wallet',     label: 'Carteira'          },
 ] as const
@@ -144,7 +144,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
           style={{ background: 'rgba(129,140,248,0.06)', border: '0.5px solid rgba(129,140,248,0.2)' }}>
 
           <p className="text-xs font-medium" style={{ color: '#818cf8' }}>
-            Configuracoes do cartao
+            Configurações do cartão
           </p>
 
           <div>
@@ -196,10 +196,10 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             step="0.01"
             min="0"
             className="input"
-            placeholder="0,00 - deixe vazio se nao souber"
+            placeholder="0,00 - deixe vazio se não souber"
           />
           <p className="mt-1 text-[11px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            Sera registrado como uma transacao de receita inicial.
+            Será registrado como uma transação de receita inicial.
           </p>
         </div>
       )}
@@ -237,7 +237,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
         className="btn-primary w-full justify-center py-2.5"
         disabled={isPending}
       >
-        {isPending ? 'Salvando...' : isEditing ? 'Salvar alteracoes' : 'Criar conta'}
+        {isPending ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Criar conta'}
       </button>
 
       {isEditing && (
@@ -252,7 +252,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
                 : 'bg-transparent text-red-400 border border-red-500/30'
             }`}
           >
-            {deleteAccount.isPending ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusao' : 'Excluir conta'}
+            {deleteAccount.isPending ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusão' : 'Excluir conta'}
           </button>
           {confirmDelete && (
             <button
@@ -261,7 +261,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
               className="w-full py-2 text-xs"
               style={{ color: 'rgba(200,198,190,0.35)' }}
             >
-              Cancelar exclusao
+              Cancelar exclusão
             </button>
           )}
         </>

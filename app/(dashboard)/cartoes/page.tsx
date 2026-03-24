@@ -8,6 +8,8 @@ import { useInvoices }       from '@/hooks/useInvoices'
 import { formatCurrency }    from '@/lib/utils/format'
 import { Modal }             from '@/components/ui/Modal'
 import { AccountForm }       from '@/components/finance/AccountForm'
+import { useCouple }         from '@/hooks/useCouple'
+import { c }                 from '@/lib/utils/copy'
 import type { Account }      from '@/types'
 
 // ── Modal de exclusão com confirmação por senha ───────────────────────────────
@@ -90,6 +92,8 @@ function DeleteCardModal({
 
 export default function CartoesPage() {
   const router                              = useRouter()
+  const { data: couple }                    = useCouple()
+  const isCouple                            = !!couple
   const { data: accounts = [], isLoading } = useAccounts()
 
   const [showCreate, setShowCreate]     = useState(false)
@@ -138,9 +142,11 @@ export default function CartoesPage() {
       ) : creditCards.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl mb-4">💳</p>
-          <p className="text-sm font-medium text-[#e8e6e1] mb-1">Nenhum cartão cadastrado</p>
+          <p className="text-sm font-medium text-[#e8e6e1] mb-1">
+            {c(isCouple, 'Você ainda não cadastrou nenhum cartão', 'Vocês ainda não cadastraram nenhum cartão')}
+          </p>
           <p className="text-xs mb-6" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            Adicione seu primeiro cartão de crédito
+            {c(isCouple, 'Adicione seu primeiro cartão', 'Adicionem o primeiro cartão de vocês')}
           </p>
           <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
             <span className="opacity-60">+</span>

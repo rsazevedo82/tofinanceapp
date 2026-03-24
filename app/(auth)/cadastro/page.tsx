@@ -84,7 +84,7 @@ export default function CadastroPage() {
 
           <h1 className="text-xl font-semibold text-[#f0ede8] tracking-tight mb-1">Criar conta</h1>
           <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
-            Comece a controlar suas finanças juntos
+            Comece a organizar sua vida financeira
           </p>
 
           <form onSubmit={handleCadastro} className="space-y-4">

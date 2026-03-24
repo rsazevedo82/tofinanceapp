@@ -34,7 +34,7 @@ export function PartnerViewBanner() {
         className="text-[10px] px-2.5 py-1 rounded-lg transition-colors"
         style={{ color: 'rgba(129,140,248,0.7)', background: 'rgba(129,140,248,0.1)' }}
       >
-        Voltar para os meus dados
+        Voltar para meus dados
       </button>
     </div>
   )

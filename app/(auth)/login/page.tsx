@@ -72,7 +72,7 @@ export default function LoginPage() {
 
           <h1 className="text-xl font-semibold text-[#f0ede8] tracking-tight mb-1">Entrar</h1>
           <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
-            Acesse sua conta financeira
+            Acesse sua conta
           </p>
 
           <form onSubmit={handleLogin} className="space-y-4">

@@ -6,10 +6,14 @@ import { useAccounts }    from '@/hooks/useAccounts'
 import { formatCurrency } from '@/lib/utils/format'
 import { Modal }          from '@/components/ui/Modal'
 import { AccountForm }    from '@/components/finance/AccountForm'
+import { useCouple }      from '@/hooks/useCouple'
+import { c }              from '@/lib/utils/copy'
 import type { Account }   from '@/types'
 
 
 export default function ContasPage() {
+  const { data: couple }                   = useCouple()
+  const isCouple                           = !!couple
   const { data: accounts = [], isLoading } = useAccounts()
 
   const [showCreate, setShowCreate] = useState(false)
@@ -48,7 +52,7 @@ export default function ContasPage() {
             {formatCurrency(totalBalance)}
           </p>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Poupanca, corrente e carteiras (cartoes nao incluidos)
+            Poupança, corrente e carteiras (cartões não incluídos)
           </p>
         </div>
       )}
@@ -68,9 +72,11 @@ export default function ContasPage() {
       ) : otherAccounts.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl mb-4">🏦</p>
-          <p className="text-sm font-medium text-[#e8e6e1] mb-1">Nenhuma conta ainda</p>
+          <p className="text-sm font-medium text-[#e8e6e1] mb-1">
+            {c(isCouple, 'Você ainda não adicionou nenhuma conta', 'Vocês ainda não adicionaram nenhuma conta')}
+          </p>
           <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
-            Adicione sua primeira conta para começar
+            {c(isCouple, 'Adicione sua primeira conta para começar', 'Adicionem a primeira conta de vocês')}
           </p>
           <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
             <span className="opacity-60">+</span>
@@ -79,7 +85,7 @@ export default function ContasPage() {
         </div>
       ) : (
         <div>
-          <p className="section-heading">Suas contas</p>
+          <p className="section-heading">{c(isCouple, 'Suas contas', 'Contas de vocês')}</p>
           <div className="space-y-0.5">
             {otherAccounts.map(account => (
               <AccountRow
@@ -149,8 +155,8 @@ function AccountRow({
           <div className="flex items-center gap-2">
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {account.type === 'checking' ? 'Conta corrente'
-                : account.type === 'savings' ? 'Poupanca'
-                : account.type === 'credit'  ? 'Cartao de credito'
+                : account.type === 'savings' ? 'Poupança'
+                : account.type === 'credit'  ? 'Cartão de crédito'
                 : account.type === 'investment' ? 'Investimento'
                 : 'Carteira'}
             </p>
