@@ -162,3 +162,23 @@ export type AddContributionInput   = z.infer<typeof addContributionSchema>
 export type PayInvoiceInput        = z.infer<typeof payInvoiceSchema>
 export type CreateSplitInput       = z.infer<typeof createSplitSchema>
 export type SettleSplitInput       = z.infer<typeof settleSplitSchema>
+// ── Profile ───────────────────────────────────────────────────────────────────
+
+export const updateProfileSchema = z.object({
+  name:  safeString(100).min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
+  email: z.string().email('Email inválido').max(255).optional(),
+}).refine(data => data.name !== undefined || data.email !== undefined, {
+  message: 'Informe ao menos um campo para atualizar',
+})
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Informe sua senha atual'),
+  newPassword: z.string()
+    .min(10, 'Nova senha deve ter pelo menos 10 caracteres')
+    .refine(val => /[a-zA-Z]/.test(val) && /[0-9]/.test(val), {
+      message: 'Nova senha deve conter letras e números',
+    }),
+})
+
+export type UpdateProfileInput  = z.infer<typeof updateProfileSchema>
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>

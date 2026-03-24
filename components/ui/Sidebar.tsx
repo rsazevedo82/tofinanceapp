@@ -1,11 +1,11 @@
 ﻿'use client'
 
 import Link      from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { createClient }           from '@/lib/supabase/client'
-import { NotificationBell }       from '@/components/ui/NotificationBell'
-import { useState }               from 'react'
-import { useCouple }              from '@/hooks/useCouple'
+import { usePathname } from 'next/navigation'
+import { NotificationBell } from '@/components/ui/NotificationBell'
+import { useState }         from 'react'
+import { useCouple }        from '@/hooks/useCouple'
+import { useProfile }       from '@/hooks/useProfile'
 import {
   LayoutDashboard,
   ArrowUpDown,
@@ -16,7 +16,7 @@ import {
   Target,
   Split,
   Users,
-  LogOut,
+  User,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -31,18 +31,12 @@ interface NavItem {
 
 export function Sidebar() {
   const pathname = usePathname()
-  const router   = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [lockedInfo, setLockedInfo] = useState<{ label: string; message: string; hint: string } | null>(null)
 
-  const { data: couple } = useCouple()
+  const { data: couple }  = useCouple()
+  const { data: profile } = useProfile()
   const hasCouple = !!couple
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
 
   const navItems: NavItem[] = [
     { href: '/',           label: 'Visão geral',         icon: LayoutDashboard },
@@ -125,15 +119,38 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
+      {/* Footer — perfil do usuário */}
       <div className="px-1 pb-3 border-t border-white/[0.05] pt-3">
-        <button
-          onClick={handleLogout}
-          className="db-row gap-2 text-sm w-full text-[#9ca3af] hover:text-[#e8e6e1] transition-colors"
+        <Link
+          href="/perfil"
+          onClick={() => setMobileOpen(false)}
+          className={`db-row gap-2 text-sm w-full transition-colors ${
+            pathname === '/perfil'
+              ? 'text-[#e8e6e1] font-medium bg-white/[0.06]'
+              : 'text-[#9ca3af] hover:text-[#e8e6e1] hover:bg-white/[0.03]'
+          }`}
         >
-          <LogOut size={14} className="w-4 shrink-0 opacity-70" />
-          Sair
-        </button>
+          {profile?.name || profile?.email ? (
+            <div
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+              style={{ background: 'rgba(129,140,248,0.2)', color: '#818cf8' }}
+            >
+              {(profile.name ?? profile.email).charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <User size={14} className="w-4 shrink-0 opacity-70" />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-xs leading-tight">
+              {profile?.name ?? 'Meu perfil'}
+            </p>
+            {profile?.email && (
+              <p className="truncate text-[10px] leading-tight opacity-50">
+                {profile.email}
+              </p>
+            )}
+          </div>
+        </Link>
       </div>
     </>
   )

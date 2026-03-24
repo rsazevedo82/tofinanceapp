@@ -5,6 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Nós Dois Reais',
     short_name: 'N2 Reais',
     description: 'Finanças do casal, juntos e de verdade.',
+    id: '/',
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',

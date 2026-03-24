@@ -255,3 +255,9 @@ export interface ReportsPayload {
     month: string
   }
 }
+export interface UserProfile {
+  id:         string
+  name:       string | null
+  email:      string
+  avatar_url: string | null
+}
