@@ -70,13 +70,18 @@ export function useDeleteAccount() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/accounts/${id}`, { method: 'DELETE' })
+    mutationFn: async ({ id, password }: { id: string; password?: string }) => {
+      const res = await fetch(`/api/accounts/${id}`, {
+        method:  'DELETE',
+        headers: password ? { 'Content-Type': 'application/json' } : undefined,
+        body:    password ? JSON.stringify({ password }) : undefined,
+      })
       const json: ApiResponse<null> = await res.json()
       if (json.error) throw new Error(json.error)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })

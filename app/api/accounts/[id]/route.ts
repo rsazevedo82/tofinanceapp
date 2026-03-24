@@ -51,7 +51,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
   }
 }
 
-export async function DELETE(_request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<null>>> {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<null>>> {
   const params = await props.params;
   const limited = await checkRateLimit()
   if (limited) return limited
@@ -65,7 +65,7 @@ export async function DELETE(_request: Request, props: { params: Promise<{ id: s
 
     const { data: existing, error: findError } = await supabase
       .from('accounts')
-      .select('id')
+      .select('id, type')
       .eq('id', params.id)
       .eq('user_id', user.id)
       .is('deleted_at', null)
@@ -75,6 +75,48 @@ export async function DELETE(_request: Request, props: { params: Promise<{ id: s
       return NextResponse.json({ data: null, error: 'Conta nao encontrada' }, { status: 404 })
     }
 
+    const isCreditCard = existing.type === 'credit'
+
+    if (isCreditCard) {
+      // Cartão de crédito: requer senha para confirmar exclusão em cascata
+      let body: { password?: string } = {}
+      try { body = await request.json() } catch { /* body vazio */ }
+
+      if (!body.password) {
+        return NextResponse.json({ data: null, error: 'Senha obrigatória para excluir cartão' }, { status: 400 })
+      }
+
+      // Valida senha via re-autenticação
+      const { data: userData } = await supabase.auth.getUser()
+      const email = userData.user?.email
+      if (!email) {
+        return NextResponse.json({ data: null, error: 'Não foi possível identificar o usuário' }, { status: 400 })
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: body.password })
+      if (signInError) {
+        return NextResponse.json({ data: null, error: 'Senha incorreta' }, { status: 401 })
+      }
+
+      // Soft-delete de todas as transações do cartão
+      const now = new Date().toISOString()
+      await supabase
+        .from('transactions')
+        .update({ deleted_at: now })
+        .eq('account_id', params.id)
+        .is('deleted_at', null)
+
+      // Soft-delete do cartão
+      const { error } = await supabase
+        .from('accounts')
+        .update({ deleted_at: now, is_active: false })
+        .eq('id', params.id)
+
+      if (error) throw error
+      return NextResponse.json({ data: null, error: null })
+    }
+
+    // Conta comum: bloqueia se houver transações ativas
     const { count } = await supabase
       .from('transactions')
       .select('id', { count: 'exact', head: true })

@@ -103,7 +103,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
 
   function handleDelete() {
     if (!confirmDelete) { setConfirmDelete(true); return }
-    deleteAccount.mutate(account!.id, {
+    deleteAccount.mutate({ id: account!.id }, {
       onSuccess: () => { onSuccess(); router.refresh() },
       onError:   (err) => setApiError(err.message),
     })

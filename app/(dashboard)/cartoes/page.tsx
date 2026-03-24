@@ -1,21 +1,100 @@
 ﻿// app/(dashboard)/cartoes/page.tsx
 'use client'
 
-import { useState }       from 'react'
-import { useRouter }      from 'next/navigation'
-import { useAccounts }    from '@/hooks/useAccounts'
-import { useInvoices }    from '@/hooks/useInvoices'
-import { formatCurrency } from '@/lib/utils/format'
-import { Modal }          from '@/components/ui/Modal'
-import { AccountForm }    from '@/components/finance/AccountForm'
-import type { Account }   from '@/types'
+import { useState }          from 'react'
+import { useRouter }         from 'next/navigation'
+import { useAccounts, useDeleteAccount } from '@/hooks/useAccounts'
+import { useInvoices }       from '@/hooks/useInvoices'
+import { formatCurrency }    from '@/lib/utils/format'
+import { Modal }             from '@/components/ui/Modal'
+import { AccountForm }       from '@/components/finance/AccountForm'
+import type { Account }      from '@/types'
+
+// ── Modal de exclusão com confirmação por senha ───────────────────────────────
+
+function DeleteCardModal({
+  card,
+  onClose,
+}: {
+  card:    Account
+  onClose: () => void
+}) {
+  const [password,  setPassword]  = useState('')
+  const [error,     setError]     = useState('')
+  const deleteAccount = useDeleteAccount()
+
+  async function handleConfirm() {
+    setError('')
+    if (!password) { setError('Informe sua senha para confirmar.'); return }
+
+    try {
+      await deleteAccount.mutateAsync({ id: card.id, password })
+      onClose()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir cartão.')
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Aviso */}
+      <div className="rounded-lg px-4 py-3 space-y-1"
+        style={{ background: 'rgba(248,113,113,0.08)', border: '0.5px solid rgba(248,113,113,0.25)' }}>
+        <p className="text-sm font-medium text-red-400">⚠️ Ação irreversível</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          Ao excluir o cartão <strong className="text-[#f0ede8]">{card.name}</strong>,
+          os seguintes dados serão removidos permanentemente:
+        </p>
+        <ul className="text-sm space-y-0.5 mt-2" style={{ color: 'var(--text-muted)' }}>
+          <li>• Todas as transações vinculadas ao cartão</li>
+          <li>• Todas as faturas e parcelamentos</li>
+          <li>• O cadastro do cartão</li>
+        </ul>
+      </div>
+
+      {/* Senha */}
+      <div>
+        <label className="label-sm">Confirme sua senha para prosseguir</label>
+        <input
+          type="password"
+          className="input-field"
+          placeholder="Sua senha de acesso"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleConfirm()}
+          autoFocus
+        />
+        {error && <p className="error-msg mt-1">{error}</p>}
+      </div>
+
+      {/* Ações */}
+      <div className="flex gap-3 pt-1">
+        <button onClick={onClose} className="btn-secondary flex-1" disabled={deleteAccount.isPending}>
+          Cancelar
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={deleteAccount.isPending || !password}
+          className="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+          style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171',
+                   border: '0.5px solid rgba(248,113,113,0.3)' }}
+        >
+          {deleteAccount.isPending ? 'Excluindo…' : 'Excluir cartão'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CartoesPage() {
   const router                              = useRouter()
   const { data: accounts = [], isLoading } = useAccounts()
 
-  const [showCreate, setShowCreate] = useState(false)
-  const [editing,    setEditing]    = useState<Account | null>(null)
+  const [showCreate, setShowCreate]     = useState(false)
+  const [editing,    setEditing]        = useState<Account | null>(null)
+  const [deleting,   setDeleting]       = useState<Account | null>(null)
 
   const creditCards = accounts.filter(a => a.type === 'credit' && a.is_active)
 
@@ -24,8 +103,13 @@ export default function CartoesPage() {
   }
 
   function handleEditClick(e: React.MouseEvent, card: Account) {
-    e.stopPropagation()   // nao navega para a fatura
+    e.stopPropagation()
     setEditing(card)
+  }
+
+  function handleDeleteClick(e: React.MouseEvent, card: Account) {
+    e.stopPropagation()
+    setDeleting(card)
   }
 
   return (
@@ -34,14 +118,14 @@ export default function CartoesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Cartoes</h1>
+          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Cartões</h1>
           <p className="text-xs mt-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            {creditCards.length} cartao{creditCards.length !== 1 ? 'es' : ''} ativo{creditCards.length !== 1 ? 's' : ''}
+            {creditCards.length} cartão{creditCards.length !== 1 ? 'ões' : ''} ativo{creditCards.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
           <span className="opacity-60">+</span>
-          Novo cartao
+          Novo cartão
         </button>
       </div>
 
@@ -54,13 +138,13 @@ export default function CartoesPage() {
       ) : creditCards.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl mb-4">💳</p>
-          <p className="text-sm font-medium text-[#e8e6e1] mb-1">Nenhum cartao cadastrado</p>
+          <p className="text-sm font-medium text-[#e8e6e1] mb-1">Nenhum cartão cadastrado</p>
           <p className="text-xs mb-6" style={{ color: 'rgba(200,198,190,0.35)' }}>
-            Adicione seu primeiro cartao de credito
+            Adicione seu primeiro cartão de crédito
           </p>
           <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
             <span className="opacity-60">+</span>
-            Adicionar cartao
+            Adicionar cartão
           </button>
         </div>
       ) : (
@@ -71,26 +155,37 @@ export default function CartoesPage() {
               card={card}
               onClick={() => handleRowClick(card)}
               onEdit={e => handleEditClick(e, card)}
+              onDelete={e => handleDeleteClick(e, card)}
             />
           ))}
         </div>
       )}
 
-      {/* Modal novo cartao — restrito a credito */}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Novo cartao">
+      {/* Modal novo cartão */}
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Novo cartão">
         <AccountForm
           allowedTypes={['credit']}
           onSuccess={() => setShowCreate(false)}
         />
       </Modal>
 
-      {/* Modal editar cartao — restrito a credito */}
-      <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Editar cartao">
+      {/* Modal editar cartão */}
+      <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Editar cartão">
         {editing && (
           <AccountForm
             account={editing}
             allowedTypes={['credit']}
             onSuccess={() => setEditing(null)}
+          />
+        )}
+      </Modal>
+
+      {/* Modal excluir cartão */}
+      <Modal isOpen={!!deleting} onClose={() => setDeleting(null)} title="Excluir cartão">
+        {deleting && (
+          <DeleteCardModal
+            card={deleting}
+            onClose={() => setDeleting(null)}
           />
         )}
       </Modal>
@@ -104,10 +199,12 @@ function CardItem({
   card,
   onClick,
   onEdit,
+  onDelete,
 }: {
-  card:    Account
-  onClick: () => void
-  onEdit:  (e: React.MouseEvent) => void
+  card:     Account
+  onClick:  () => void
+  onEdit:   (e: React.MouseEvent) => void
+  onDelete: (e: React.MouseEvent) => void
 }) {
   const { data: invoices = [] } = useInvoices(card.id)
 
@@ -142,7 +239,15 @@ function CardItem({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Botao editar */}
+          {/* Botão excluir */}
+          <button
+            onClick={onDelete}
+            className="text-[10px] px-2 py-1 rounded-lg transition-colors"
+            style={{ color: 'rgba(248,113,113,0.6)', background: 'rgba(248,113,113,0.06)' }}
+          >
+            Excluir
+          </button>
+          {/* Botão editar */}
           <button
             onClick={onEdit}
             className="text-[10px] px-2 py-1 rounded-lg transition-colors"

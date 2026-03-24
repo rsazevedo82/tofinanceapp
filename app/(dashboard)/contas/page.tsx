@@ -2,7 +2,6 @@
 'use client'
 
 import { useState }       from 'react'
-import { useRouter }      from 'next/navigation'
 import { useAccounts }    from '@/hooks/useAccounts'
 import { formatCurrency } from '@/lib/utils/format'
 import { Modal }          from '@/components/ui/Modal'
@@ -11,26 +10,17 @@ import type { Account }   from '@/types'
 
 
 export default function ContasPage() {
-  const router                              = useRouter()
   const { data: accounts = [], isLoading } = useAccounts()
 
   const [showCreate, setShowCreate] = useState(false)
   const [editing, setEditing]       = useState<Account | null>(null)
 
-  // Saldo consolidado exclui cartoes de credito (nao e dinheiro seu)
-  const totalBalance = accounts
-    .filter(a => a.type !== 'credit')
-    .reduce((sum, a) => sum + Number(a.balance), 0)
-
-  const creditCards = accounts.filter(a => a.type === 'credit')
+  // Saldo consolidado — apenas contas reais, sem cartões de crédito
   const otherAccounts = accounts.filter(a => a.type !== 'credit')
+  const totalBalance  = otherAccounts.reduce((sum, a) => sum + Number(a.balance), 0)
 
   function handleRowClick(account: Account) {
-    if (account.type === 'credit') {
-      router.push(`/fatura/${account.id}`)
-    } else {
-      setEditing(account)
-    }
+    setEditing(account)
   }
 
   return (
@@ -75,12 +65,12 @@ export default function ContasPage() {
             </div>
           ))}
         </div>
-      ) : accounts.length === 0 ? (
+      ) : otherAccounts.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl mb-4">🏦</p>
           <p className="text-sm font-medium text-[#e8e6e1] mb-1">Nenhuma conta ainda</p>
           <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
-            Adicione sua primeira conta para comecar
+            Adicione sua primeira conta para começar
           </p>
           <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
             <span className="opacity-60">+</span>
@@ -88,40 +78,18 @@ export default function ContasPage() {
           </button>
         </div>
       ) : (
-        <>
-          {/* Cartoes de credito */}
-          {creditCards.length > 0 && (
-            <div className="mb-6">
-              <p className="section-heading">Cartoes de credito</p>
-              <div className="space-y-0.5">
-                {creditCards.map(account => (
-                  <AccountRow
-                    key={account.id}
-                    account={account}
-                    onClick={() => handleRowClick(account)}
-                    badge="Ver fatura →"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Demais contas */}
-          {otherAccounts.length > 0 && (
-            <div>
-              <p className="section-heading">Suas contas</p>
-              <div className="space-y-0.5">
-                {otherAccounts.map(account => (
-                  <AccountRow
-                    key={account.id}
-                    account={account}
-                    onClick={() => handleRowClick(account)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+        <div>
+          <p className="section-heading">Suas contas</p>
+          <div className="space-y-0.5">
+            {otherAccounts.map(account => (
+              <AccountRow
+                key={account.id}
+                account={account}
+                onClick={() => handleRowClick(account)}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Modal criacao — apenas contas (nao-cartao) */}
