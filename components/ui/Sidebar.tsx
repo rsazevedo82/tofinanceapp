@@ -8,23 +8,25 @@ import { NotificationBell }       from '@/components/ui/NotificationBell'
 import { useState }               from 'react'
 import { useCouple }              from '@/hooks/useCouple'
 
-const baseNavItems = [
-  { href: '/',           label: 'Dashboard',    icon: '⊞' },
-  { href: '/transacoes', label: 'Transacoes',   icon: '↕' },
-  { href: '/contas',     label: 'Contas',       icon: '◫' },
-  { href: '/categorias', label: 'Categorias',   icon: '◈' },
-  { href: '/relatorios', label: 'Relatorios',   icon: '▤' },
-  { href: '/objetivos',  label: 'Objetivos',    icon: '🎯' },
-  { href: '/casal',      label: 'Perfil Casal', icon: '💑' },
-]
+interface NavItem {
+  href:        string
+  label:       string
+  icon:        string
+  locked?:     boolean
+  lockMessage?: string
+  lockHint?:   string  // onde ir para desbloquear
+}
 
 export function Sidebar() {
   const pathname = usePathname()
   const router   = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [lockedInfo, setLockedInfo] = useState<{ label: string; message: string; hint: string } | null>(null)
 
   const { data: accounts = [] } = useAccounts()
-  const hasCards = accounts.some(a => a.type === 'credit' && a.is_active)
+  const { data: couple }        = useCouple()
+  const hasCards  = accounts.some(a => a.type === 'credit' && a.is_active)
+  const hasCouple = !!couple
 
   async function handleLogout() {
     const supabase = createClient()
@@ -32,14 +34,31 @@ export function Sidebar() {
     router.push('/login')
   }
 
-  // Injeta item Cartoes entre Contas e Categorias apenas se houver cartoes
-  const navItems = hasCards
-    ? [
-        ...baseNavItems.slice(0, 3),
-        { href: '/cartoes', label: 'Cartoes', icon: '💳' },
-        ...baseNavItems.slice(3),
-      ]
-    : baseNavItems
+  const navItems: NavItem[] = [
+    { href: '/',           label: 'Dashboard',    icon: '⊞' },
+    { href: '/transacoes', label: 'Transações',   icon: '↕' },
+    { href: '/contas',     label: 'Contas',       icon: '◫' },
+    {
+      href:        '/cartoes',
+      label:       'Cartões',
+      icon:        '💳',
+      locked:      !hasCards,
+      lockMessage: 'Você ainda não tem cartão de crédito cadastrado.',
+      lockHint:    'Crie um em Contas → Nova conta → Cartão de crédito.',
+    },
+    { href: '/categorias', label: 'Categorias',   icon: '◈' },
+    { href: '/relatorios', label: 'Relatórios',   icon: '▤' },
+    { href: '/objetivos',  label: 'Objetivos',    icon: '🎯' },
+    {
+      href:        '/divisao',
+      label:       'Divisão',
+      icon:        '🤝',
+      locked:      !hasCouple,
+      lockMessage: 'A divisão de despesas só está disponível para casais vinculados.',
+      lockHint:    'Acesse Perfil Casal e convide seu parceiro(a) para desbloquear.',
+    },
+    { href: '/casal',      label: 'Perfil Casal', icon: '💑' },
+  ]
 
   const NavContent = () => (
     <>
@@ -64,6 +83,25 @@ export function Sidebar() {
           const isActive =
             pathname === item.href ||
             (item.href !== '/' && pathname.startsWith(item.href))
+
+          if (item.locked) {
+            return (
+              <button
+                key={item.href}
+                onClick={() => setLockedInfo({
+                  label:   item.label,
+                  message: item.lockMessage!,
+                  hint:    item.lockHint!,
+                })}
+                className="db-row gap-2 text-sm w-full transition-colors text-[#9ca3af]/50 hover:text-[#9ca3af] hover:bg-white/[0.02]"
+              >
+                <span className="text-[13px] w-4 text-center opacity-40">{item.icon}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                <span className="text-[10px] opacity-40">🔒</span>
+              </button>
+            )
+          }
+
           return (
             <Link
               key={item.href}
@@ -99,6 +137,38 @@ export function Sidebar() {
 
   return (
     <>
+      {/* Modal: item bloqueado */}
+      {lockedInfo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setLockedInfo(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl p-6 space-y-3"
+            style={{ background: '#1c1c1a', border: '0.5px solid rgba(255,255,255,0.1)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔒</span>
+              <h3 className="font-semibold text-[#f0ede8]">{lockedInfo.label} indisponível</h3>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              {lockedInfo.message}
+            </p>
+            <p className="text-sm text-indigo-300">
+              {lockedInfo.hint}
+            </p>
+            <button
+              onClick={() => setLockedInfo(null)}
+              className="btn-secondary w-full text-sm mt-2"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Desktop */}
       <aside
         className="hidden md:flex fixed left-0 top-0 h-full w-56 flex-col z-30"

@@ -132,6 +132,23 @@ export const addContributionSchema = z.object({
   date:   isoDate,
 })
 
+// ── Expense Splits ────────────────────────────────────────────────────────────
+
+export const createSplitSchema = z.object({
+  couple_id:           z.string().uuid('Perfil de casal inválido'),
+  description:         safeString(255).min(1, 'Descrição é obrigatória'),
+  date:                isoDate,
+  total_amount:        z.number().positive('Valor deve ser maior que zero').max(999999999),
+  payer_share_percent: z.number()
+                         .min(1,   'Percentual mínimo é 1%')
+                         .max(99,  'Percentual máximo é 99%')
+                         .default(50),
+})
+
+export const settleSplitSchema = z.object({
+  settled_at: z.string().datetime({ message: 'Data de quitação inválida' }),
+})
+
 // ── Tipos exportados ──────────────────────────────────────────────────────────
 
 export type CreateAccountInput     = z.infer<typeof createAccountSchema>
@@ -143,3 +160,5 @@ export type CreateGoalInput        = z.infer<typeof createGoalSchema>
 export type UpdateGoalInput        = z.infer<typeof updateGoalSchema>
 export type AddContributionInput   = z.infer<typeof addContributionSchema>
 export type PayInvoiceInput        = z.infer<typeof payInvoiceSchema>
+export type CreateSplitInput       = z.infer<typeof createSplitSchema>
+export type SettleSplitInput       = z.infer<typeof settleSplitSchema>

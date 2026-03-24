@@ -154,6 +154,29 @@ export interface GoalContribution {
   user_profile?: UserProfile
 }
 
+// ── Expense Splits ────────────────────────────────────────────────────────────
+
+export type SplitStatus = 'pending' | 'settled'
+
+export interface ExpenseSplit {
+  id:                  string
+  couple_id:           string
+  payer_id:            string
+  description:         string
+  date:                string
+  total_amount:        number
+  payer_share_percent: number
+  status:              SplitStatus
+  settled_at:          string | null
+  created_at:          string
+  updated_at:          string
+  // computed
+  payer_amount:        number
+  partner_amount:      number
+  // join
+  payer_profile?:      UserProfile
+}
+
 // ── Notifications ──────────────────────────────────────────────────────────────
 
 export type NotificationType =
