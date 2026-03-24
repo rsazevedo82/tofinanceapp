@@ -30,7 +30,7 @@ export default function CasalPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Perfil de Casal</h1>
         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-          Conecte-se ao seu parceiro e acompanhem as finanças juntos
+          Conectem-se e organizem a vida financeira juntos
         </p>
       </div>
 
@@ -159,7 +159,7 @@ function InviteForm() {
         {success && (
           <p className="text-xs px-3 py-2 rounded-lg"
             style={{ background: 'rgba(110,231,183,0.08)', color: '#6ee7b7' }}>
-            Convite enviado! Aguardando confirmação do seu parceiro.
+            Convite enviado. Agora é só aguardar seu parceiro aceitar.
           </p>
         )}
 
@@ -195,7 +195,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
         <div className="flex items-center gap-3 mb-4">
           <span className="text-3xl">💑</span>
           <div>
-            <p className="text-sm font-semibold text-[#e8e6e1]">Perfil de casal ativo</p>
+            <p className="text-sm font-semibold text-[#e8e6e1]">Vocês já estão conectados 🎉</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               Conectado desde {linkedDate}
             </p>
@@ -226,7 +226,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
           className="w-full py-2.5 rounded-xl text-sm transition-colors"
           style={{ color: 'rgba(248,113,113,0.6)', border: '0.5px solid rgba(248,113,113,0.2)' }}
         >
-          Desvincular perfil de casal
+          Encerrar vínculo do casal
         </button>
       )}
     </div>
@@ -251,9 +251,9 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
   return (
     <div className="card"
       style={{ border: '0.5px solid rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.03)' }}>
-      <p className="text-sm font-semibold text-[#f87171] mb-1">Desvincular perfil de casal</p>
+      <p className="text-sm font-semibold text-[#f87171] mb-1">Encerrar vínculo do casal</p>
       <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-        Ao desvincular, as seguintes ações serão executadas <strong className="text-[#f0ede8]">permanentemente e sem recuperação</strong>:
+        Ao encerrar o vínculo, vocês deixarão de compartilhar dados e objetivos. As seguintes ações serão executadas <strong className="text-[#f0ede8]">permanentemente</strong>:
       </p>
 
       <ul className="text-xs space-y-1.5 mb-5" style={{ color: 'rgba(252,165,165,0.7)' }}>
@@ -291,7 +291,7 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
             className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
             style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '0.5px solid rgba(239,68,68,0.3)' }}
           >
-            {unlinkCouple.isPending ? 'Desvinculando...' : 'Confirmar desvinculação'}
+            {unlinkCouple.isPending ? 'Encerrando...' : 'Confirmar encerramento'}
           </button>
           <button
             type="button"

@@ -118,15 +118,15 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
       <div className="card p-5 flex items-center gap-4 mb-6">
         <span className="text-3xl">🤝</span>
         <div>
-          <p className="font-semibold text-[#f0ede8]">Vocês estão quite!</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Nenhuma divisão pendente no momento.</p>
+          <p className="font-semibold text-[#f0ede8]">Tudo certo entre vocês 👍</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum valor pendente entre vocês</p>
         </div>
       </div>
     )
   }
 
   const youOwe     = balance > 0
-  const label      = youOwe ? `Você deve para ${partnerName}` : `${partnerName} te deve`
+  const label      = youOwe ? `Você tem um valor pendente com ${partnerName}` : `${partnerName} tem um valor pendente com você`
   const colorClass = youOwe ? 'text-red-400' : 'text-emerald-400'
 
   return (
@@ -202,7 +202,7 @@ export default function DivisaoPage() {
           <p className="text-[#f0ede8] font-medium mb-1">Perfil de casal não vinculado</p>
           <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
             Vincule-se ao seu parceiro em{' '}
-            <a href="/casal" className="text-indigo-400 hover:underline">Perfil Casal</a>{' '}
+            <a href="/casal" className="text-indigo-400 hover:underline">Conexão do casal</a>{' '}
             para dividir despesas.
           </p>
         </div>
