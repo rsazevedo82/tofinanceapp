@@ -1,6 +1,7 @@
 import { Sidebar }            from '@/components/ui/Sidebar'
 import { PartnerViewToggle }  from '@/components/ui/PartnerViewToggle'
 import { PartnerViewBanner }  from '@/components/ui/PartnerViewBanner'
+import { InstallBanner }      from '@/components/ui/InstallBanner'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         {children}
       </main>
+      {/* Banner de instalação iOS — só aparece no Safari/iOS fora do modo standalone */}
+      <InstallBanner />
     </div>
   )
 }

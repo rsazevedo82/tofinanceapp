@@ -45,11 +45,11 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ size: st
               fontSize,
               fontWeight: 700,
               fontFamily: 'sans-serif',
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.04em',
               lineHeight: 1,
             }}
           >
-            F
+            N2
           </span>
         </div>
       </div>

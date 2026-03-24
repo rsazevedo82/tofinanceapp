@@ -1,3 +1,29 @@
+import withPWAInit from '@ducanh2912/next-pwa'
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  // Service worker ativo apenas em produção
+  disable: process.env.NODE_ENV === 'development',
+  workboxOptions: {
+    disableDevLogs: true,
+    runtimeCaching: [
+      {
+        // Dados da API sempre via rede — nunca sirva financeiros do cache
+        urlPattern: /^\/api\//,
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'api-cache',
+          networkTimeoutSeconds: 10,
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 },
+        },
+      },
+    ],
+  },
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: { ignoreBuildErrors: true },
@@ -37,6 +63,9 @@ const nextConfig = {
 
       // Base URI restrita
       "base-uri 'self'",
+
+      // Service worker precisa de worker-src
+      "worker-src 'self'",
     ].join('; ')
 
     return [
@@ -75,4 +104,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withPWA(nextConfig)
