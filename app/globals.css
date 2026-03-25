@@ -23,6 +23,12 @@
     --text-body:  rgba(200,198,190,0.6);
     --border:     rgba(255,255,255,0.06);
     --surface:    rgba(255,255,255,0.03);
+
+    /* Safe areas do iOS (notch, Dynamic Island, home indicator) */
+    --sat: env(safe-area-inset-top,    0px);
+    --sar: env(safe-area-inset-right,  0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left,   0px);
   }
   body {
     @apply antialiased bg-background text-foreground;
@@ -30,6 +36,8 @@
   }
   * {
     @apply border-border outline-ring/50;
+    /* Remove flash azul/cinza ao tocar em elementos no iOS */
+    -webkit-tap-highlight-color: transparent;
   }
   ::selection {
     background: rgba(255,255,255,0.1);
@@ -81,9 +89,13 @@
 
   /* ── Inputs ── */
   .input {
-    @apply w-full px-3 py-2.5 rounded-lg text-sm text-[#e8e6e1]
+    @apply w-full px-3 py-2.5 rounded-lg text-[#e8e6e1]
            placeholder-[#c8c6be]/30 transition-all duration-150
            focus:outline-none;
+    /* 16px mínimo: evita auto-zoom do iOS Safari em inputs focados */
+    font-size: 1rem;
+    /* Compensa visualmente o tamanho maior mantendo o visual compacto */
+    line-height: 1.25rem;
     background: rgba(255,255,255,0.04);
     border: 0.5px solid rgba(255,255,255,0.08);
   }
@@ -253,4 +265,80 @@
   --sidebar-accent-foreground:      oklch(0.985 0 0);
   --sidebar-border:      oklch(1 0 0 / 10%);
   --sidebar-ring:      oklch(0.556 0 0);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Fallback para Safari < 15.4 e outros browsers sem suporte a oklch().
+   A regra @supports not garante que estes valores só se aplicam quando oklch
+   NÃO é reconhecido — browsers modernos continuam usando os valores acima.
+   Conversão: oklch(L 0 0) → escala de cinza sRGB correspondente.
+───────────────────────────────────────────────────────────────────────────── */
+@supports not (color: oklch(0 0 0)) {
+  :root {
+    --background:                 #ffffff;
+    --foreground:                 #09090b;
+    --card:                       #ffffff;
+    --card-foreground:            #09090b;
+    --popover:                    #ffffff;
+    --popover-foreground:         #09090b;
+    --primary:                    #18181b;
+    --primary-foreground:         #fafafa;
+    --secondary:                  #f4f4f5;
+    --secondary-foreground:       #18181b;
+    --muted:                      #f4f4f5;
+    --muted-foreground:           #71717a;
+    --accent:                     #f4f4f5;
+    --accent-foreground:          #18181b;
+    --destructive:                #dc2626;
+    --border:                     #e4e4e7;
+    --input:                      #e4e4e7;
+    --ring:                       #a1a1aa;
+    --chart-1:                    #d4d4d8;
+    --chart-2:                    #71717a;
+    --chart-3:                    #52525b;
+    --chart-4:                    #3f3f46;
+    --chart-5:                    #27272a;
+    --sidebar:                    #fafafa;
+    --sidebar-foreground:         #09090b;
+    --sidebar-primary:            #18181b;
+    --sidebar-primary-foreground: #fafafa;
+    --sidebar-accent:             #f4f4f5;
+    --sidebar-accent-foreground:  #18181b;
+    --sidebar-border:             #e4e4e7;
+    --sidebar-ring:               #a1a1aa;
+  }
+
+  .dark {
+    --background:                 #111110;
+    --foreground:                 #e8e6e1;
+    --card:                       #18181b;
+    --card-foreground:            #fafafa;
+    --popover:                    #18181b;
+    --popover-foreground:         #fafafa;
+    --primary:                    #e4e4e7;
+    --primary-foreground:         #18181b;
+    --secondary:                  #27272a;
+    --secondary-foreground:       #fafafa;
+    --muted:                      #27272a;
+    --muted-foreground:           #a1a1aa;
+    --accent:                     #27272a;
+    --accent-foreground:          #fafafa;
+    --destructive:                #f87171;
+    --border:                     rgba(255,255,255,0.1);
+    --input:                      rgba(255,255,255,0.15);
+    --ring:                       #71717a;
+    --chart-1:                    #d4d4d8;
+    --chart-2:                    #71717a;
+    --chart-3:                    #52525b;
+    --chart-4:                    #3f3f46;
+    --chart-5:                    #27272a;
+    --sidebar:                    #18181b;
+    --sidebar-foreground:         #fafafa;
+    --sidebar-primary:            #6366f1;
+    --sidebar-primary-foreground: #fafafa;
+    --sidebar-accent:             #27272a;
+    --sidebar-accent-foreground:  #fafafa;
+    --sidebar-border:             rgba(255,255,255,0.1);
+    --sidebar-ring:               #71717a;
+  }
 }

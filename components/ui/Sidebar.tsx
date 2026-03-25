@@ -205,35 +205,42 @@ export function Sidebar() {
         style={{
           background:  'rgba(255,255,255,0.015)',
           borderRight: '0.5px solid rgba(255,255,255,0.06)',
+          paddingTop:  'env(safe-area-inset-top,  0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
         }}
       >
         <NavContent />
       </aside>
 
-      {/* Mobile header */}
+      {/* Mobile header — altura cresce para cobrir o notch/Dynamic Island */}
       <header
-        className="md:hidden fixed top-0 left-0 right-0 h-12 flex items-center justify-between px-4 z-30"
+        className="md:hidden fixed top-0 left-0 right-0 flex flex-col justify-end px-4 z-30"
         style={{
           background:     'rgba(17,17,16,0.8)',
           backdropFilter: 'blur(12px)',
           borderBottom:   '0.5px solid rgba(255,255,255,0.06)',
+          paddingTop:     'env(safe-area-inset-top, 0px)',
+          minHeight:      'calc(3rem + env(safe-area-inset-top, 0px))',
         }}
       >
-        <div className="flex items-center gap-2">
-          <div
-            className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
-            style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
-          >N</div>
-          <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <NotificationBell />
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="text-[#9ca3af] hover:text-[#e8e6e1] transition-colors p-1"
-          >
-            ☰
-          </button>
+        {/* Linha de conteúdo com altura fixa de 48px — independente do safe area */}
+        <div className="flex items-center justify-between h-12">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+              style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
+            >N</div>
+            <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="text-[#9ca3af] hover:text-[#e8e6e1] transition-colors p-1"
+            >
+              ☰
+            </button>
+          </div>
         </div>
       </header>
 
@@ -257,7 +264,11 @@ export function Sidebar() {
         </div>
       )}
 
-      <div className="md:hidden h-12" />
+      {/* Espaçador compensa o header fixo + safe area top */}
+      <div
+        className="md:hidden"
+        style={{ height: 'calc(3rem + env(safe-area-inset-top, 0px))' }}
+      />
     </>
   )
 }

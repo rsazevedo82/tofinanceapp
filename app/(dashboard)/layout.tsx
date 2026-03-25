@@ -7,7 +7,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-[#111110]">
       <Sidebar />
-      <main className="flex-1 md:ml-56 min-h-screen">
+      <main
+        className="flex-1 md:ml-56 min-h-screen"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         {/* Toggle de visão do parceiro — aparece apenas quando há vínculo ativo */}
         <div className="flex justify-end px-6 pt-5 md:pt-6">
           <PartnerViewToggle />

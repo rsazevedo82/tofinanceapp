@@ -2,18 +2,25 @@
 'use client'
 
 import { useState }                                      from 'react'
-import { useCouple, useSendInvite, useUnlinkCouple, useRespondInvite } from '@/hooks/useCouple'
-import { useNotifications }                              from '@/hooks/useNotifications'
-import type { Notification }                             from '@/types'
+import {
+  useCouple, useSendInvite, useUnlinkCouple,
+  useRespondInvite, usePendingInvite,
+  useResendInvite, useCancelInvite,
+} from '@/hooks/useCouple'
+import { useNotifications }   from '@/hooks/useNotifications'
+import type { Notification, CoupleInvitation } from '@/types'
 
 export default function CasalPage() {
-  const { data: couple, isLoading } = useCouple()
-  const { data: notifications = [] } = useNotifications()
+  const { data: couple,      isLoading: loadingCouple }  = useCouple()
+  const { data: sentInvite,  isLoading: loadingSent }    = usePendingInvite()
+  const { data: notifications = [] }                     = useNotifications()
 
-  // Convite pendente recebido (notificação do tipo couple_invite)
-  const pendingInvite = notifications.find(
+  // Convite pendente recebido (notificação do tipo couple_invite não lida)
+  const receivedInvite = notifications.find(
     (n: Notification) => n.type === 'couple_invite' && !n.read_at
   )
+
+  const isLoading = loadingCouple || loadingSent
 
   if (isLoading) {
     return (
@@ -34,15 +41,20 @@ export default function CasalPage() {
         </p>
       </div>
 
-      {/* Convite pendente recebido */}
-      {pendingInvite && !couple && (
-        <PendingInviteCard notification={pendingInvite} />
+      {/* 1. Convite recebido aguardando resposta */}
+      {receivedInvite && !couple && (
+        <PendingInviteCard notification={receivedInvite} />
       )}
 
-      {/* Sem vínculo */}
-      {!couple && !pendingInvite && <InviteForm />}
+      {/* 2. Convite enviado aguardando resposta do parceiro */}
+      {sentInvite && !couple && !receivedInvite && (
+        <SentInviteCard invitation={sentInvite} />
+      )}
 
-      {/* Vínculo ativo */}
+      {/* 3. Sem vínculo e sem convites */}
+      {!couple && !receivedInvite && !sentInvite && <InviteForm />}
+
+      {/* 4. Vínculo ativo */}
       {couple && <CoupleStatus couple={couple} />}
     </div>
   )
@@ -99,6 +111,104 @@ function PendingInviteCard({ notification }: { notification: Notification }) {
           className="btn-ghost text-xs px-4"
         >
           Recusar
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Convite enviado aguardando resposta ───────────────────────────────────────
+
+function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
+  const resendInvite = useResendInvite()
+  const cancelInvite = useCancelInvite()
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  const isExpired  = new Date(invitation.expires_at) < new Date()
+  const expiryDate = new Date(invitation.expires_at).toLocaleDateString('pt-BR', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  })
+
+  const isBusy = resendInvite.isPending || cancelInvite.isPending
+
+  function handleResend() {
+    setFeedback(null)
+    resendInvite.mutate(undefined, {
+      onSuccess: () => setFeedback({ type: 'success', message: 'Convite reenviado com sucesso!' }),
+      onError:   (err) => setFeedback({ type: 'error', message: err.message }),
+    })
+  }
+
+  function handleCancel() {
+    setFeedback(null)
+    cancelInvite.mutate(undefined, {
+      onError: (err) => setFeedback({ type: 'error', message: err.message }),
+    })
+  }
+
+  return (
+    <div className="card mb-6"
+      style={{ border: '0.5px solid rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.03)' }}>
+
+      {/* Cabeçalho */}
+      <div className="flex items-start gap-3 mb-4">
+        <span className="text-2xl">📨</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-[#e8e6e1]">Convite enviado</p>
+          <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
+            Aguardando {invitation.invitee_email} aceitar o convite
+          </p>
+        </div>
+      </div>
+
+      {/* Detalhe de expiração */}
+      <div className="px-3 py-2.5 rounded-lg mb-4 flex items-center gap-2"
+        style={{
+          background: isExpired ? 'rgba(252,165,165,0.05)' : 'rgba(255,255,255,0.03)',
+          border:     isExpired ? '0.5px solid rgba(252,165,165,0.15)' : '0.5px solid rgba(255,255,255,0.06)',
+        }}>
+        <span className="text-xs" style={{ color: isExpired ? '#fca5a5' : 'var(--text-muted)' }}>
+          {isExpired ? '⚠️ Expirado em' : '⏱ Expira em'}
+        </span>
+        <span className="text-xs font-medium" style={{ color: isExpired ? '#fca5a5' : '#e8e6e1' }}>
+          {expiryDate}
+        </span>
+        {isExpired && (
+          <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded"
+            style={{ background: 'rgba(252,165,165,0.12)', color: '#fca5a5' }}>
+            Reenvie para renovar
+          </span>
+        )}
+      </div>
+
+      {/* Feedback */}
+      {feedback && (
+        <p className="text-xs px-3 py-2 rounded-lg mb-3"
+          style={{
+            background: feedback.type === 'success'
+              ? 'rgba(110,231,183,0.08)' : 'rgba(252,165,165,0.08)',
+            color: feedback.type === 'success' ? '#6ee7b7' : '#fca5a5',
+          }}>
+          {feedback.message}
+        </p>
+      )}
+
+      {/* Ações */}
+      <div className="flex gap-3">
+        <button
+          onClick={handleResend}
+          disabled={isBusy}
+          className="btn-primary text-xs flex-1 justify-center py-2.5"
+          style={{ background: 'rgba(251,191,36,0.1)', borderColor: 'rgba(251,191,36,0.25)', color: '#fbbf24' }}
+        >
+          {resendInvite.isPending ? 'Reenviando...' : 'Reenviar convite'}
+        </button>
+        <button
+          onClick={handleCancel}
+          disabled={isBusy}
+          className="btn-ghost text-xs px-4"
+        >
+          {cancelInvite.isPending ? 'Cancelando...' : 'Cancelar'}
         </button>
       </div>
     </div>

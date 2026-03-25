@@ -4,7 +4,16 @@
       "WebFetch(domain:lordicon.com)",
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:element.lordicon.com)",
-      "WebFetch(domain:app.unpkg.com)"
+      "WebFetch(domain:app.unpkg.com)",
+      "Bash(find:*)",
+      "Bash(grep -E '\\\\.\\(ts|tsx\\)$')",
+      "Bash(xargs grep:*)",
+      "Bash(find /E/MyProjects/tofinanceapp -name \"page.tsx\" -path \"*/dashboard/*\" -o -path \"*/\\(dashboard\\)/*\")",
+      "Bash(grep -r 'Load Failed' /E/MyProjects/tofinanceapp --include=*.tsx --include=*.ts --include=*.jsx --include=*.js)",
+      "Bash(node:*)",
+      "Bash(npm run:*)",
+      "Bash(grep -r \"resend\\\\|sendEmail\\\\|Resend\" /e/MyProjects/tofinanceapp/app /e/MyProjects/tofinanceapp/lib --include=*.ts --include=*.tsx)",
+      "Bash(grep:*)"
     ]
   }
 }
