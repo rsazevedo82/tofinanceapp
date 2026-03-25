@@ -29,9 +29,15 @@ export default function CadastroPage() {
     }
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) {
-      setError('Erro ao criar conta. Tente novamente.')
+      setError(error.message)
+      setLoading(false)
+      return
+    }
+    // Supabase pode exigir confirmação de e-mail — sem sessão imediata
+    if (!data.session) {
+      setError('Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.')
       setLoading(false)
       return
     }
