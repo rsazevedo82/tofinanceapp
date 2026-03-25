@@ -4,6 +4,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 const ALLOWED_ORIGINS = [
   'https://tofinanceapp.vercel.app',
   'http://localhost:3000',
+  'http://localhost:3001',
+  // Permite origem extra via env var — útil para testar em dispositivos na rede local
+  ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
 ]
 
 function csrfProtection(request: NextRequest): NextResponse | null {
