@@ -7,23 +7,23 @@ import { useState }         from 'react'
 import { useCouple }        from '@/hooks/useCouple'
 import { useProfile }       from '@/hooks/useProfile'
 import {
-  LayoutDashboard,
-  ArrowUpDown,
-  Landmark,
-  CreditCard,
-  Tag,
-  BarChart2,
-  Target,
-  Split,
-  Users,
-  User,
-  type LucideIcon,
-} from 'lucide-react'
+  FcHome,
+  FcMoneyTransfer,
+  FcSafe,
+  FcSimCard,
+  FcList,
+  FcBarChart,
+  FcPositiveDynamic,
+  FcCollaboration,
+  FcConferenceCall,
+  FcManager,
+} from 'react-icons/fc'
+import type { IconType } from 'react-icons'
 
 interface NavItem {
   href:         string
   label:        string
-  icon:         LucideIcon
+  icon:         IconType
   locked?:      boolean
   lockMessage?: string
   lockHint?:    string
@@ -39,22 +39,22 @@ export function Sidebar() {
   const hasCouple = !!couple
 
   const navItems: NavItem[] = [
-    { href: '/',           label: 'Visão geral',         icon: LayoutDashboard },
-    { href: '/transacoes', label: 'Gastos',               icon: ArrowUpDown },
-    { href: '/contas',     label: 'Contas',               icon: Landmark },
-    { href: '/cartoes',    label: 'Cartões',              icon: CreditCard },
-    { href: '/categorias', label: 'Categorias',           icon: Tag },
-    { href: '/relatorios', label: 'Relatórios',           icon: BarChart2 },
-    { href: '/objetivos',  label: 'Objetivos',            icon: Target },
+    { href: '/',           label: 'Visão geral',         icon: FcHome },
+    { href: '/transacoes', label: 'Gastos',               icon: FcMoneyTransfer },
+    { href: '/contas',     label: 'Contas',               icon: FcSafe },
+    { href: '/cartoes',    label: 'Cartões',              icon: FcSimCard },
+    { href: '/categorias', label: 'Categorias',           icon: FcList },
+    { href: '/relatorios', label: 'Relatórios',           icon: FcBarChart },
+    { href: '/objetivos',  label: 'Objetivos',            icon: FcPositiveDynamic },
     {
       href:        '/divisao',
       label:       'Divisão de despesas',
-      icon:        Split,
+      icon:        FcCollaboration,
       locked:      !hasCouple,
       lockMessage: 'A divisão de despesas só está disponível para casais vinculados.',
       lockHint:    'Acesse Conexão do casal e convide seu parceiro(a) para desbloquear.',
     },
-    { href: '/casal',      label: 'Conexão do casal',    icon: Users },
+    { href: '/casal',      label: 'Conexão do casal',    icon: FcConferenceCall },
   ]
 
   const NavContent = () => (
@@ -94,7 +94,7 @@ export function Sidebar() {
                 })}
                 className="db-row gap-2 text-sm w-full transition-colors text-[#9ca3af]/50 hover:text-[#9ca3af] hover:bg-white/[0.02]"
               >
-                <Icon size={14} className="w-4 shrink-0 opacity-40" />
+                <Icon size={18} className="w-4 shrink-0 opacity-30" />
                 <span className="flex-1 text-left">{item.label}</span>
                 <span className="text-[10px] opacity-40">🔒</span>
               </button>
@@ -112,7 +112,7 @@ export function Sidebar() {
                   : 'text-[#9ca3af] hover:text-[#e8e6e1] hover:bg-white/[0.03]'
               }`}
             >
-              <Icon size={14} className={`w-4 shrink-0 ${isActive ? 'opacity-90' : 'opacity-70'}`} />
+              <Icon size={18} className={`w-4 shrink-0 ${isActive ? 'opacity-100' : 'opacity-60'}`} />
               {item.label}
             </Link>
           )
@@ -138,7 +138,7 @@ export function Sidebar() {
               {(profile.name ?? profile.email).charAt(0).toUpperCase()}
             </div>
           ) : (
-            <User size={14} className="w-4 shrink-0 opacity-70" />
+            <FcManager size={18} className="w-4 shrink-0" />
           )}
           <div className="flex-1 min-w-0">
             <p className="truncate text-xs leading-tight">

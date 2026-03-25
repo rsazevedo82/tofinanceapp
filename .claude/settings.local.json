@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:lordicon.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:element.lordicon.com)",
+      "WebFetch(domain:app.unpkg.com)"
+    ]
+  }
+}
