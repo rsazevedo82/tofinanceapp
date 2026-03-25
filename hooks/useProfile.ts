@@ -1,6 +1,6 @@
 // hooks/useProfile.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { createClient as createBrowserClient }   from '@/lib/supabase/client'
 import type { UserProfile } from '@/types'
 import type { UpdateProfileInput, ChangePasswordInput } from '@/lib/validations/schemas'
 
@@ -56,15 +56,22 @@ export function useChangePassword() {
 }
 
 export function useLogout() {
-  const router = useRouter()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      const supabase = createBrowserClient()
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
     },
     onSuccess: () => {
-      router.push('/login')
-      router.refresh()
+      queryClient.clear()
+      window.location.href = '/login'
+    },
+    onError: () => {
+      // Mesmo com erro, força saída no client
+      queryClient.clear()
+      window.location.href = '/login'
     },
   })
 }

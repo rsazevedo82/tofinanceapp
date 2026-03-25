@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect }    from 'react'
-import { useProfile, useUpdateProfile, useChangePassword, useLogout } from '@/hooks/useProfile'
+import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/useProfile'
 
 export default function PerfilPage() {
   const { data: profile, isLoading } = useProfile()
@@ -51,9 +51,6 @@ export default function PerfilPage() {
 
       {/* Segurança */}
       <SenhaForm />
-
-      {/* Logout */}
-      <LogoutSection />
     </div>
   )
 }
@@ -255,25 +252,3 @@ function SenhaForm() {
   )
 }
 
-// ── Logout ────────────────────────────────────────────────────────────────────
-
-function LogoutSection() {
-  const logout = useLogout()
-
-  return (
-    <div className="card" style={{ border: '0.5px solid rgba(248,113,113,0.15)' }}>
-      <p className="text-sm font-semibold text-[#e8e6e1] mb-1">Sair da conta</p>
-      <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-        Você será redirecionado para a tela de login.
-      </p>
-      <button
-        onClick={() => logout.mutate()}
-        disabled={logout.isPending}
-        className="w-full py-2.5 rounded-xl text-sm transition-colors"
-        style={{ color: 'rgba(248,113,113,0.7)', border: '0.5px solid rgba(248,113,113,0.2)' }}
-      >
-        {logout.isPending ? 'Saindo...' : 'Sair da conta'}
-      </button>
-    </div>
-  )
-}

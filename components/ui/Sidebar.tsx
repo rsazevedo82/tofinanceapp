@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { NotificationBell } from '@/components/ui/NotificationBell'
 import { useState }         from 'react'
 import { useCouple }        from '@/hooks/useCouple'
-import { useProfile }       from '@/hooks/useProfile'
+import { useProfile, useLogout } from '@/hooks/useProfile'
 import {
   FcHome,
   FcMoneyTransfer,
@@ -36,6 +36,7 @@ export function Sidebar() {
 
   const { data: couple }  = useCouple()
   const { data: profile } = useProfile()
+  const logout            = useLogout()
   const hasCouple = !!couple
 
   const navItems: NavItem[] = [
@@ -120,7 +121,7 @@ export function Sidebar() {
       </nav>
 
       {/* Footer — perfil do usuário */}
-      <div className="px-1 pb-3 border-t border-white/[0.05] pt-3">
+      <div className="px-1 pb-3 border-t border-white/[0.05] pt-3 space-y-0.5">
         <Link
           href="/perfil"
           onClick={() => setMobileOpen(false)}
@@ -151,6 +152,15 @@ export function Sidebar() {
             )}
           </div>
         </Link>
+
+        <button
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+          className="db-row gap-2 text-sm w-full transition-colors text-[#9ca3af]/60 hover:text-[#f87171] hover:bg-white/[0.02]"
+        >
+          <span className="w-4 text-center text-[13px] shrink-0 opacity-50">↪</span>
+          <span>{logout.isPending ? 'Saindo...' : 'Sair da conta'}</span>
+        </button>
       </div>
     </>
   )

@@ -10,6 +10,7 @@ import { useState }                              from 'react'
 import { useNotifications, useMarkAllAsRead }    from '@/hooks/useNotifications'
 import { useCouple }                             from '@/hooks/useCouple'
 import { c }                                     from '@/lib/utils/copy'
+import { OnboardingChecklist }                   from '@/components/ui/OnboardingChecklist'
 import type { ApiResponse }                      from '@/types'
 import type { Notification }                     from '@/types'
 import type { DashboardData }                    from '@/app/api/dashboard/route'
@@ -113,6 +114,14 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* ── Onboarding ── */}
+      {data && (
+        <OnboardingChecklist
+          dashboardData={data}
+          onNewTransaction={() => setShowTx(true)}
+        />
       )}
 
       {isLoading ? (
