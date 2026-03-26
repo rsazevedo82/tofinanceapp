@@ -1,4 +1,4 @@
-# Nós Dois Reais
+# Nós 2 Reais
 
 Aplicação de controle financeiro para casais. Permite gerenciar contas, transações e categorias com dashboard de resumo mensal.
 

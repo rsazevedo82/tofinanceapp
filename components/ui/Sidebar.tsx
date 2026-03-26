@@ -64,12 +64,12 @@ export function Sidebar() {
       <div className="flex items-center justify-between px-3 py-4 mb-2">
         <div className="flex items-center gap-2">
           <div
-            className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+            className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold"
             style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
           >
-            N
+            N2R
           </div>
-          <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
+          <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós 2 Reais</span>
         </div>
         <NotificationBell />
       </div>
@@ -227,10 +227,10 @@ export function Sidebar() {
         <div className="flex items-center justify-between h-12">
           <div className="flex items-center gap-2">
             <div
-              className="w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+              className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold"
               style={{ background: 'rgba(255,255,255,0.1)', color: '#e8e6e1' }}
-            >N</div>
-            <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós Dois Reais</span>
+            >N2R</div>
+            <span className="text-sm font-semibold text-[#e8e6e1] tracking-tight">Nós 2 Reais</span>
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />

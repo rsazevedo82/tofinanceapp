@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Nós Dois Reais',
-    short_name: 'N2 Reais',
+    name: 'Nós 2 Reais',
+    short_name: 'N2R',
     description: 'Finanças do casal, juntos e de verdade.',
     id: '/',
     start_url: '/',

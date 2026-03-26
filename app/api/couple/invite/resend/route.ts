@@ -116,12 +116,22 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
       })
     } else {
       // Usuário novo → reenvio via Supabase Auth
-      await adminClient.auth.admin.inviteUserByEmail(inviteeEmail, {
+      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(inviteeEmail, {
         data: {
           couple_invitation_token: invitation.token,
           invited_by:              inviterName,
         },
       })
+      if (emailError) {
+        log('error', 'POST /api/couple/invite/resend — inviteUserByEmail falhou', {
+          userId: user.id, inviteeEmail, detail: emailError.message,
+        })
+        await adminClient.from('couple_invitations').update({ status: 'cancelled' }).eq('id', invitation.id)
+        return NextResponse.json(
+          { data: null, error: `Erro ao reenviar e-mail: ${emailError.message}` },
+          { status: 500 }
+        )
+      }
     }
 
     log('info', 'POST /api/couple/invite/resend', {

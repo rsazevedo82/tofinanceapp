@@ -1,4 +1,4 @@
-# Textos da Interface — Nós Dois Reais
+# Textos da Interface — Nós 2 Reais
 
 > Documento de referência de copy. Organizado por página/seção.
 > Atualizado em: 2026-03-24 — reflete copy dupla (individual vs casal) implementada.
@@ -14,7 +14,7 @@
 
 | # | Texto | Tipo | Modo |
 |---|-------|------|------|
-| 1 | Nós Dois Reais | Branding/Logo | fixo |
+| 1 | Nós 2 Reais | Branding/Logo | fixo |
 | 2 | Sem brigas por dinheiro. | Tagline | fixo |
 | 3 | Organizem a vida financeira juntos. | Tagline | fixo |
 | 4 | Entrar | Título H1 | fixo |
@@ -35,7 +35,7 @@
 
 | # | Texto | Tipo | Modo |
 |---|-------|------|------|
-| 1 | Nós Dois Reais | Branding/Logo | fixo |
+| 1 | Nós 2 Reais | Branding/Logo | fixo |
 | 2 | Sem brigas por dinheiro. | Tagline | fixo |
 | 3 | Organizem a vida financeira juntos. | Tagline | fixo |
 | 4 | Criar conta | Título H1 | fixo |
@@ -58,7 +58,7 @@
 
 | # | Texto | Tipo | Modo |
 |---|-------|------|------|
-| 1 | Nós Dois Reais | Logo | fixo |
+| 1 | Nós 2 Reais | Logo | fixo |
 | 2 | Visão geral | Item menu | fixo |
 | 3 | Gastos | Item menu | fixo |
 | 4 | Contas | Item menu | fixo |

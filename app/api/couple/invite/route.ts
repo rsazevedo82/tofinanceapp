@@ -122,12 +122,21 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       })
     } else {
       // Usuário novo → cria conta e envia email via Supabase
-      await adminClient.auth.admin.inviteUserByEmail(email, {
+      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
         data: {
           couple_invitation_token: invitation.token,
           invited_by:              inviterName,
         },
       })
+      if (emailError) {
+        console.error('[POST /api/couple/invite] inviteUserByEmail falhou:', emailError.message)
+        // Cancela o convite criado para não deixar registro órfão
+        await adminClient.from('couple_invitations').update({ status: 'cancelled' }).eq('id', invitation.id)
+        return NextResponse.json(
+          { data: null, error: `Erro ao enviar e-mail de convite: ${emailError.message}` },
+          { status: 500 }
+        )
+      }
     }
 
     return NextResponse.json({ data: invitation, error: null }, { status: 201 })

@@ -1,4 +1,4 @@
-# CLAUDE.md – Nós Dois Reais
+# CLAUDE.md – Nós 2 Reais
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -13,7 +13,7 @@ npm run test:run     # Vitest single run
 ```
 
 ## 1. Visão Geral do Produto
-**Nós Dois Reais** — aplicação web de controle financeiro pessoal.
+**Nós 2 Reais** — aplicação web de controle financeiro pessoal.
 Objetivo principal: gerenciar contas, transações e categorias com dashboard claro e resumo mensal.
 Público-alvo: casais no Brasil.
 Idioma prioritário: Português Brasileiro (interface, mensagens, validações, logs).

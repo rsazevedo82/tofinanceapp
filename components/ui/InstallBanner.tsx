@@ -62,7 +62,7 @@ export function InstallBanner() {
         {/* Texto */}
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-[#f0ede8] leading-snug">
-            Instale o Nós Dois Reais
+            Instale o Nós 2 Reais
           </p>
           <p className="text-[11px] mt-0.5 leading-snug" style={{ color: 'var(--text-muted)' }}>
             Toque em <Share size={10} className="inline-block mx-0.5 align-middle" /> e depois{' '}

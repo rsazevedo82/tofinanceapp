@@ -36,14 +36,14 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-6 px-12">
           <Image
             src="/nos-dois-reais.jpeg"
-            alt="Nós Dois Reais"
+            alt="Nós 2 Reais"
             width={340}
             height={340}
             className="rounded-2xl"
             priority
           />
           <div className="text-center space-y-1">
-            <p className="text-lg font-semibold text-[#f0ede8] tracking-tight">Nós Dois Reais</p>
+            <p className="text-lg font-semibold text-[#f0ede8] tracking-tight">Nós 2 Reais</p>
             <p className="text-sm" style={{ color: 'rgba(200,198,190,0.5)' }}>Sem brigas por dinheiro.</p>
             <p className="text-sm" style={{ color: 'rgba(200,198,190,0.4)' }}>Organizem a vida financeira juntos.</p>
           </div>
@@ -60,13 +60,13 @@ export default function LoginPage() {
           <div className="flex items-center gap-2.5 mb-10">
             <Image
               src="/nos-dois-reais.jpeg"
-              alt="Nós Dois Reais"
+              alt="Nós 2 Reais"
               width={28}
               height={28}
               className="rounded-md lg:hidden"
             />
             <span className="text-base font-semibold text-[#e8e6e1] tracking-tight">
-              Nós Dois Reais
+              Nós 2 Reais
             </span>
           </div>
 
