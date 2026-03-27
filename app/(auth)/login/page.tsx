@@ -5,6 +5,14 @@ import Image              from 'next/image'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
 
+type LoginResponse = {
+  data: {
+    access_token: string
+    refresh_token: string
+  } | null
+  error: string | null
+}
+
 export default function LoginPage() {
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
@@ -17,13 +25,31 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError('Email ou senha incorretos')
+
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const json: LoginResponse = await res.json()
+
+    if (!res.ok || json.error || !json.data) {
+      setError(json.error ?? 'Email ou senha incorretos')
       setLoading(false)
       return
     }
+
+    const supabase = createClient()
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: json.data.access_token,
+      refresh_token: json.data.refresh_token,
+    })
+    if (sessionError) {
+      setError('Falha ao iniciar sessao. Tente novamente.')
+      setLoading(false)
+      return
+    }
+
     router.push('/')
     router.refresh()
   }

@@ -28,6 +28,7 @@ export default function CadastroPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error,    setError]    = useState('')
+  const [success,  setSuccess]  = useState('')
   const [loading,  setLoading]  = useState(false)
   const router = useRouter()
   const strength = getPasswordStrength(password)
@@ -36,6 +37,7 @@ export default function CadastroPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
 
     if (password.length < 10) {
       setError('Senha deve ter pelo menos 10 caracteres')
@@ -48,19 +50,39 @@ export default function CadastroPage() {
       return
     }
 
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const json: {
+      data: { session: { access_token: string; refresh_token: string } | null } | null
+      error: string | null
+    } = await res.json()
+
+    if (!res.ok || json.error || !json.data) {
+      setError(json.error ?? 'Nao foi possivel criar a conta.')
+      setLoading(false)
+      return
+    }
+
+    if (!json.data.session) {
+      setSuccess('Conta criada. Confirme seu e-mail antes de entrar.')
+      setLoading(false)
+      return
+    }
+
     const supabase = createClient()
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) {
-      setError(error.message)
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: json.data.session.access_token,
+      refresh_token: json.data.session.refresh_token,
+    })
+    if (sessionError) {
+      setError('Conta criada, mas houve falha ao iniciar sessao. Faca login manualmente.')
       setLoading(false)
       return
     }
-    // Supabase pode exigir confirmação de e-mail — sem sessão imediata
-    if (!data.session) {
-      setError('Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.')
-      setLoading(false)
-      return
-    }
+
     router.push('/')
     router.refresh()
   }
@@ -156,6 +178,12 @@ export default function CadastroPage() {
             {error && (
               <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
                 {error}
+              </p>
+            )}
+
+            {success && (
+              <p className="text-sm px-3 py-2 rounded-lg bg-green-50 border border-green-100 text-green-700">
+                {success}
               </p>
             )}
 
