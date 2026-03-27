@@ -5,12 +5,32 @@ import Image              from 'next/image'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
 
+function getPasswordStrength(password: string): { label: string; color: string; width: string } {
+  if (!password) return { label: 'Digite sua senha', color: '#D1D5DB', width: '0%' }
+
+  const hasMinLength = password.length >= 10
+  const hasLetters = /[a-zA-Z]/.test(password)
+  const hasNumbers = /[0-9]/.test(password)
+
+  const checks = [hasMinLength, hasLetters, hasNumbers].filter(Boolean).length
+
+  if (checks <= 1) {
+    return { label: 'Senha fraca', color: '#EF4444', width: '33%' }
+  }
+  if (checks === 2) {
+    return { label: 'Senha média', color: '#F59E0B', width: '66%' }
+  }
+  return { label: 'Senha boa', color: '#22C55E', width: '100%' }
+}
+
 export default function CadastroPage() {
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
   const router = useRouter()
+  const strength = getPasswordStrength(password)
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -102,15 +122,35 @@ export default function CadastroPage() {
             </div>
             <div>
               <label className="label">Senha</label>
-              <input
-                type="password"
-                className="input"
-                placeholder="mínimo 10 caracteres, letras e números"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                disabled={loading}
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="input pr-24"
+                  placeholder="mínimo 10 caracteres, letras e números"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                >
+                  {showPassword ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+              <div className="mt-2">
+                <div className="h-1.5 w-full rounded-full bg-[#E5E7EB] overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300"
+                    style={{ width: strength.width, backgroundColor: strength.color }}
+                  />
+                </div>
+                <p className="text-xs mt-1" style={{ color: strength.color }}>
+                  {strength.label}
+                </p>
+              </div>
             </div>
 
             {error && (
