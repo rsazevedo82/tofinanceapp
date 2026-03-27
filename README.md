@@ -253,6 +253,7 @@ middleware.ts           # Auth + CSRF
 Crie um arquivo `.env.local` na raiz:
 
 ```env
+NEXT_PUBLIC_APP_URL=https://www.nos2reais.com.br
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 UPSTASH_REDIS_REST_URL=

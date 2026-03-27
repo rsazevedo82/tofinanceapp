@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const ALLOWED_ORIGINS = [
-  'https://tofinanceapp.vercel.app',
+  'https://www.nos2reais.com.br',
+  'https://nos2reais.com.br',
   'http://localhost:3000',
   'http://localhost:3001',
   // Permite origem extra via env var — útil para testar em dispositivos na rede local
