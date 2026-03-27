@@ -42,7 +42,7 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
 
   if (transactions.length === 0) {
     return (
-      <p className="text-center py-12 text-sm" style={{ color: 'rgba(200,198,190,0.3)' }}>
+      <p className="text-center py-12 text-sm text-[#6B7280]">
         Nenhuma transacao neste periodo
       </p>
     )
@@ -64,11 +64,11 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
               <div className="flex items-center gap-2 min-w-0">
                 <span
                   className="text-xs w-4 text-center flex-shrink-0"
-                  style={{ color: t.type === 'income' ? '#6ee7b7' : '#fca5a5', opacity: 0.7 }}
+                  style={{ color: t.type === 'income' ? '#2DD4BF' : '#FF7F50', opacity: 0.7 }}
                 >
                   {t.type === 'income' ? '↑' : '↓'}
                 </span>
-                <span className="text-sm text-[#e8e6e1] truncate font-medium">
+                <span className="text-sm text-[#0F172A] truncate font-medium">
                   {t.description}
                 </span>
               </div>
@@ -77,11 +77,11 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
                   {t.category?.name ?? '—'}
                 </span>
               </div>
-              <div className="text-xs" style={{ color: 'rgba(200,198,190,0.35)' }}>
+              <div className="text-xs text-[#6B7280]">
                 {formatDate(t.date)}
               </div>
               <div className={`text-sm font-semibold text-right ${
-                t.type === 'income' ? 'text-[#6ee7b7]' : 'text-[#fca5a5]'
+                t.type === 'income' ? 'text-[#2DD4BF]' : 'text-[#FF7F50]'
               }`}>
                 {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
               </div>
@@ -112,18 +112,18 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
             className="db-row flex items-center justify-between px-2"
           >
             <div className="flex items-center gap-3">
-              <span className="text-xs" style={{ color: t.type === 'income' ? '#6ee7b7' : '#fca5a5' }}>
+              <span className="text-xs" style={{ color: t.type === 'income' ? '#2DD4BF' : '#FF7F50' }}>
                 {t.type === 'income' ? '↑' : '↓'}
               </span>
               <div>
-                <p className="text-sm font-medium text-[#e8e6e1]">{t.description}</p>
-                <p className="text-xs" style={{ color: 'rgba(200,198,190,0.35)' }}>
+                <p className="text-sm font-medium text-[#0F172A]">{t.description}</p>
+                <p className="text-xs text-[#6B7280]">
                   {t.category?.name ?? '—'} · {formatDate(t.date)}
                 </p>
               </div>
             </div>
             <span className={`text-sm font-semibold ${
-              t.type === 'income' ? 'text-[#6ee7b7]' : 'text-[#fca5a5]'
+              t.type === 'income' ? 'text-[#2DD4BF]' : 'text-[#FF7F50]'
             }`}>
               {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
             </span>
@@ -167,7 +167,7 @@ function EditModal({
           />
 
           {/* Botao de exclusao separado do formulario */}
-          <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+          <div style={{ borderTop: '1px solid #D1D5DB', paddingTop: '12px' }}>
             <button
               type="button"
               onClick={onDelete}
@@ -175,7 +175,7 @@ function EditModal({
               className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 confirmDelete
                   ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-transparent text-red-400 border border-red-500/30 hover:bg-red-500/10'
+                  : 'bg-transparent text-red-500 border border-red-200 hover:bg-red-50'
               }`}
             >
               {isPending
@@ -190,7 +190,7 @@ function EditModal({
                 type="button"
                 onClick={onDelete}
                 className="w-full py-2 text-xs mt-1 transition-colors"
-                style={{ color: 'rgba(200,198,190,0.35)' }}
+                className="text-[#6B7280] hover:text-[#0F172A] transition-colors"
               >
                 Cancelar
               </button>

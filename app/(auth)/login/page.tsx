@@ -28,52 +28,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111110] flex">
+    <div className="min-h-screen bg-[#FDFCF0] flex">
 
-      {/* ── Painel esquerdo — imagem (oculto em mobile) ── */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center"
-        style={{ background: 'rgba(255,255,255,0.02)' }}>
-        <div className="flex flex-col items-center gap-6 px-12">
+      {/* ── Painel esquerdo (oculto em mobile) ── */}
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center bg-[#FFF5F0]">
+        <div className="flex flex-col items-center gap-8 px-12">
           <Image
-            src="/nos-dois-reais.jpeg"
+            src="/n2r-logo-completo-horizontal-cor-V1.png"
             alt="Nós 2 Reais"
-            width={340}
-            height={340}
-            className="rounded-2xl"
+            width={260}
+            height={80}
             priority
           />
-          <div className="text-center space-y-1">
-            <p className="text-lg font-semibold text-[#f0ede8] tracking-tight">Nós 2 Reais</p>
-            <p className="text-sm" style={{ color: 'rgba(200,198,190,0.5)' }}>Sem brigas por dinheiro.</p>
-            <p className="text-sm" style={{ color: 'rgba(200,198,190,0.4)' }}>Organizem a vida financeira juntos.</p>
+          <div className="text-center space-y-1.5">
+            <p className="text-sm text-[#6B7280]">Sem brigas por dinheiro.</p>
+            <p className="text-sm text-[#6B7280]">Organizem a vida financeira juntos.</p>
           </div>
         </div>
         {/* Divisor vertical */}
-        <div className="absolute right-0 top-0 bottom-0 w-px"
-          style={{ background: 'rgba(255,255,255,0.06)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-px bg-[#D1D5DB]" />
       </div>
 
       {/* ── Painel direito — formulário ── */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
 
-          <div className="flex items-center gap-2.5 mb-10">
+          <div className="flex items-center gap-2.5 mb-10 lg:hidden">
             <Image
-              src="/nos-dois-reais.jpeg"
+              src="/n2r-simbolo-principal-claro-V1.png"
               alt="Nós 2 Reais"
               width={28}
               height={28}
-              className="rounded-md lg:hidden"
+              className="rounded-md"
             />
-            <span className="text-base font-semibold text-[#e8e6e1] tracking-tight">
+            <span className="text-base font-bold text-[#0F172A] tracking-tight">
               Nós 2 Reais
             </span>
           </div>
 
-          <h1 className="text-xl font-semibold text-[#f0ede8] tracking-tight mb-1">Entrar</h1>
-          <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
-            Acesse sua conta
-          </p>
+          <h1 className="text-2xl font-black text-[#0F172A] tracking-tight mb-1">Entrar</h1>
+          <p className="text-sm mb-8 text-[#6B7280]">Acesse sua conta</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -102,8 +96,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-xs px-3 py-2 rounded-lg"
-                style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+              <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
                 {error}
               </p>
             )}
@@ -122,11 +115,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-xs mt-6" style={{ color: 'rgba(200,198,190,0.3)' }}>
+          <p className="text-center text-sm mt-6 text-[#6B7280]">
             Não tem conta?{' '}
-            <a href="/cadastro"
-              style={{ color: 'rgba(200,198,190,0.6)' }}
-              className="hover:text-[#e8e6e1] transition-colors">
+            <a href="/cadastro" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
               Criar conta
             </a>
           </p>

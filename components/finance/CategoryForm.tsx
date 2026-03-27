@@ -89,10 +89,15 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
               className={`py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 currentType === type
                   ? type === 'income'
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  : 'bg-slate-800 text-slate-400 border border-transparent'
+                    ? 'border'
+                    : 'border'
+                  : 'bg-[#F3F4F6] text-[#6B7280] border border-transparent'
               }`}
+              style={currentType === type ? {
+                background: type === 'income' ? 'rgba(45,212,191,0.1)' : 'rgba(255,127,80,0.1)',
+                color:      type === 'income' ? '#0d9488' : '#FF7F50',
+                borderColor: type === 'income' ? 'rgba(45,212,191,0.3)' : 'rgba(255,127,80,0.3)',
+              } : undefined}
             >
               {type === 'income' ? '↑ Receita' : '↓ Despesa'}
             </button>
@@ -134,11 +139,10 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
       </div>
 
       {/* Preview */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F3F4F6] border border-[#D1D5DB]">
         <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
           style={{ background: currentColor }} />
-        <span className="text-sm text-[#e8e6e1]">
+        <span className="text-sm text-[#0F172A]">
           {currentName || 'Nome da categoria'}
         </span>
         <span className="ml-auto tag tag-neutral text-[10px]">
@@ -147,8 +151,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
       </div>
 
       {displayError && (
-        <p className="text-xs px-3 py-2 rounded-lg"
-          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+        <p className="text-xs px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
           {displayError}
         </p>
       )}
@@ -170,7 +173,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
               confirmDelete
                 ? 'bg-red-500 text-white hover:bg-red-600'
-                : 'bg-transparent text-red-400 border border-red-500/30 hover:bg-red-500/10'
+                : 'bg-transparent text-red-500 border border-red-200 hover:bg-red-50'
             }`}
           >
             {deleteCategory.isPending
@@ -184,8 +187,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="w-full py-2 text-xs transition-colors"
-              style={{ color: 'rgba(200,198,190,0.35)' }}
+              className="w-full py-2 text-xs text-[#6B7280] hover:text-[#0F172A] transition-colors"
             >
               Cancelar exclusão
             </button>

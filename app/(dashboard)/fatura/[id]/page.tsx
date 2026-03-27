@@ -1,4 +1,4 @@
-﻿// app/(dashboard)/fatura/[id]/page.tsx
+// app/(dashboard)/fatura/[id]/page.tsx
 'use client'
 
 import { useParams, useRouter }       from 'next/navigation'
@@ -20,9 +20,9 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  open:   '#fbbf24',
-  closed: '#fb923c',
-  paid:   '#6ee7b7',
+  open:   '#F59E0B',
+  closed: '#FF7F50',
+  paid:   '#2DD4BF',
 }
 
 export default function FaturaPage() {
@@ -86,31 +86,30 @@ export default function FaturaPage() {
   if (!account) return null
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="text-xs px-2 py-1 rounded-lg transition-colors"
-            style={{ color: 'rgba(200,198,190,0.5)', background: 'rgba(255,255,255,0.04)' }}
+            className="text-xs px-2 py-1 rounded-lg transition-colors text-[#6B7280] bg-[#F3F4F6] hover:bg-[#E5E7EB]"
           >
             ← voltar
           </button>
           <div>
-            <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+            <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
               {account.name}
             </h1>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(200,198,190,0.35)' }}>
+            <p className="text-sm mt-0.5 text-[#6B7280]">
               Fecha dia {account.closing_day} · Vence dia {account.due_day}
             </p>
           </div>
         </div>
 
         {/* Botao Nova Transacao */}
-        <button onClick={() => setShowNewTx(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span>
+        <button onClick={() => setShowNewTx(true)} className="btn-primary">
+          <span className="text-lg leading-none">+</span>
           Nova transação
         </button>
       </div>
@@ -120,19 +119,19 @@ export default function FaturaPage() {
         <div className="card mb-6 grid grid-cols-3 gap-4">
           <div>
             <p className="label">Limite total</p>
-            <p className="text-lg font-semibold text-[#f0ede8]">
+            <p className="text-lg font-black text-[#0F172A]">
               {formatCurrency(account.credit_limit)}
             </p>
           </div>
           <div>
             <p className="label">Fatura aberta</p>
-            <p className="text-lg font-semibold text-[#fbbf24]">
+            <p className="text-lg font-black" style={{ color: '#F59E0B' }}>
               {formatCurrency(invoices.find(i => i.status === 'open')?.total_amount ?? 0)}
             </p>
           </div>
           <div>
-            <p className="label">Disponivel</p>
-            <p className="text-lg font-semibold text-[#6ee7b7]">
+            <p className="label">Disponível</p>
+            <p className="text-lg font-black" style={{ color: '#2DD4BF' }}>
               {formatCurrency(
                 account.credit_limit -
                 invoices
@@ -153,12 +152,12 @@ export default function FaturaPage() {
             <div className="space-y-1">
               {[1, 2, 3].map(i => (
                 <div key={i} className="db-row px-2 py-3 animate-pulse">
-                  <div className="h-3 bg-white/5 rounded w-full" />
+                  <div className="h-3 bg-[#E5E7EB] rounded w-full" />
                 </div>
               ))}
             </div>
           ) : invoices.length === 0 ? (
-            <p className="text-xs py-8 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
+            <p className="text-xs py-8 text-center text-[#6B7280]">
               {c(isCouple, 'Nenhuma fatura ainda. Registre um gasto para começar.', 'Nenhuma fatura ainda. Registrem um gasto para começar.')}
             </p>
           ) : (
@@ -170,16 +169,16 @@ export default function FaturaPage() {
                     key={invoice.id}
                     onClick={() => setSelectedInvoiceId(invoice.id)}
                     className={`db-row flex items-center justify-between px-2 py-3 ${
-                      isSelected ? 'bg-white/[0.05]' : ''
+                      isSelected ? 'bg-[#FFF5F0]' : ''
                     }`}
                   >
                     <div>
-                      <p className="text-sm text-[#e8e6e1]">{invoice.reference_month}</p>
-                      <p className="text-[10px] font-medium" style={{ color: STATUS_COLOR[invoice.status] }}>
+                      <p className="text-sm text-[#0F172A]">{invoice.reference_month}</p>
+                      <p className="text-[10px] font-semibold" style={{ color: STATUS_COLOR[invoice.status] }}>
                         {STATUS_LABEL[invoice.status]}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-[#f0ede8]">
+                    <p className="text-sm font-bold text-[#0F172A]">
                       {formatCurrency(Number(invoice.total_amount))}
                     </p>
                   </div>
@@ -198,7 +197,7 @@ export default function FaturaPage() {
                   Lançamentos · {selectedInvoice.reference_month}
                 </p>
                 <span
-                  className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
                   style={{
                     color:      STATUS_COLOR[selectedInvoice.status],
                     background: `${STATUS_COLOR[selectedInvoice.status]}18`,
@@ -211,20 +210,20 @@ export default function FaturaPage() {
               {/* Lista de transacoes */}
               <div className="space-y-0.5 mb-4">
                 {transactions.length === 0 ? (
-                  <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.35)' }}>
+                  <p className="text-xs py-6 text-center text-[#6B7280]">
                     Nenhum lançamento nesta fatura
                   </p>
                 ) : (
                   transactions.map(tx => (
                     <div key={tx.id} className="db-row flex items-center justify-between px-2 py-2.5">
                       <div>
-                        <p className="text-sm text-[#e8e6e1]">{tx.description}</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
+                        <p className="text-sm text-[#0F172A]">{tx.description}</p>
+                        <p className="text-[10px] text-[#6B7280]">
                           {new Date(tx.date + 'T12:00:00').toLocaleDateString('pt-BR')}
                           {tx.installment_number ? ` · Parcela ${tx.installment_number}` : ''}
                         </p>
                       </div>
-                      <p className="text-sm font-medium text-[#fca5a5]">
+                      <p className="text-sm font-semibold" style={{ color: '#FF7F50' }}>
                         -{formatCurrency(Number(tx.amount))}
                       </p>
                     </div>
@@ -234,11 +233,11 @@ export default function FaturaPage() {
 
               {/* Total calculado pelas transacoes */}
               <div
-                className="flex items-center justify-between px-2 py-2.5 rounded-lg mb-4"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}
+                className="flex items-center justify-between px-2 py-2.5 rounded-lg mb-4 bg-[#F3F4F6]"
+                style={{ border: '1px solid #D1D5DB' }}
               >
-                <p className="text-sm font-medium text-[#e8e6e1]">Total da fatura</p>
-                <p className="text-sm font-semibold text-[#f0ede8]">
+                <p className="text-sm font-semibold text-[#0F172A]">Total da fatura</p>
+                <p className="text-sm font-black text-[#0F172A]">
                   {formatCurrency(calculatedTotal)}
                 </p>
               </div>
@@ -246,10 +245,10 @@ export default function FaturaPage() {
               {/* Pagar fatura */}
               {selectedInvoice.status === 'closed' && (
                 <div
-                  className="p-4 rounded-xl space-y-3"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)' }}
+                  className="p-4 rounded-xl space-y-3 bg-white"
+                  style={{ border: '1px solid #D1D5DB' }}
                 >
-                  <p className="text-sm font-medium text-[#e8e6e1]">Pagar fatura</p>
+                  <p className="text-sm font-semibold text-[#0F172A]">Pagar fatura</p>
 
                   <div>
                     <label className="label">Pagar com</label>
@@ -276,8 +275,7 @@ export default function FaturaPage() {
                   </div>
 
                   {error && (
-                    <p className="text-xs px-3 py-2 rounded-lg"
-                      style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+                    <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
                       {error}
                     </p>
                   )}
@@ -297,7 +295,7 @@ export default function FaturaPage() {
           ) : (
             <div className="py-16 text-center">
               <p className="text-3xl mb-3">🧾</p>
-              <p className="text-sm" style={{ color: 'rgba(200,198,190,0.35)' }}>
+              <p className="text-sm text-[#6B7280]">
                 Selecione uma fatura ou adicione uma transação
               </p>
             </div>

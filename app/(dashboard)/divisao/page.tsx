@@ -44,20 +44,19 @@ function SplitCard({
     <div className="card p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-medium text-[#f0ede8] truncate">{split.description}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+          <p className="font-semibold text-[#0F172A] truncate">{split.description}</p>
+          <p className="text-xs mt-0.5 text-[#6B7280]">
             {formatDate(split.date)} · Pago por {isPayer ? 'você' : partnerName}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className="font-semibold text-[#f0ede8]">{formatCurrency(split.total_amount)}</p>
-          {isPending && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
+          <p className="font-bold text-[#0F172A]">{formatCurrency(split.total_amount)}</p>
+          {isPending ? (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">
               pendente
             </span>
-          )}
-          {!isPending && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+          ) : (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-[#CCFBF1] text-[#0d9488] border border-teal-100">
               quitado
             </span>
           )}
@@ -66,25 +65,25 @@ function SplitCard({
 
       {/* Divisão */}
       <div className="flex gap-3 text-xs">
-        <div className="flex-1 rounded bg-white/5 px-3 py-2">
-          <p style={{ color: 'var(--text-muted)' }}>Você ({split.payer_share_percent}%)</p>
-          <p className="text-[#f0ede8] font-medium mt-0.5">{formatCurrency(split.payer_amount)}</p>
+        <div className="flex-1 rounded bg-[#F3F4F6] px-3 py-2">
+          <p className="text-[#6B7280]">Você ({split.payer_share_percent}%)</p>
+          <p className="text-[#0F172A] font-semibold mt-0.5">{formatCurrency(split.payer_amount)}</p>
         </div>
-        <div className="flex-1 rounded bg-white/5 px-3 py-2">
-          <p style={{ color: 'var(--text-muted)' }}>{partnerName} ({100 - split.payer_share_percent}%)</p>
-          <p className="text-[#f0ede8] font-medium mt-0.5">{formatCurrency(split.partner_amount)}</p>
+        <div className="flex-1 rounded bg-[#F3F4F6] px-3 py-2">
+          <p className="text-[#6B7280]">{partnerName} ({100 - split.payer_share_percent}%)</p>
+          <p className="text-[#0F172A] font-semibold mt-0.5">{formatCurrency(split.partner_amount)}</p>
         </div>
       </div>
 
       {!isPending && split.settled_at && (
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs text-[#6B7280]">
           Quitado em {new Date(split.settled_at).toLocaleDateString('pt-BR')}
         </p>
       )}
 
       {/* Ações */}
       {isPending && (
-        <div className="flex gap-2 pt-1 border-t border-white/5">
+        <div className="flex gap-2 pt-1 border-t border-[#D1D5DB]">
           <button
             onClick={() => onSettle(split.id)}
             disabled={settling}
@@ -96,7 +95,7 @@ function SplitCard({
             <button
               onClick={() => onDelete(split.id)}
               disabled={deleting}
-              className="btn-secondary text-xs px-3 py-1.5 hover:text-red-400"
+              className="btn-ghost text-xs px-3 py-1.5 hover:text-red-500"
               title="Remover divisão"
             >
               🗑
@@ -118,8 +117,8 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
       <div className="card p-5 flex items-center gap-4 mb-6">
         <span className="text-3xl">🤝</span>
         <div>
-          <p className="font-semibold text-[#f0ede8]">Tudo certo entre vocês 👍</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Nenhum valor pendente entre vocês</p>
+          <p className="font-semibold text-[#0F172A]">Tudo certo entre vocês 👍</p>
+          <p className="text-sm text-[#6B7280]">Nenhum valor pendente entre vocês</p>
         </div>
       </div>
     )
@@ -127,15 +126,15 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
 
   const youOwe     = balance > 0
   const label      = youOwe ? `Você tem um valor pendente com ${partnerName}` : `${partnerName} tem um valor pendente com você`
-  const colorClass = youOwe ? 'text-red-400' : 'text-emerald-400'
+  const colorClass = youOwe ? 'text-red-500' : 'text-[#2DD4BF]'
 
   return (
     <div className="card p-5 flex items-center gap-4 mb-6 border-l-4"
-      style={{ borderLeftColor: youOwe ? '#f87171' : '#34d399' }}>
+      style={{ borderLeftColor: youOwe ? '#ef4444' : '#2DD4BF' }}>
       <span className="text-3xl">{youOwe ? '💸' : '💰'}</span>
       <div>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{label}</p>
-        <p className={`text-2xl font-bold ${colorClass}`}>{formatCurrency(abs)}</p>
+        <p className="text-sm text-[#6B7280]">{label}</p>
+        <p className={`text-2xl font-black ${colorClass}`}>{formatCurrency(abs)}</p>
       </div>
     </div>
   )
@@ -159,10 +158,6 @@ export default function DivisaoPage() {
 
   const partnerName = couple?.partner?.name ?? 'Parceiro(a)'
 
-  // Para calcular saldo, precisamos do userId — pegamos via payer_id do próprio split
-  // Como não temos o userId diretamente no client, usamos uma heurística:
-  // o saldo é calculado a partir de todos os splits pendentes
-  // userId é inferido comparando payer_id dos splits
   const userId = allPending.find(s => s.payer_profile)?.payer_id ?? ''
   const balance = computeBalance(allPending, userId)
 
@@ -196,13 +191,13 @@ export default function DivisaoPage() {
 
   if (!couple) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-8 md:py-10">
+      <div className="max-w-2xl mx-auto px-6 py-10 md:py-12">
         <div className="card p-10 text-center">
           <p className="text-4xl mb-3">🤝</p>
-          <p className="text-[#f0ede8] font-medium mb-1">Perfil de casal não vinculado</p>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[#0F172A] font-semibold mb-1">Perfil de casal não vinculado</p>
+          <p className="text-sm mb-4 text-[#6B7280]">
             Vincule-se ao seu parceiro em{' '}
-            <a href="/casal" className="text-indigo-400 hover:underline">Conexão do casal</a>{' '}
+            <a href="/casal" className="text-[#FF7F50] hover:underline font-medium">Conexão do casal</a>{' '}
             para dividir despesas.
           </p>
         </div>
@@ -211,18 +206,18 @@ export default function DivisaoPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-2xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Divisão</h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Divisão</h1>
+          <p className="text-sm mt-1 text-[#6B7280]">
             Despesas compartilhadas com {partnerName}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span> Nova divisão
+        <button onClick={() => setShowCreate(true)} className="btn-primary">
+          <span className="text-lg leading-none">+</span> Nova divisão
         </button>
       </div>
 
@@ -230,13 +225,15 @@ export default function DivisaoPage() {
       <SplitBalanceCard balance={balance} partnerName={partnerName} />
 
       {/* Abas */}
-      <div className="flex gap-1 mb-5 p-1 rounded-lg bg-white/5 w-fit">
+      <div className="flex gap-1 mb-5 p-1 rounded-lg bg-[#F3F4F6] w-fit">
         {(['pending', 'settled'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              tab === t ? 'bg-indigo-500 text-white' : 'text-white/50 hover:text-white/80'
+            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+              tab === t
+                ? 'bg-[#FF7F50] text-white shadow-sm'
+                : 'text-[#6B7280] hover:text-[#0F172A]'
             }`}
           >
             {t === 'pending' ? '⏳ Pendentes' : '✓ Histórico'}
@@ -254,11 +251,11 @@ export default function DivisaoPage() {
       {!isLoading && splits.length === 0 && (
         <div className="card p-8 text-center">
           <p className="text-3xl mb-2">{tab === 'pending' ? '⏳' : '📋'}</p>
-          <p className="text-[#f0ede8] font-medium mb-1">
+          <p className="text-[#0F172A] font-semibold mb-1">
             {tab === 'pending' ? 'Nenhuma divisão pendente' : 'Nenhuma divisão quitada ainda'}
           </p>
           {tab === 'pending' && (
-            <button onClick={() => setShowCreate(true)} className="btn-primary text-sm mt-3">
+            <button onClick={() => setShowCreate(true)} className="btn-primary mt-3">
               Registrar primeira divisão
             </button>
           )}

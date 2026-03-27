@@ -16,9 +16,9 @@ export function ChartCard({ title, subtitle, children, action }: ChartCardProps)
     <div className="card space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-semibold text-[#e8e6e1]">{title}</p>
+          <p className="text-sm font-semibold text-[#0F172A]">{title}</p>
           {subtitle && (
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(200,198,190,0.4)' }}>{subtitle}</p>
+            <p className="text-xs mt-0.5 text-[#6B7280]">{subtitle}</p>
           )}
         </div>
         {action}
@@ -41,7 +41,7 @@ interface DataTableProps {
 export function DataTable({ columns, rows, formatValue }: DataTableProps) {
   if (rows.length === 0) {
     return (
-      <p className="text-xs text-center py-4" style={{ color: 'rgba(200,198,190,0.3)' }}>
+      <p className="text-xs text-center py-4 text-[#6B7280]">
         Sem dados para exibir
       </p>
     )
@@ -51,12 +51,11 @@ export function DataTable({ columns, rows, formatValue }: DataTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr style={{ borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <tr style={{ borderBottom: '1px solid #D1D5DB' }}>
             {columns.map(col => (
               <th
                 key={col.key}
-                className={`pb-2 font-medium ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                style={{ color: 'rgba(200,198,190,0.4)' }}
+                className={`pb-2 font-medium ${col.align === 'right' ? 'text-right' : 'text-left'} text-[#6B7280]`}
               >
                 {col.label}
               </th>
@@ -67,13 +66,12 @@ export function DataTable({ columns, rows, formatValue }: DataTableProps) {
           {rows.map((row, i) => (
             <tr
               key={i}
-              style={{ borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}
+              style={{ borderBottom: '1px solid rgba(209,213,219,0.5)' }}
             >
               {columns.map(col => (
                 <td
                   key={col.key}
-                  className={`py-1.5 ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                  style={{ color: '#c8c6be' }}
+                  className={`py-1.5 text-[#0F172A] ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                 >
                   {formatValue
                     ? formatValue(col.key, row[col.key] ?? null)

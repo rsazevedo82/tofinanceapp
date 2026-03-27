@@ -23,7 +23,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ size: st
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#1c1c1a',
+          background: '#FF7F50',
           borderRadius: radius,
         }}
       >
@@ -35,13 +35,13 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ size: st
             width: innerSize,
             height: innerSize,
             borderRadius: innerRadius,
-            background: 'rgba(129,140,248,0.12)',
-            border: '2px solid rgba(129,140,248,0.28)',
+            background: 'rgba(255,255,255,0.25)',
+            border: '2px solid rgba(255,255,255,0.4)',
           }}
         >
           <span
             style={{
-              color: '#818cf8',
+              color: '#ffffff',
               fontSize,
               fontWeight: 700,
               fontFamily: 'sans-serif',

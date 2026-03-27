@@ -14,13 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ['finance', 'productivity'],
     icons: [
       {
-        src: '/api/icons/192',
+        src: '/n2r-simbolo-principal-claro-V1.png',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'maskable',
       },
       {
-        src: '/api/icons/512',
+        src: '/n2r-simbolo-principal-claro-V1.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',

@@ -33,10 +33,10 @@ export default function CasalPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8 md:py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Perfil de Casal</h1>
-        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+    <div className="max-w-2xl mx-auto px-6 py-10 md:py-12">
+      <div className="mb-10">
+        <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Perfil de Casal</h1>
+        <p className="text-sm mt-1 text-[#6B7280]">
           Conectem-se e organizem a vida financeira juntos
         </p>
       </div>
@@ -80,18 +80,17 @@ function PendingInviteCard({ notification }: { notification: Notification }) {
 
   return (
     <div className="card mb-6"
-      style={{ border: '0.5px solid rgba(129,140,248,0.3)', background: 'rgba(129,140,248,0.04)' }}>
+      style={{ border: '1px solid rgba(255,127,80,0.3)', background: 'rgba(255,127,80,0.04)' }}>
       <div className="flex items-start gap-3 mb-4">
         <span className="text-2xl">💌</span>
         <div>
-          <p className="text-sm font-semibold text-[#e8e6e1]">{notification.title}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{notification.body}</p>
+          <p className="text-sm font-bold text-[#0F172A]">{notification.title}</p>
+          <p className="text-xs mt-0.5 text-[#6B7280]">{notification.body}</p>
         </div>
       </div>
 
       {error && (
-        <p className="text-xs px-3 py-2 rounded-lg mb-3"
-          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+        <p className="text-sm px-3 py-2 rounded-lg mb-3 bg-red-50 border border-red-100 text-red-600">
           {error}
         </p>
       )}
@@ -101,7 +100,6 @@ function PendingInviteCard({ notification }: { notification: Notification }) {
           onClick={() => respond('accept')}
           disabled={respondInvite.isPending}
           className="btn-primary text-xs flex-1 justify-center py-2.5"
-          style={{ background: 'rgba(110,231,183,0.12)', borderColor: 'rgba(110,231,183,0.3)', color: '#6ee7b7' }}
         >
           {respondInvite.isPending ? 'Processando...' : 'Aceitar convite 💑'}
         </button>
@@ -148,14 +146,14 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
 
   return (
     <div className="card mb-6"
-      style={{ border: '0.5px solid rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.03)' }}>
+      style={{ border: '1px solid rgba(245,158,11,0.25)', background: 'rgba(245,158,11,0.04)' }}>
 
       {/* Cabeçalho */}
       <div className="flex items-start gap-3 mb-4">
         <span className="text-2xl">📨</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#e8e6e1]">Convite enviado</p>
-          <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm font-bold text-[#0F172A]">Convite enviado</p>
+          <p className="text-xs mt-0.5 truncate text-[#6B7280]">
             Aguardando {invitation.invitee_email} aceitar o convite
           </p>
         </div>
@@ -164,18 +162,17 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
       {/* Detalhe de expiração */}
       <div className="px-3 py-2.5 rounded-lg mb-4 flex items-center gap-2"
         style={{
-          background: isExpired ? 'rgba(252,165,165,0.05)' : 'rgba(255,255,255,0.03)',
-          border:     isExpired ? '0.5px solid rgba(252,165,165,0.15)' : '0.5px solid rgba(255,255,255,0.06)',
+          background: isExpired ? 'rgba(239,68,68,0.06)' : '#F3F4F6',
+          border:     isExpired ? '1px solid rgba(239,68,68,0.15)' : '1px solid #D1D5DB',
         }}>
-        <span className="text-xs" style={{ color: isExpired ? '#fca5a5' : 'var(--text-muted)' }}>
+        <span className="text-xs" style={{ color: isExpired ? '#dc2626' : '#6B7280' }}>
           {isExpired ? '⚠️ Expirado em' : '⏱ Expira em'}
         </span>
-        <span className="text-xs font-medium" style={{ color: isExpired ? '#fca5a5' : '#e8e6e1' }}>
+        <span className="text-xs font-semibold" style={{ color: isExpired ? '#dc2626' : '#0F172A' }}>
           {expiryDate}
         </span>
         {isExpired && (
-          <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded"
-            style={{ background: 'rgba(252,165,165,0.12)', color: '#fca5a5' }}>
+          <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-50 text-red-600">
             Reenvie para renovar
           </span>
         )}
@@ -183,11 +180,11 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
 
       {/* Feedback */}
       {feedback && (
-        <p className="text-xs px-3 py-2 rounded-lg mb-3"
+        <p className="text-sm px-3 py-2 rounded-lg mb-3 border"
           style={{
-            background: feedback.type === 'success'
-              ? 'rgba(110,231,183,0.08)' : 'rgba(252,165,165,0.08)',
-            color: feedback.type === 'success' ? '#6ee7b7' : '#fca5a5',
+            background: feedback.type === 'success' ? 'rgba(45,212,191,0.08)' : 'rgba(239,68,68,0.06)',
+            borderColor: feedback.type === 'success' ? 'rgba(45,212,191,0.2)' : 'rgba(239,68,68,0.15)',
+            color: feedback.type === 'success' ? '#0d9488' : '#dc2626',
           }}>
           {feedback.message}
         </p>
@@ -199,7 +196,7 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
           onClick={handleResend}
           disabled={isBusy}
           className="btn-primary text-xs flex-1 justify-center py-2.5"
-          style={{ background: 'rgba(251,191,36,0.1)', borderColor: 'rgba(251,191,36,0.25)', color: '#fbbf24' }}
+          style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706' }}
         >
           {resendInvite.isPending ? 'Reenviando...' : 'Reenviar convite'}
         </button>
@@ -238,8 +235,8 @@ function InviteForm() {
       <div className="flex items-center gap-3 mb-6">
         <span className="text-3xl">💑</span>
         <div>
-          <p className="text-sm font-semibold text-[#e8e6e1]">Conectar com seu parceiro</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm font-bold text-[#0F172A]">Conectar com seu parceiro</p>
+          <p className="text-xs mt-0.5 text-[#6B7280]">
             Informe o e-mail do seu parceiro para enviar um convite
           </p>
         </div>
@@ -260,15 +257,14 @@ function InviteForm() {
         </div>
 
         {error && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
             {error}
           </p>
         )}
 
         {success && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(110,231,183,0.08)', color: '#6ee7b7' }}>
+          <p className="text-sm px-3 py-2 rounded-lg border"
+            style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.2)', color: '#0d9488' }}>
             Convite enviado. Agora é só aguardar seu parceiro aceitar.
           </p>
         )}
@@ -282,7 +278,7 @@ function InviteForm() {
         </button>
       </form>
 
-      <p className="text-[11px] mt-4" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-xs mt-4 text-[#6B7280]">
         Se o email não tiver cadastro, será criada uma conta automaticamente e um e-mail de convite será enviado.
       </p>
     </div>
@@ -301,28 +297,28 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
   return (
     <div className="space-y-4">
       <div className="card"
-        style={{ border: '0.5px solid rgba(110,231,183,0.2)', background: 'rgba(110,231,183,0.03)' }}>
+        style={{ border: '1px solid rgba(45,212,191,0.25)', background: 'rgba(45,212,191,0.03)' }}>
         <div className="flex items-center gap-3 mb-4">
           <span className="text-3xl">💑</span>
           <div>
-            <p className="text-sm font-semibold text-[#e8e6e1]">Vocês já estão conectados 🎉</p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm font-bold text-[#0F172A]">Vocês já estão conectados 🎉</p>
+            <p className="text-xs mt-0.5 text-[#6B7280]">
               Conectado desde {linkedDate}
             </p>
           </div>
         </div>
 
-        <div className="px-3 py-3 rounded-xl flex items-center gap-3"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)' }}>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold"
-            style={{ background: 'rgba(129,140,248,0.15)', color: '#818cf8' }}>
+        <div className="px-3 py-3 rounded-xl flex items-center gap-3 bg-[#F3F4F6]"
+          style={{ border: '1px solid #D1D5DB' }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black"
+            style={{ background: 'rgba(255,127,80,0.12)', color: '#FF7F50' }}>
             {couple.partner?.name?.charAt(0).toUpperCase() ?? '?'}
           </div>
           <div>
-            <p className="text-sm font-medium text-[#e8e6e1]">
+            <p className="text-sm font-semibold text-[#0F172A]">
               {couple.partner?.name ?? 'Parceiro'}
             </p>
-            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Parceiro vinculado</p>
+            <p className="text-xs text-[#6B7280]">Parceiro vinculado</p>
           </div>
         </div>
       </div>
@@ -333,8 +329,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
       ) : (
         <button
           onClick={() => setShowUnlink(true)}
-          className="w-full py-2.5 rounded-xl text-sm transition-colors"
-          style={{ color: 'rgba(248,113,113,0.6)', border: '0.5px solid rgba(248,113,113,0.2)' }}
+          className="w-full py-2.5 rounded-xl text-sm transition-colors text-red-500 border border-red-100 hover:bg-red-50"
         >
           Encerrar vínculo do casal
         </button>
@@ -360,13 +355,13 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
 
   return (
     <div className="card"
-      style={{ border: '0.5px solid rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.03)' }}>
-      <p className="text-sm font-semibold text-[#f87171] mb-1">Encerrar vínculo do casal</p>
-      <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-        Ao encerrar o vínculo, vocês deixarão de compartilhar dados e objetivos. As seguintes ações serão executadas <strong className="text-[#f0ede8]">permanentemente</strong>:
+      style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.02)' }}>
+      <p className="text-sm font-bold text-red-600 mb-1">Encerrar vínculo do casal</p>
+      <p className="text-xs mb-4 text-[#6B7280]">
+        Ao encerrar o vínculo, vocês deixarão de compartilhar dados e objetivos. As seguintes ações serão executadas <strong className="text-[#0F172A]">permanentemente</strong>:
       </p>
 
-      <ul className="text-xs space-y-1.5 mb-5" style={{ color: 'rgba(252,165,165,0.7)' }}>
+      <ul className="text-xs space-y-1.5 mb-5 text-red-500">
         <li>• Os objetivos de casal serão excluídos</li>
         <li>• A visão compartilhada dos dados será encerrada</li>
         <li>• {partnerName} será notificado</li>
@@ -388,8 +383,7 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
         </div>
 
         {error && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
             {error}
           </p>
         )}
@@ -398,8 +392,8 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
           <button
             type="submit"
             disabled={unlinkCouple.isPending || !password}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '0.5px solid rgba(239,68,68,0.3)' }}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+            style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }}
           >
             {unlinkCouple.isPending ? 'Encerrando...' : 'Confirmar encerramento'}
           </button>

@@ -28,11 +28,6 @@ export default function ObjetivosPage() {
   const createGoal                          = useCreateGoal()
   const updateGoal                          = useUpdateGoal(editing?.id ?? '')
 
-  // Usuário logado — obtido via supabase mas simplificado aqui como undefined
-  // O GoalCard recebe ownUserId para controle de permissão de remoção/edição
-  // O user.id é passado pelo servidor, mas no client usamos uma abordagem mais simples:
-  // a API já valida RLS — o botão de editar/deletar é controlado pelo campo user_id do goal
-
   const activeGoals    = goals.filter(g => g.status === 'active')
   const completedGoals = goals.filter(g => g.status === 'completed')
 
@@ -50,34 +45,34 @@ export default function ObjetivosPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Seus objetivos', 'Objetivos de vocês')}
           </h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-1 text-[#6B7280]">
             {goals.length} {goals.length === 1 ? 'meta' : 'metas'} ·{' '}
             {formatCurrency(totalCurrent)} de {formatCurrency(totalTarget)} acumulados
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span> Nova meta
+        <button onClick={() => setShowCreate(true)} className="btn-primary">
+          <span className="text-lg leading-none">+</span> Nova meta
         </button>
       </div>
 
       {/* Abas */}
-      <div className="flex gap-1 mb-6 p-1 rounded-lg bg-white/5 w-fit">
+      <div className="flex gap-1 mb-6 p-1 rounded-lg bg-[#F3F4F6] w-fit">
         {(['individual', 'couple'] as Scope[]).map(s => (
           <button
             key={s}
             onClick={() => setScope(s)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               scope === s
-                ? 'bg-indigo-500 text-white'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-[#FF7F50] text-white shadow-sm'
+                : 'text-[#6B7280] hover:text-[#0F172A]'
             }`}
           >
             {s === 'individual' ? '👤 Meus objetivos' : '💑 Do casal'}
@@ -89,10 +84,10 @@ export default function ObjetivosPage() {
       {scope === 'couple' && !couple && (
         <div className="card p-6 text-center">
           <p className="text-2xl mb-2">💑</p>
-          <p className="text-[#f0ede8] font-medium mb-1">Nenhum perfil de casal vinculado</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[#0F172A] font-semibold mb-1">Nenhum perfil de casal vinculado</p>
+          <p className="text-sm text-[#6B7280]">
             Vincule-se ao seu parceiro em{' '}
-            <a href="/casal" className="text-indigo-400 hover:underline">Perfil Casal</a>{' '}
+            <a href="/casal" className="text-[#FF7F50] hover:underline font-medium">Perfil Casal</a>{' '}
             para criar objetivos compartilhados.
           </p>
         </div>
@@ -108,7 +103,7 @@ export default function ObjetivosPage() {
       {/* Metas ativas */}
       {!isLoading && activeGoals.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-3 text-[#6B7280]">
             Em andamento
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,7 +121,7 @@ export default function ObjetivosPage() {
       {/* Metas concluídas */}
       {!isLoading && completedGoals.length > 0 && (
         <section>
-          <h2 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-3 text-[#6B7280]">
             Concluídas 🎉
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -145,13 +140,13 @@ export default function ObjetivosPage() {
       {!isLoading && goals.length === 0 && !(scope === 'couple' && !couple) && (
         <div className="card p-10 text-center">
           <p className="text-4xl mb-3">🎯</p>
-          <p className="text-[#f0ede8] font-medium mb-1">
+          <p className="text-[#0F172A] font-semibold mb-1">
             {scope === 'individual' ? 'Você ainda não criou nenhum objetivo' : 'Vocês ainda não definiram um objetivo em conjunto'}
           </p>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mb-4 text-[#6B7280]">
             {c(isCouple, 'Defina um objetivo e acompanhe seu progresso', 'Definam um objetivo e acompanhem juntos')}
           </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-sm">
+          <button onClick={() => setShowCreate(true)} className="btn-primary">
             Criar primeiro objetivo
           </button>
         </div>

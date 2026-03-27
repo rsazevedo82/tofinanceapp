@@ -1,4 +1,4 @@
-﻿// app/(dashboard)/cartoes/page.tsx
+// app/(dashboard)/cartoes/page.tsx
 'use client'
 
 import { useState }          from 'react'
@@ -40,14 +40,14 @@ function DeleteCardModal({
   return (
     <div className="space-y-4">
       {/* Aviso */}
-      <div className="rounded-lg px-4 py-3 space-y-1"
-        style={{ background: 'rgba(248,113,113,0.08)', border: '0.5px solid rgba(248,113,113,0.25)' }}>
-        <p className="text-sm font-medium text-red-400">⚠️ Ação irreversível</p>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Ao excluir o cartão <strong className="text-[#f0ede8]">{card.name}</strong>,
+      <div className="rounded-lg px-4 py-3 space-y-1 bg-red-50"
+        style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
+        <p className="text-sm font-semibold text-red-600">⚠️ Ação irreversível</p>
+        <p className="text-sm text-[#6B7280]">
+          Ao excluir o cartão <strong className="text-[#0F172A]">{card.name}</strong>,
           os seguintes dados serão removidos permanentemente:
         </p>
-        <ul className="text-sm space-y-0.5 mt-2" style={{ color: 'var(--text-muted)' }}>
+        <ul className="text-sm space-y-0.5 mt-2 text-[#6B7280]">
           <li>• Todas as transações vinculadas ao cartão</li>
           <li>• Todas as faturas e parcelamentos</li>
           <li>• O cadastro do cartão</li>
@@ -56,30 +56,34 @@ function DeleteCardModal({
 
       {/* Senha */}
       <div>
-        <label className="label-sm">Confirme sua senha para prosseguir</label>
+        <label className="label">Confirme sua senha para prosseguir</label>
         <input
           type="password"
-          className="input-field"
+          className="input"
           placeholder="Sua senha de acesso"
           value={password}
           onChange={e => setPassword(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleConfirm()}
           autoFocus
         />
-        {error && <p className="error-msg mt-1">{error}</p>}
+        {error && (
+          <p className="text-sm mt-1 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+            {error}
+          </p>
+        )}
       </div>
 
       {/* Ações */}
       <div className="flex gap-3 pt-1">
-        <button onClick={onClose} className="btn-secondary flex-1" disabled={deleteAccount.isPending}>
+        <button onClick={onClose} className="btn-ghost flex-1" disabled={deleteAccount.isPending}>
           Cancelar
         </button>
         <button
           onClick={handleConfirm}
           disabled={deleteAccount.isPending || !password}
           className="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors"
-          style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171',
-                   border: '0.5px solid rgba(248,113,113,0.3)' }}
+          style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626',
+                   border: '1px solid rgba(239,68,68,0.2)' }}
         >
           {deleteAccount.isPending ? 'Excluindo…' : 'Excluir cartão'}
         </button>
@@ -117,18 +121,18 @@ export default function CartoesPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Cartões</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Cartões</h1>
+          <p className="text-sm mt-1 text-[#6B7280]">
             {creditCards.length} cartão{creditCards.length !== 1 ? 'ões' : ''} ativo{creditCards.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span>
+        <button onClick={() => setShowCreate(true)} className="btn-primary">
+          <span className="text-lg leading-none">+</span>
           Novo cartão
         </button>
       </div>
@@ -142,14 +146,14 @@ export default function CartoesPage() {
       ) : creditCards.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl mb-4">💳</p>
-          <p className="text-sm font-medium text-[#e8e6e1] mb-1">
+          <p className="text-sm font-semibold text-[#0F172A] mb-1">
             {c(isCouple, 'Você ainda não cadastrou nenhum cartão', 'Vocês ainda não cadastraram nenhum cartão')}
           </p>
-          <p className="text-xs mb-6" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          <p className="text-xs mb-6 text-[#6B7280]">
             {c(isCouple, 'Adicione seu primeiro cartão', 'Adicionem o primeiro cartão de vocês')}
           </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
-            <span className="opacity-60">+</span>
+          <button onClick={() => setShowCreate(true)} className="btn-primary mx-auto">
+            <span className="text-lg leading-none">+</span>
             Adicionar cartão
           </button>
         </div>
@@ -229,7 +233,7 @@ function CardItem({
   return (
     <div
       onClick={onClick}
-      className="card cursor-pointer transition-all duration-150 hover:border-white/[0.12]"
+      className="card cursor-pointer transition-all duration-150 hover:border-[#D1D5DB]"
       style={{ borderColor: card.color ? `${card.color}30` : undefined }}
     >
       {/* Header */}
@@ -237,9 +241,9 @@ function CardItem({
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-lg">💳</span>
-            <p className="text-base font-semibold text-[#f0ede8]">{card.name}</p>
+            <p className="text-base font-bold text-[#0F172A]">{card.name}</p>
           </div>
-          <p className="text-xs" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          <p className="text-xs text-[#6B7280]">
             Fecha dia {card.closing_day} · Vence dia {card.due_day}
           </p>
         </div>
@@ -249,7 +253,7 @@ function CardItem({
           <button
             onClick={onDelete}
             className="text-[10px] px-2 py-1 rounded-lg transition-colors"
-            style={{ color: 'rgba(248,113,113,0.6)', background: 'rgba(248,113,113,0.06)' }}
+            style={{ color: '#dc2626', background: 'rgba(239,68,68,0.06)' }}
           >
             Excluir
           </button>
@@ -258,15 +262,15 @@ function CardItem({
             onClick={onEdit}
             className="text-[10px] px-2 py-1 rounded-lg transition-colors"
             style={{
-              color:      'rgba(200,198,190,0.4)',
-              background: 'rgba(255,255,255,0.04)',
+              color:      '#6B7280',
+              background: 'rgba(107,114,128,0.08)',
             }}
           >
             Editar
           </button>
           <span
             className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            style={{ color: 'rgba(129,140,248,0.8)', background: 'rgba(129,140,248,0.1)' }}
+            style={{ color: '#FF7F50', background: 'rgba(255,127,80,0.1)' }}
           >
             Ver fatura →
           </span>
@@ -276,44 +280,40 @@ function CardItem({
       {/* Valores */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-medium mb-1"
-            style={{ color: 'rgba(200,198,190,0.35)' }}>Limite</p>
-          <p className="text-sm font-semibold text-[#f0ede8]">
+          <p className="text-[10px] uppercase tracking-widest font-semibold mb-1 text-[#6B7280]">Limite</p>
+          <p className="text-sm font-bold text-[#0F172A]">
             {formatCurrency(card.credit_limit ?? 0)}
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-medium mb-1"
-            style={{ color: 'rgba(200,198,190,0.35)' }}>Fatura aberta</p>
-          <p className="text-sm font-semibold text-[#fbbf24]">
+          <p className="text-[10px] uppercase tracking-widest font-semibold mb-1 text-[#6B7280]">Fatura aberta</p>
+          <p className="text-sm font-bold" style={{ color: '#F59E0B' }}>
             {formatCurrency(Number(openInvoice?.total_amount ?? 0))}
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-medium mb-1"
-            style={{ color: 'rgba(200,198,190,0.35)' }}>Disponivel</p>
-          <p className="text-sm font-semibold text-[#6ee7b7]">
+          <p className="text-[10px] uppercase tracking-widest font-semibold mb-1 text-[#6B7280]">Disponível</p>
+          <p className="text-sm font-bold" style={{ color: '#2DD4BF' }}>
             {formatCurrency(available)}
           </p>
         </div>
       </div>
 
       {/* Barra de uso */}
-      <div className="h-1 rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.06)' }}>
+      <div className="h-1.5 rounded-full overflow-hidden bg-[#E5E7EB]">
         <div
           className="h-full rounded-full transition-all duration-300"
           style={{
             width:      `${usedPercent}%`,
             background: usedPercent > 80
-              ? '#f87171'
+              ? '#ef4444'
               : usedPercent > 50
-              ? '#fbbf24'
-              : card.color ?? '#6ee7b7',
+              ? '#F59E0B'
+              : card.color ?? '#2DD4BF',
           }}
         />
       </div>
-      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(200,198,190,0.3)' }}>
+      <p className="text-[10px] mt-1.5 text-[#6B7280]">
         {usedPercent.toFixed(0)}% do limite utilizado
       </p>
 
@@ -321,12 +321,12 @@ function CardItem({
       {closedInvoice && (
         <div
           className="mt-3 px-3 py-2 rounded-lg flex items-center justify-between"
-          style={{ background: 'rgba(251,146,60,0.08)', border: '0.5px solid rgba(251,146,60,0.2)' }}
+          style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
         >
-          <p className="text-xs" style={{ color: '#fb923c' }}>
+          <p className="text-xs" style={{ color: '#d97706' }}>
             Fatura {closedInvoice.reference_month} aguardando pagamento
           </p>
-          <p className="text-xs font-semibold" style={{ color: '#fb923c' }}>
+          <p className="text-xs font-semibold" style={{ color: '#d97706' }}>
             {formatCurrency(Number(closedInvoice.total_amount))}
           </p>
         </div>

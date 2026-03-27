@@ -141,9 +141,9 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
       {/* Campos especificos de cartao */}
       {isCreditCard && (
         <div className="space-y-3 p-3 rounded-xl"
-          style={{ background: 'rgba(129,140,248,0.06)', border: '0.5px solid rgba(129,140,248,0.2)' }}>
+          style={{ background: 'rgba(255,127,80,0.05)', border: '1px solid rgba(255,127,80,0.2)' }}>
 
-          <p className="text-xs font-medium" style={{ color: '#818cf8' }}>
+          <p className="text-xs font-medium" style={{ color: '#FF7F50' }}>
             Configurações do cartão
           </p>
 
@@ -198,7 +198,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             className="input"
             placeholder="0,00 - deixe vazio se não souber"
           />
-          <p className="mt-1 text-[11px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          <p className="mt-1 text-[11px] text-[#6B7280]">
             Será registrado como uma transação de receita inicial.
           </p>
         </div>
@@ -226,8 +226,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
       </div>
 
       {displayError && (
-        <p className="text-xs px-3 py-2 rounded-lg"
-          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+        <p className="text-xs px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
           {displayError}
         </p>
       )}
@@ -249,7 +248,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
               confirmDelete
                 ? 'bg-red-500 text-white'
-                : 'bg-transparent text-red-400 border border-red-500/30'
+                : 'bg-transparent text-red-500 border border-red-200 hover:bg-red-50'
             }`}
           >
             {deleteAccount.isPending ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusão' : 'Excluir conta'}
@@ -258,8 +257,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="w-full py-2 text-xs"
-              style={{ color: 'rgba(200,198,190,0.35)' }}
+              className="w-full py-2 text-xs text-[#6B7280] hover:text-[#0F172A] transition-colors"
             >
               Cancelar exclusão
             </button>

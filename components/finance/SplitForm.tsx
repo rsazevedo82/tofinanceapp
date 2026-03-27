@@ -95,12 +95,12 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
               step={1}
               value={field.value}
               onChange={e => field.onChange(Number(e.target.value))}
-              className="w-full accent-indigo-400 mt-2"
+              className="w-full accent-[#FF7F50] mt-2"
             />
           )}
         />
         <div className="flex justify-between text-xs mt-2">
-          <span className="text-[#f0ede8] font-medium">
+          <span className="text-[#0F172A] font-medium">
             Você: {payerSharePercent}% ({formatCurrency(payerAmount)})
           </span>
           <span style={{ color: 'var(--text-muted)' }}>
@@ -115,7 +115,7 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
             const el = document.querySelector('input[type=range]') as HTMLInputElement
             if (el) { el.value = '50'; el.dispatchEvent(new Event('input', { bubbles: true })) }
           }}
-          className="text-xs text-indigo-400 hover:underline mt-1"
+          className="text-xs text-[#FF7F50] hover:underline mt-1"
         >
           Dividir igualmente (50/50)
         </button>
@@ -124,11 +124,11 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
 
       {/* Preview */}
       {totalAmount > 0 && (
-        <div className="rounded-lg bg-white/5 p-3 text-sm space-y-1">
-          <p style={{ color: 'var(--text-muted)' }}>Resumo</p>
-          <p className="text-[#f0ede8]">
+        <div className="rounded-lg bg-[#F3F4F6] border border-[#D1D5DB] p-3 text-sm space-y-1">
+          <p className="text-[#6B7280]">Resumo</p>
+          <p className="text-[#0F172A]">
             {partnerName} tem um valor pendente com você de{' '}
-            <span className="text-amber-400 font-semibold">{formatCurrency(partnerAmount)}</span>
+            <span className="text-[#F59E0B] font-semibold">{formatCurrency(partnerAmount)}</span>
           </p>
         </div>
       )}

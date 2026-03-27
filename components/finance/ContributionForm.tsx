@@ -24,7 +24,7 @@ export function ContributionForm({ goalTitle, onSave, onCancel, loading }: Props
   return (
     <form onSubmit={handleSubmit(onSave)} className="space-y-4">
       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-        Registrar aporte em <span className="text-[#f0ede8] font-medium">{goalTitle}</span>
+        Registrar aporte em <span className="text-[#0F172A] font-medium">{goalTitle}</span>
       </p>
 
       <div>

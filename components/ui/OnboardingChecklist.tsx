@@ -89,12 +89,12 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
   return (
     <div
       className="card mb-6"
-      style={{ border: '0.5px solid rgba(129,140,248,0.25)', background: 'rgba(129,140,248,0.04)' }}
+      style={{ border: '1px solid rgba(255,127,80,0.2)', background: 'rgba(255,127,80,0.03)' }}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-sm font-semibold text-[#e8e6e1]">
+          <p className="text-sm font-semibold text-[#0F172A]">
             Primeiros passos 👋
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -114,13 +114,13 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
       {/* Barra de progresso */}
       <div
         className="h-1 rounded-full mb-4 overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.06)' }}
+        style={{ background: '#E5E7EB' }}
       >
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{
             width:      `${(completedCount / steps.length) * 100}%`,
-            background: 'rgba(129,140,248,0.7)',
+            background: '#FF7F50',
           }}
         />
       </div>
@@ -133,12 +133,12 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
             style={{
               background: step.done
-                ? 'rgba(110,231,183,0.05)'
-                : 'rgba(255,255,255,0.02)',
-              border: '0.5px solid',
+                ? 'rgba(45,212,191,0.05)'
+                : '#F9FAFB',
+              border: '1px solid',
               borderColor: step.done
-                ? 'rgba(110,231,183,0.15)'
-                : 'rgba(255,255,255,0.05)',
+                ? 'rgba(45,212,191,0.2)'
+                : '#E5E7EB',
             }}
           >
             {/* Ícone status */}
@@ -146,9 +146,9 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
               className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] shrink-0"
               style={{
                 background: step.done
-                  ? 'rgba(110,231,183,0.2)'
-                  : 'rgba(255,255,255,0.06)',
-                color: step.done ? '#6ee7b7' : 'rgba(200,198,190,0.3)',
+                  ? 'rgba(45,212,191,0.15)'
+                  : '#E5E7EB',
+                color: step.done ? '#0d9488' : '#9CA3AF',
               }}
             >
               {step.done ? '✓' : '○'}
@@ -159,7 +159,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
               <p
                 className="text-xs font-medium leading-tight"
                 style={{
-                  color:          step.done ? '#6ee7b7' : '#e8e6e1',
+                  color:          step.done ? '#0d9488' : '#0F172A',
                   textDecoration: step.done ? 'line-through' : 'none',
                   opacity:        step.done ? 0.7 : 1,
                 }}
@@ -187,9 +187,9 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
                 onClick={step.action}
                 className="text-[11px] px-2.5 py-1 rounded-lg shrink-0 transition-colors"
                 style={{
-                  background:  'rgba(129,140,248,0.12)',
-                  border:      '0.5px solid rgba(129,140,248,0.25)',
-                  color:       '#818cf8',
+                  background:  'rgba(255,127,80,0.1)',
+                  border:      '1px solid rgba(255,127,80,0.25)',
+                  color:       '#FF7F50',
                 }}
               >
                 {step.actionLabel}

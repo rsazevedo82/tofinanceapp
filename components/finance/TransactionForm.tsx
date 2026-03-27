@@ -56,7 +56,7 @@ function CustomSelect({
         onClick={() => !disabled && setOpen(o => !o)}
         className="input w-full text-left flex items-center justify-between"
         style={{
-          color:   selected ? '#e8e6e1' : 'rgba(200,198,190,0.35)',
+          color:   selected ? '#0F172A' : '#94A3B8',
           opacity: disabled ? 0.5 : 1,
           cursor:  disabled ? 'not-allowed' : 'pointer',
         }}
@@ -69,12 +69,11 @@ function CustomSelect({
 
       {open && !disabled && (
         <div
-          className="absolute z-50 w-full mt-1 rounded-xl shadow-xl"
+          className="absolute z-50 w-full mt-1 rounded-xl shadow-xl bg-white"
           style={{
-            background: '#1c1c1a',
-            border:     '0.5px solid rgba(255,255,255,0.1)',
-            maxHeight:  '220px',
-            overflowY:  'auto',
+            border:    '1px solid #D1D5DB',
+            maxHeight: '220px',
+            overflowY: 'auto',
           }}
         >
           {options.map(opt => (
@@ -84,11 +83,11 @@ function CustomSelect({
               onClick={() => { onChange(opt.value); setOpen(false) }}
               className="w-full text-left px-3 py-2 text-sm transition-colors"
               style={{
-                color:      opt.value === value ? '#e8e6e1' : '#9ca3af',
-                background: opt.value === value ? 'rgba(255,255,255,0.06)' : 'transparent',
+                color:      opt.value === value ? '#0F172A' : '#6B7280',
+                background: opt.value === value ? 'rgba(255,127,80,0.06)' : 'transparent',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
-              onMouseLeave={e => (e.currentTarget.style.background = opt.value === value ? 'rgba(255,255,255,0.06)' : 'transparent')}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,127,80,0.04)')}
+              onMouseLeave={e => (e.currentTarget.style.background = opt.value === value ? 'rgba(255,127,80,0.06)' : 'transparent')}
             >
               {opt.label}
             </button>
@@ -104,9 +103,9 @@ function CustomSelect({
 const INSTALLMENT_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 const TYPE_CONFIG = {
-  expense:  { label: '↓ Despesa',       bg: 'rgba(252,165,165,0.15)', color: '#fca5a5', border: 'rgba(252,165,165,0.3)' },
-  income:   { label: '↑ Receita',       bg: 'rgba(110,231,183,0.15)', color: '#6ee7b7', border: 'rgba(110,231,183,0.3)' },
-  transfer: { label: '⇄ Transferência', bg: 'rgba(129,140,248,0.15)', color: '#818cf8', border: 'rgba(129,140,248,0.3)' },
+  expense:  { label: '↓ Despesa',       bg: 'rgba(255,127,80,0.12)',  color: '#FF7F50', border: 'rgba(255,127,80,0.3)'  },
+  income:   { label: '↑ Receita',       bg: 'rgba(45,212,191,0.12)',  color: '#2DD4BF', border: 'rgba(45,212,191,0.3)'  },
+  transfer: { label: '⇄ Transferência', bg: 'rgba(107,114,128,0.1)',  color: '#6B7280', border: 'rgba(107,114,128,0.25)' },
 }
 
 export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
@@ -249,9 +248,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
               onClick={() => { setValue('type', t); setValue('category_id', '') }}
               className="py-2 rounded-xl text-xs font-medium transition-all"
               style={{
-                background: sel ? c.bg      : 'rgba(255,255,255,0.03)',
-                color:      sel ? c.color   : 'rgba(200,198,190,0.4)',
-                border:     sel ? `0.5px solid ${c.border}` : '0.5px solid rgba(255,255,255,0.06)',
+                background: sel ? c.bg    : '#F3F4F6',
+                color:      sel ? c.color : '#6B7280',
+                border:     sel ? `1px solid ${c.border}` : '1px solid transparent',
               }}
             >
               {c.label}
@@ -333,7 +332,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             />
           )}
           {effectiveInstallments > 1 && watchedAmount > 0 && (
-            <p className="mt-1 text-[11px]" style={{ color: 'rgba(200,198,190,0.4)' }}>
+            <p className="mt-1 text-[11px] text-[#6B7280]">
               {effectiveInstallments}x de R$ {(watchedAmount / effectiveInstallments).toFixed(2)} · Total R$ {watchedAmount.toFixed(2)}
             </p>
           )}
@@ -373,8 +372,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       <button
         type="button"
         onClick={() => setShowExtras(v => !v)}
-        className="w-full text-left text-[11px] py-1 transition-colors flex items-center gap-1"
-        style={{ color: 'rgba(200,198,190,0.35)' }}
+        className="w-full text-left text-[11px] py-1 transition-colors flex items-center gap-1 text-[#6B7280]"
       >
         <span>{showExtras ? '▲' : '▼'}</span>
         {showExtras ? 'Menos opções' : 'Mais opções (status, observações)'}
@@ -412,8 +410,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       )}
 
       {displayError && (
-        <p className="text-xs px-3 py-2 rounded-lg"
-          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+        <p className="text-xs px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
           {displayError}
         </p>
       )}
@@ -422,11 +419,6 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
         type="submit"
         className="btn-primary w-full justify-center py-2.5 mt-1"
         disabled={isSubmitting}
-        style={{
-          background:  cfg.bg,
-          color:       cfg.color,
-          borderColor: cfg.border,
-        }}
       >
         {isSubmitting
           ? 'Salvando...'

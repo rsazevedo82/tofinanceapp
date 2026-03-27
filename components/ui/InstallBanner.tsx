@@ -46,27 +46,27 @@ export function InstallBanner() {
       <div
         className="rounded-2xl px-4 py-3 flex items-center gap-3 shadow-xl"
         style={{
-          background: 'rgba(28,28,26,0.97)',
-          border: '0.5px solid rgba(255,255,255,0.1)',
+          background: 'rgba(255,255,255,0.97)',
+          border: '1px solid #D1D5DB',
           backdropFilter: 'blur(12px)',
         }}
       >
         {/* Ícone do app */}
         <div
           className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center text-sm font-bold"
-          style={{ background: 'rgba(129,140,248,0.12)', color: '#818cf8' }}
+          style={{ background: 'rgba(255,127,80,0.12)', color: '#FF7F50' }}
         >
           N2
         </div>
 
         {/* Texto */}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-[#f0ede8] leading-snug">
+          <p className="text-xs font-semibold text-[#0F172A] leading-snug">
             Instale o Nós 2 Reais
           </p>
-          <p className="text-[11px] mt-0.5 leading-snug" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[11px] mt-0.5 leading-snug text-[#6B7280]">
             Toque em <Share size={10} className="inline-block mx-0.5 align-middle" /> e depois{' '}
-            <strong className="text-[#e8e6e1]">Adicionar à Tela de Início</strong>
+            <strong className="text-[#0F172A]">Adicionar à Tela de Início</strong>
           </p>
         </div>
 

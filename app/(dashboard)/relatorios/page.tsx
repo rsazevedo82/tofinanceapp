@@ -55,9 +55,9 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="px-3 py-2 rounded-lg text-xs shadow-xl"
-      style={{ background: '#1c1c1a', border: '0.5px solid rgba(255,255,255,0.1)' }}>
-      <p className="font-medium text-[#e8e6e1] mb-1">{label}</p>
+    <div className="px-3 py-2 rounded-lg text-xs shadow-xl bg-white"
+      style={{ border: '1px solid #D1D5DB' }}>
+      <p className="font-semibold text-[#0F172A] mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }}>
           {p.name}: {fmtCur(p.value)}
@@ -77,10 +77,10 @@ const TABS = [
 ]
 
 const chartColors = {
-  income:     '#6ee7b7',
-  expense:    '#fca5a5',
-  balance:    '#818cf8',
-  projection: '#fbbf24',
+  income:     '#2DD4BF',
+  expense:    '#FF7F50',
+  balance:    '#6B7280',
+  projection: '#F59E0B',
 }
 
 // ── Pagina ────────────────────────────────────────────────────────────────────
@@ -97,15 +97,15 @@ export default function RelatoriosPage() {
   const { data, isLoading, error } = useReports(month)
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Seus relatórios', 'Relatórios de vocês')}
           </h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-1 text-[#6B7280]">
             {c(isCouple, 'Entenda melhor seu dinheiro', 'Entendam como vocês estão usando o dinheiro')}
           </p>
         </div>
@@ -118,13 +118,13 @@ export default function RelatoriosPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-shrink-0"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0"
             style={{
-              background: activeTab === tab.key ? 'rgba(255,255,255,0.08)' : 'transparent',
-              color:      activeTab === tab.key ? '#e8e6e1' : 'rgba(200,198,190,0.4)',
+              background: activeTab === tab.key ? 'rgba(255,127,80,0.1)' : 'transparent',
+              color:      activeTab === tab.key ? '#FF7F50' : '#6B7280',
               border:     activeTab === tab.key
-                ? '0.5px solid rgba(255,255,255,0.12)'
-                : '0.5px solid transparent',
+                ? '1px solid rgba(255,127,80,0.25)'
+                : '1px solid transparent',
             }}
           >
             {tab.label}
@@ -141,8 +141,7 @@ export default function RelatoriosPage() {
 
       {/* Erro */}
       {error && (
-        <p className="text-xs px-4 py-3 rounded-xl"
-          style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+        <p className="text-sm px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-600">
           Erro ao carregar relatórios: {(error as Error).message}
         </p>
       )}
@@ -155,7 +154,7 @@ export default function RelatoriosPage() {
           {activeTab === 'categories' && (
             <ChartCard title="Gastos por categoria" subtitle={`Despesas de ${data.period.month}`}>
               {data.categories.length === 0 ? (
-                <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-xs text-center py-8 text-[#6B7280]">
                   {c(isCouple, 'Nenhuma despesa categorizada neste mês', 'Vocês ainda não categorizaram despesas este mês')}
                 </p>
               ) : (
@@ -171,11 +170,11 @@ export default function RelatoriosPage() {
                         paddingAngle={2}
                       >
                         {data.categories.map((entry, i) => (
-                          <Cell key={i} fill={entry.category_color ?? `hsl(${i * 40}, 60%, 60%)`} />
+                          <Cell key={i} fill={entry.category_color ?? `hsl(${i * 40}, 60%, 55%)`} />
                         ))}
                       </Pie>
                       <Tooltip content={<CustomTooltip />} />
-                      <Legend formatter={(v) => <span style={{ color: '#9ca3af', fontSize: 11 }}>{v}</span>} />
+                      <Legend formatter={(v) => <span style={{ color: '#6B7280', fontSize: 11 }}>{v}</span>} />
                     </PieChart>
                   </ResponsiveContainer>
                   <DataTable
@@ -202,9 +201,9 @@ export default function RelatoriosPage() {
             <ChartCard title="Evolução mensal" subtitle="Receitas e despesas dos últimos 6 meses">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={data.monthly} barGap={4}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false}
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
+                  <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false}
                     tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="income"  name="Receitas" fill={chartColors.income}  radius={[4,4,0,0]} />
@@ -231,9 +230,9 @@ export default function RelatoriosPage() {
             <ChartCard title="Fluxo de caixa diário" subtitle={`Entradas, saídas e saldo acumulado em ${data.period.month}`}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={data.daily_flow}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
-                  <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false}
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
+                  <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
+                  <YAxis tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false}
                     tickFormatter={v => `R$${(v/1000).toFixed(1)}k`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Line dataKey="income"  name="Entrada" stroke={chartColors.income}  dot={false} strokeWidth={2} />
@@ -260,7 +259,7 @@ export default function RelatoriosPage() {
           {activeTab === 'compare' && (
             <ChartCard title="Comparativo mensal" subtitle="Mês atual vs mês anterior">
               {data.monthly.length < 2 ? (
-                <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-xs text-center py-8 text-[#6B7280]">
                   Dados insuficientes para comparativo
                 </p>
               ) : (
@@ -275,19 +274,19 @@ export default function RelatoriosPage() {
                       const pct   = prevV > 0 ? ((diff / prevV) * 100).toFixed(1) : '—'
                       const isGood = type === 'income' ? diff >= 0 : diff <= 0
                       return (
-                        <div key={type} className="p-3 rounded-xl"
-                          style={{ background: 'var(--surface)', border: '0.5px solid var(--border)' }}>
-                          <p className="text-[10px] uppercase tracking-widest font-medium mb-2"
-                            style={{ color: type === 'income' ? '#6ee7b7' : '#fca5a5' }}>
+                        <div key={type} className="p-3 rounded-xl bg-white"
+                          style={{ border: '1px solid #D1D5DB' }}>
+                          <p className="text-[10px] uppercase tracking-widest font-semibold mb-2"
+                            style={{ color: type === 'income' ? '#2DD4BF' : '#FF7F50' }}>
                             {type === 'income' ? 'Receitas' : 'Despesas'}
                           </p>
-                          <p className="text-base font-semibold text-[#f0ede8]">{fmtCur(curV)}</p>
-                          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                          <p className="text-base font-black text-[#0F172A]">{fmtCur(curV)}</p>
+                          <p className="text-xs mt-1 text-[#6B7280]">
                             Anterior: {fmtCur(prevV)}
                           </p>
                           {prevV > 0 && (
-                            <p className="text-xs font-medium mt-0.5"
-                              style={{ color: isGood ? '#6ee7b7' : '#fca5a5' }}>
+                            <p className="text-xs font-semibold mt-0.5"
+                              style={{ color: isGood ? '#2DD4BF' : '#FF7F50' }}>
                               {diff >= 0 ? '+' : ''}{pct}%
                             </p>
                           )}
@@ -297,9 +296,9 @@ export default function RelatoriosPage() {
                   </div>
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={data.monthly.slice(-3)} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false}
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
+                      <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false}
                         tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="income"  name="Receitas" fill={chartColors.income}  radius={[4,4,0,0]} />
@@ -315,7 +314,7 @@ export default function RelatoriosPage() {
           {activeTab === 'cards' && (
             <ChartCard title="Limites dos cartões" subtitle="Uso atual do limite de crédito">
               {data.card_limits.length === 0 ? (
-                <p className="text-xs text-center py-8" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-xs text-center py-8 text-[#6B7280]">
                   Nenhum cartão de crédito cadastrado
                 </p>
               ) : (
@@ -325,23 +324,22 @@ export default function RelatoriosPage() {
                       <div key={card.account_id}>
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full" style={{ background: card.color ?? '#818cf8' }} />
-                            <p className="text-sm text-[#e8e6e1]">{card.name}</p>
+                            <div className="w-2 h-2 rounded-full" style={{ background: card.color ?? '#FF7F50' }} />
+                            <p className="text-sm text-[#0F172A]">{card.name}</p>
                           </div>
-                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          <p className="text-xs text-[#6B7280]">
                             {fmtCur(card.used)} / {fmtCur(card.credit_limit)}
                           </p>
                         </div>
-                        <div className="h-2 rounded-full overflow-hidden"
-                          style={{ background: 'rgba(255,255,255,0.06)' }}>
+                        <div className="h-2 rounded-full overflow-hidden bg-[#E5E7EB]">
                           <div className="h-full rounded-full transition-all"
                             style={{
                               width:      `${card.percent}%`,
-                              background: card.percent > 80 ? '#f87171' : card.percent > 50 ? '#fbbf24' : card.color ?? '#6ee7b7',
+                              background: card.percent > 80 ? '#ef4444' : card.percent > 50 ? '#F59E0B' : card.color ?? '#2DD4BF',
                             }}
                           />
                         </div>
-                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-[10px] mt-0.5 text-[#6B7280]">
                           {card.percent}% utilizado · {fmtCur(card.available)} disponível
                         </p>
                       </div>
@@ -370,14 +368,14 @@ export default function RelatoriosPage() {
           {/* ── ABA 6: PROJECAO ── */}
           {activeTab === 'projection' && (
             <ChartCard
-              title="Projecao financeira"
+              title="Projeção financeira"
               subtitle="Saldo projetado para os próximos 3 meses com base na média histórica"
             >
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={data.projection}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false}
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
+                  <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false}
                     tickFormatter={v => `R$${(v/1000).toFixed(1)}k`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Line dataKey="projected_income"  name="Receita proj."  stroke={chartColors.income}     strokeWidth={2} dot={false} />
@@ -386,7 +384,7 @@ export default function RelatoriosPage() {
                 </LineChart>
               </ResponsiveContainer>
 
-              <p className="text-[10px] mb-3" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] mb-3 text-[#6B7280]">
                 Baseado na média dos últimos 3 meses
               </p>
 
@@ -402,7 +400,7 @@ export default function RelatoriosPage() {
                 formatValue={(k, v) => {
                   if (['projected_income','projected_expense','projected_balance'].includes(k))
                     return fmtCur(Number(v))
-                  if (k === 'is_projection') return v ? 'Projecao' : 'Real'
+                  if (k === 'is_projection') return v ? 'Projeção' : 'Real'
                   return String(v ?? '—')
                 }}
               />

@@ -45,7 +45,7 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
         couple_id:     goal.couple_id ?? undefined,
       } : {
         icon:     '⭐',
-        color:    '#818cf8',
+        color:    '#FF7F50',
         category: 'custom',
       },
     })
@@ -95,8 +95,8 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
               onClick={() => onCategorySelect(cat)}
               className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-xs transition-colors ${
                 selectedCategory === cat.value
-                  ? 'border-indigo-400 bg-indigo-500/20 text-indigo-300'
-                  : 'border-white/10 bg-white/5 text-white/60 hover:bg-white/10'
+                  ? 'border-[rgba(255,127,80,0.4)] bg-[rgba(255,127,80,0.08)] text-[#FF7F50]'
+                  : 'border-[#D1D5DB] bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
               }`}
             >
               <span className="text-lg">{cat.icon}</span>
@@ -124,12 +124,12 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
             <input
               {...register('color')}
               type="color"
-              className="h-10 w-14 rounded cursor-pointer bg-transparent border border-white/20"
+              className="h-10 w-14 rounded cursor-pointer bg-transparent border border-[#D1D5DB]"
             />
             <input
               {...register('color')}
               className="input-field flex-1"
-              placeholder="#818cf8"
+              placeholder="#FF7F50"
             />
           </div>
         </div>

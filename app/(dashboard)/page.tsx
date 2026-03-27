@@ -1,4 +1,4 @@
-﻿// app/(dashboard)/page.tsx
+// app/(dashboard)/page.tsx
 'use client'
 
 import { useQuery }                              from '@tanstack/react-query'
@@ -58,61 +58,64 @@ export default function DashboardPage() {
   })
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Visão geral', 'Como vocês estão hoje')}
           </h1>
-          <p className="text-sm capitalize mt-0.5" style={{ color: 'rgba(200,198,190,0.35)' }}>
+          <p className="text-base font-bold capitalize mt-1 text-[#6B7280]">
             {month}
           </p>
         </div>
-        <button onClick={() => setShowTx(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span>
+        <button onClick={() => setShowTx(true)} className="btn-primary">
+          <span className="text-lg leading-none">+</span>
           Registrar gasto
         </button>
       </div>
 
-      {/* ── Painel de notificações não lidas ── */}
+      {/* ── Notificações não lidas ── */}
       {unread.length > 0 && (
-        <div className="mb-6 rounded-xl overflow-hidden"
-          style={{ border: '0.5px solid rgba(129,140,248,0.2)', background: 'rgba(129,140,248,0.04)' }}>
-
-          <div className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: '0.5px solid rgba(129,140,248,0.1)' }}>
-            <p className="text-xs font-semibold text-[#e8e6e1]">
+        <div
+          className="mb-8 rounded-xl overflow-hidden"
+          style={{ border: '1px solid rgba(255,127,80,0.25)', background: 'rgba(255,127,80,0.05)' }}
+        >
+          <div
+            className="flex items-center justify-between px-5 py-3.5"
+            style={{ borderBottom: '1px solid rgba(255,127,80,0.15)' }}
+          >
+            <p className="text-sm font-bold text-[#0F172A]">
               {unread.length} notificaç{unread.length === 1 ? 'ão' : 'ões'} não lida{unread.length !== 1 ? 's' : ''}
             </p>
             <button
               onClick={() => markAllAsRead.mutate()}
               disabled={markAllAsRead.isPending}
-              className="text-[10px] transition-colors"
-              style={{ color: 'rgba(129,140,248,0.7)' }}
+              className="text-xs font-medium text-[#FF7F50] hover:text-[#e86e40] transition-colors"
             >
               Marcar todas como lidas
             </button>
           </div>
 
-          <div>
-            {unread.slice(0, 3).map((n: Notification) => (
-              <div key={n.id} className="flex items-start gap-3 px-4 py-3"
-                style={{ borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}>
-                <span className="text-base flex-shrink-0">{TYPE_ICONS[n.type] ?? '🔔'}</span>
-                <div>
-                  <p className="text-xs font-medium text-[#e8e6e1]">{n.title}</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(200,198,190,0.5)' }}>{n.body}</p>
-                </div>
+          {unread.slice(0, 3).map((n: Notification) => (
+            <div
+              key={n.id}
+              className="flex items-start gap-3 px-5 py-4"
+              style={{ borderBottom: '1px solid #D1D5DB' }}
+            >
+              <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '🔔'}</span>
+              <div>
+                <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
+                <p className="text-sm mt-0.5 text-[#6B7280]">{n.body}</p>
               </div>
-            ))}
-            {unread.length > 3 && (
-              <p className="px-4 py-2 text-[10px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                +{unread.length - 3} notificações no sino acima
-              </p>
-            )}
-          </div>
+            </div>
+          ))}
+          {unread.length > 3 && (
+            <p className="px-5 py-3 text-xs text-[#6B7280]">
+              +{unread.length - 3} notificações no sino acima
+            </p>
+          )}
         </div>
       )}
 
@@ -126,117 +129,121 @@ export default function DashboardPage() {
 
       {isLoading ? (
         <div className="space-y-4">
-          {[1, 2, 3].map(i => <div key={i} className="card animate-pulse h-24" />)}
+          {[1, 2, 3].map(i => <div key={i} className="card animate-pulse h-28" />)}
         </div>
       ) : data ? (
         <>
           {/* ── KPIs principais ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="card sm:col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+            {/* Saldo */}
+            <div className="card sm:col-span-1">
               <p className="label">Saldo em contas</p>
-              <p className={`text-2xl font-semibold tracking-tight ${
-                data.total_balance >= 0 ? 'text-[#f0ede8]' : 'text-[#fca5a5]'
+              <p className={`text-3xl font-black tracking-tight mt-1 ${
+                data.total_balance >= 0 ? 'text-[#0F172A]' : 'text-[#EF4444]'
               }`}>
                 {formatCurrency(data.total_balance)}
               </p>
-              <p className="text-[10px] mt-1" style={{ color: 'rgba(200,198,190,0.3)' }}>
-                Exclui limite de cartoes de credito
+              <p className="text-xs mt-2 text-[#6B7280]">
+                Exclui limite de cartões de crédito
               </p>
             </div>
+
+            {/* Receitas */}
             <div className="card">
               <p className="label">Receitas</p>
-              <p className="text-xl font-semibold tracking-tight" style={{ color: '#6ee7b7' }}>
+              <p className="text-3xl font-black tracking-tight mt-1 text-[#2DD4BF]">
                 {formatCurrency(data.income_month)}
               </p>
+              <p className="text-xs mt-2 text-[#6B7280]">Entradas no mês</p>
             </div>
+
+            {/* Despesas */}
             <div className="card">
               <p className="label">Despesas</p>
-              <p className="text-xl font-semibold tracking-tight" style={{ color: '#fca5a5' }}>
+              <p className="text-3xl font-black tracking-tight mt-1 text-[#EF4444]">
                 {formatCurrency(data.expense_month)}
               </p>
+              <p className="text-xs mt-2 text-[#6B7280]">Saídas no mês</p>
             </div>
           </div>
 
-          {/* ── Saldo do mes ── */}
-          <div className="card mb-6 flex items-center justify-between">
+          {/* ── Saldo do mês ── */}
+          <div className="card mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="label">{c(isCouple, 'Seu saldo no mês', 'Saldo de vocês no mês')}</p>
-              <p className={`text-lg font-semibold ${
-                data.net_month >= 0 ? 'text-[#6ee7b7]' : 'text-[#fca5a5]'
+              <p className={`text-2xl font-black tracking-tight mt-1 ${
+                data.net_month >= 0 ? 'text-[#2DD4BF]' : 'text-[#EF4444]'
               }`}>
                 {data.net_month >= 0 ? '+' : ''}{formatCurrency(data.net_month)}
               </p>
             </div>
             {data.income_month > 0 && (
-              <div className="text-right">
-                <p className="text-[10px] mb-1" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                  Taxa de poupanca
-                </p>
-                <p className={`text-lg font-semibold ${data.net_month >= 0 ? "text-[#818cf8]" : "text-[#fca5a5]"}`}>
-                  {data.income_month > 0 ? `${Math.round((data.net_month / data.income_month) * 100)}%` : "—"}
+              <div className="text-right shrink-0">
+                <p className="text-xs text-[#6B7280] mb-1 font-bold uppercase tracking-wider">Taxa de poupança</p>
+                <p className={`text-2xl font-black tracking-tight ${
+                  data.net_month >= 0 ? 'text-[#2DD4BF]' : 'text-[#EF4444]'
+                }`}>
+                  {`${Math.round((data.net_month / data.income_month) * 100)}%`}
                 </p>
               </div>
             )}
           </div>
 
-          {/* ── Cartoes de credito ── */}
+          {/* ── Cartões de crédito ── */}
           {data.cards.length > 0 && (
-            <div className="mb-6">
-              <p className="section-heading">Cartoes de credito</p>
-              <div className="space-y-2">
+            <div className="mb-8">
+              <p className="section-heading">Cartões de crédito</p>
+              <div className="space-y-3">
                 {data.cards.map(card => (
                   <div
                     key={card.id}
                     onClick={() => router.push(`/fatura/${card.id}`)}
-                    className="card cursor-pointer transition-all hover:border-white/[0.12]"
-                    style={{ borderColor: card.color ? `${card.color}25` : undefined }}
+                    className="card cursor-pointer transition-all hover:shadow-md"
+                    style={{ borderColor: card.color ? `${card.color}50` : '#D1D5DB' }}
                   >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span>💳</span>
-                        <p className="text-sm font-medium text-[#e8e6e1]">{card.name}</p>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl">💳</span>
+                        <p className="text-base font-bold text-[#0F172A]">{card.name}</p>
                       </div>
-                      <span className="text-[10px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
-                        Fecha dia {card.closing_day} · Ver fatura →
+                      <span className="text-xs text-[#6B7280] font-medium">
+                        Fecha dia {card.closing_day} · <span className="text-[#FF7F50]">Ver fatura →</span>
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="grid grid-cols-3 gap-4 mb-4">
                       <div>
-                        <p className="text-[10px] uppercase tracking-widest mb-0.5"
-                          style={{ color: 'rgba(200,198,190,0.35)' }}>Fatura aberta</p>
-                        <p className="text-sm font-semibold text-[#fbbf24]">
+                        <p className="text-[11px] font-bold uppercase tracking-wider mb-1 text-[#6B7280]">Fatura aberta</p>
+                        <p className="text-lg font-black text-[#EF4444]">
                           {formatCurrency(card.open_invoice)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-widest mb-0.5"
-                          style={{ color: 'rgba(200,198,190,0.35)' }}>Disponivel</p>
-                        <p className="text-sm font-semibold text-[#6ee7b7]">
+                        <p className="text-[11px] font-bold uppercase tracking-wider mb-1 text-[#6B7280]">Disponível</p>
+                        <p className="text-lg font-black text-[#2DD4BF]">
                           {formatCurrency(card.available)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-widest mb-0.5"
-                          style={{ color: 'rgba(200,198,190,0.35)' }}>Limite</p>
-                        <p className="text-sm font-semibold text-[#f0ede8]">
+                        <p className="text-[11px] font-bold uppercase tracking-wider mb-1 text-[#6B7280]">Limite</p>
+                        <p className="text-lg font-black text-[#0F172A]">
                           {formatCurrency(card.credit_limit)}
                         </p>
                       </div>
                     </div>
 
                     {/* Barra de uso */}
-                    <div className="h-1 rounded-full overflow-hidden"
-                      style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="h-2 rounded-full overflow-hidden" style={{ background: '#F3F4F6' }}>
                       <div
-                        className="h-full rounded-full"
+                        className="h-full rounded-full transition-all"
                         style={{
                           width: `${Math.min((card.open_invoice / card.credit_limit) * 100, 100)}%`,
                           background: card.open_invoice / card.credit_limit > 0.8
-                            ? '#f87171'
+                            ? '#EF4444'
                             : card.open_invoice / card.credit_limit > 0.5
-                            ? '#fbbf24'
-                            : card.color ?? '#6ee7b7',
+                            ? '#FF7F50'
+                            : card.color ?? '#2DD4BF',
                         }}
                       />
                     </div>
@@ -246,43 +253,55 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-            {/* ── Transacoes recentes ── */}
+            {/* ── Transações recentes ── */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <p className="section-heading mb-0">{c(isCouple, 'Seus últimos gastos', 'Últimos gastos de vocês')}</p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="section-heading mb-0">
+                  {c(isCouple, 'Seus últimos gastos', 'Últimos gastos de vocês')}
+                </p>
                 <button
                   onClick={() => router.push('/transacoes')}
-                  className="text-[10px] transition-colors"
-                  style={{ color: 'rgba(200,198,190,0.4)' }}
+                  className="text-xs font-semibold text-[#FF7F50] hover:text-[#e86e40] transition-colors"
                 >
                   Ver todas →
                 </button>
               </div>
 
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {data.recent_transactions.length === 0 ? (
-                  <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.3)' }}>
-                    {c(isCouple, 'Você ainda não registrou gastos este mês', 'Vocês ainda não registraram gastos este mês')}
-                  </p>
+                  <div className="py-10 text-center">
+                    <p className="text-sm text-[#6B7280]">
+                      {c(isCouple, 'Você ainda não registrou gastos este mês', 'Vocês ainda não registraram gastos este mês')}
+                    </p>
+                  </div>
                 ) : (
                   data.recent_transactions.map(tx => (
-                    <div key={tx.id} className="db-row flex items-center justify-between px-2 py-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs flex-shrink-0"
-                          style={{ color: tx.type === 'income' ? '#6ee7b7' : '#fca5a5' }}>
+                    <div key={tx.id} className="db-row flex items-center justify-between px-3 py-3.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
+                          style={{
+                            background: tx.type === 'income'
+                              ? 'rgba(45,212,191,0.12)'
+                              : 'rgba(239,68,68,0.1)',
+                            color: tx.type === 'income' ? '#2DD4BF' : '#EF4444',
+                          }}
+                        >
                           {tx.type === 'income' ? '↑' : '↓'}
-                        </span>
+                        </div>
                         <div className="min-w-0">
-                          <p className="text-sm text-[#e8e6e1] truncate">{tx.description}</p>
-                          <p className="text-[10px]" style={{ color: 'rgba(200,198,190,0.35)' }}>
+                          <p className="text-sm font-semibold text-[#0F172A] truncate">{tx.description}</p>
+                          <p className="text-xs mt-0.5 text-[#6B7280]">
                             {tx.category_name ?? '—'} · {formatDate(tx.date)}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm font-medium flex-shrink-0 ml-2"
-                        style={{ color: tx.type === 'income' ? '#6ee7b7' : '#fca5a5' }}>
+                      <p
+                        className="text-sm font-bold flex-shrink-0 ml-3"
+                        style={{ color: tx.type === 'income' ? '#2DD4BF' : '#EF4444' }}
+                      >
                         {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                       </p>
                     </div>
@@ -293,48 +312,51 @@ export default function DashboardPage() {
 
             {/* ── Top categorias ── */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <p className="section-heading mb-0">{c(isCouple, 'Onde você mais gastou', 'Onde vocês mais gastaram')}</p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="section-heading mb-0">
+                  {c(isCouple, 'Onde você mais gastou', 'Onde vocês mais gastaram')}
+                </p>
                 <button
                   onClick={() => router.push('/relatorios')}
-                  className="text-[10px] transition-colors"
-                  style={{ color: 'rgba(200,198,190,0.4)' }}
+                  className="text-xs font-semibold text-[#FF7F50] hover:text-[#e86e40] transition-colors"
                 >
                   Ver relatórios →
                 </button>
               </div>
 
               {data.top_categories.length === 0 ? (
-                <p className="text-xs py-6 text-center" style={{ color: 'rgba(200,198,190,0.3)' }}>
-                  {c(isCouple, 'Nenhum gasto categorizado este mês', 'Vocês ainda não categorizaram gastos este mês')}
-                </p>
+                <div className="py-10 text-center">
+                  <p className="text-sm text-[#6B7280]">
+                    {c(isCouple, 'Nenhum gasto categorizado este mês', 'Vocês ainda não categorizaram gastos este mês')}
+                  </p>
+                </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {data.top_categories.map((cat, i) => (
                     <div key={i}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-sm flex-shrink-0"
-                            style={{ background: cat.color ?? '#94a3b8' }} />
-                          <p className="text-xs text-[#e8e6e1]">{cat.name}</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="w-3 h-3 rounded-sm shrink-0"
+                            style={{ background: cat.color ?? '#FF7F50' }}
+                          />
+                          <p className="text-sm font-semibold text-[#0F172A]">{cat.name}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-medium text-[#f0ede8]">
+                        <div className="flex items-center gap-3">
+                          <p className="text-sm font-bold text-[#0F172A]">
                             {formatCurrency(cat.total)}
                           </p>
-                          <p className="text-[10px] w-7 text-right"
-                            style={{ color: 'rgba(200,198,190,0.4)' }}>
+                          <p className="text-xs font-bold w-8 text-right text-[#6B7280]">
                             {cat.percent}%
                           </p>
                         </div>
                       </div>
-                      <div className="h-1 rounded-full overflow-hidden"
-                        style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-2 rounded-full overflow-hidden" style={{ background: '#F3F4F6' }}>
                         <div
-                          className="h-full rounded-full"
+                          className="h-full rounded-full transition-all"
                           style={{
                             width:      `${cat.percent}%`,
-                            background: cat.color ?? '#94a3b8',
+                            background: cat.color ?? '#FF7F50',
                           }}
                         />
                       </div>

@@ -20,10 +20,10 @@ export default function PerfilPage() {
   if (!profile) return null
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-8 md:py-10 space-y-6">
+    <div className="max-w-xl mx-auto px-6 py-10 md:py-12 space-y-6">
       <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Meu perfil</h1>
-        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+        <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Meu perfil</h1>
+        <p className="text-sm mt-1 text-[#6B7280]">
           Gerencie seus dados pessoais e segurança
         </p>
       </div>
@@ -31,16 +31,16 @@ export default function PerfilPage() {
       {/* Avatar + identidade */}
       <div className="card flex items-center gap-4">
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0"
-          style={{ background: 'rgba(129,140,248,0.15)', color: '#818cf8' }}
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shrink-0"
+          style={{ background: 'rgba(255,127,80,0.12)', color: '#FF7F50' }}
         >
           {profile.name?.charAt(0).toUpperCase() ?? profile.email.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-[#e8e6e1] truncate">
+          <p className="font-bold text-[#0F172A] truncate">
             {profile.name ?? 'Sem nome'}
           </p>
-          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs truncate text-[#6B7280]">
             {profile.email}
           </p>
         </div>
@@ -99,7 +99,7 @@ function DadosPessoaisForm({ profile }: { profile: { name: string | null; email:
 
   return (
     <div className="card">
-      <p className="text-sm font-semibold text-[#e8e6e1] mb-4">Dados pessoais</p>
+      <p className="text-sm font-bold text-[#0F172A] mb-4">Dados pessoais</p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -126,14 +126,13 @@ function DadosPessoaisForm({ profile }: { profile: { name: string | null; email:
         </div>
 
         {error && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
             {error}
           </p>
         )}
         {success && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(110,231,183,0.08)', color: '#6ee7b7' }}>
+          <p className="text-sm px-3 py-2 rounded-lg border"
+            style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.2)', color: '#0d9488' }}>
             {success}
           </p>
         )}
@@ -187,7 +186,7 @@ function SenhaForm() {
 
   return (
     <div className="card">
-      <p className="text-sm font-semibold text-[#e8e6e1] mb-4">Segurança</p>
+      <p className="text-sm font-bold text-[#0F172A] mb-4">Segurança</p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -228,14 +227,13 @@ function SenhaForm() {
         </div>
 
         {error && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(252,165,165,0.08)', color: '#fca5a5' }}>
+          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
             {error}
           </p>
         )}
         {success && (
-          <p className="text-xs px-3 py-2 rounded-lg"
-            style={{ background: 'rgba(110,231,183,0.08)', color: '#6ee7b7' }}>
+          <p className="text-sm px-3 py-2 rounded-lg border"
+            style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.2)', color: '#0d9488' }}>
             {success}
           </p>
         )}
@@ -251,4 +249,3 @@ function SenhaForm() {
     </div>
   )
 }
-

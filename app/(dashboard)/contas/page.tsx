@@ -1,4 +1,4 @@
-﻿// app/(dashboard)/contas/page.tsx
+// app/(dashboard)/contas/page.tsx
 'use client'
 
 import { useState }       from 'react'
@@ -28,18 +28,18 @@ export default function ContasPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Contas</h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Contas</h1>
+          <p className="text-sm mt-1 text-[#6B7280]">
             {accounts.length} conta{accounts.length !== 1 ? 's' : ''} ativa{accounts.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary text-xs">
-          <span className="opacity-60">+</span>
+        <button onClick={() => setShowCreate(true)} className="btn-primary">
+          <span className="text-lg leading-none">+</span>
           Nova conta
         </button>
       </div>
@@ -48,10 +48,10 @@ export default function ContasPage() {
       {otherAccounts.length > 0 && (
         <div className="card mb-6">
           <p className="label">Saldo total em contas</p>
-          <p className="text-2xl font-semibold tracking-tight text-[#f0ede8]">
+          <p className="text-2xl font-black tracking-tight text-[#0F172A]">
             {formatCurrency(totalBalance)}
           </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs mt-1 text-[#6B7280]">
             Poupança, corrente e carteiras (cartões não incluídos)
           </p>
         </div>
@@ -61,10 +61,10 @@ export default function ContasPage() {
         <div className="space-y-0.5">
           {[1, 2, 3].map(i => (
             <div key={i} className="db-row px-2 py-3 animate-pulse">
-              <div className="w-7 h-7 rounded-md bg-white/5" />
+              <div className="w-7 h-7 rounded-md bg-[#E5E7EB]" />
               <div className="ml-3 flex-1 space-y-1.5">
-                <div className="h-3 bg-white/5 rounded w-32" />
-                <div className="h-2 bg-white/5 rounded w-20" />
+                <div className="h-3 bg-[#E5E7EB] rounded w-32" />
+                <div className="h-2 bg-[#E5E7EB] rounded w-20" />
               </div>
             </div>
           ))}
@@ -72,14 +72,14 @@ export default function ContasPage() {
       ) : otherAccounts.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl mb-4">🏦</p>
-          <p className="text-sm font-medium text-[#e8e6e1] mb-1">
+          <p className="text-sm font-semibold text-[#0F172A] mb-1">
             {c(isCouple, 'Você ainda não adicionou nenhuma conta', 'Vocês ainda não adicionaram nenhuma conta')}
           </p>
-          <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs mb-6 text-[#6B7280]">
             {c(isCouple, 'Adicione sua primeira conta para começar', 'Adicionem a primeira conta de vocês')}
           </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-xs mx-auto">
-            <span className="opacity-60">+</span>
+          <button onClick={() => setShowCreate(true)} className="btn-primary mx-auto">
+            <span className="text-lg leading-none">+</span>
             Criar primeira conta
           </button>
         </div>
@@ -146,14 +146,14 @@ function AccountRow({
       <div className="flex items-center gap-3">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center text-sm flex-shrink-0"
-          style={{ background: account.color ? `${account.color}20` : 'rgba(255,255,255,0.06)' }}
+          style={{ background: account.color ? `${account.color}20` : 'rgba(15,23,42,0.05)' }}
         >
           {account.icon ?? TYPE_ICONS[account.type] ?? '◫'}
         </div>
         <div>
-          <p className="text-sm font-medium text-[#e8e6e1]">{account.name}</p>
+          <p className="text-sm font-medium text-[#0F172A]">{account.name}</p>
           <div className="flex items-center gap-2">
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs text-[#6B7280]">
               {account.type === 'checking' ? 'Conta corrente'
                 : account.type === 'savings' ? 'Poupança'
                 : account.type === 'credit'  ? 'Cartão de crédito'
@@ -161,7 +161,7 @@ function AccountRow({
                 : 'Carteira'}
             </p>
             {isCredit && account.credit_limit && (
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] text-[#6B7280]">
                 Limite: {formatCurrency(account.credit_limit)}
               </p>
             )}
@@ -172,12 +172,12 @@ function AccountRow({
       <div className="flex items-center gap-3">
         {badge ? (
           <span className="text-[10px] px-2 py-0.5 rounded"
-            style={{ color: 'rgba(129,140,248,0.8)', background: 'rgba(129,140,248,0.08)' }}>
+            style={{ color: '#FF7F50', background: 'rgba(255,127,80,0.1)' }}>
             {badge}
           </span>
         ) : (
           <span className={`text-sm font-semibold ${
-            balanceVal >= 0 ? 'text-[#f0ede8]' : 'text-[#fca5a5]'
+            balanceVal >= 0 ? 'text-[#0F172A]' : 'text-[#FF7F50]'
           }`}>
             {formatCurrency(balanceVal)}
           </span>

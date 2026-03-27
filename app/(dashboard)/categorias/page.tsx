@@ -1,4 +1,4 @@
-﻿// app/(dashboard)/categorias/page.tsx
+// app/(dashboard)/categorias/page.tsx
 'use client'
 
 import { useState }         from 'react'
@@ -37,17 +37,17 @@ export default function CategoriasPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-10">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-semibold text-[#f0ede8] tracking-tight">Categorias</h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Categorias</h1>
+          <p className="text-sm mt-1 text-[#6B7280]">
             {systemCategories.length} do sistema · {userCategories.length} suas
           </p>
         </div>
-        <button onClick={() => openCreate('expense')} className="btn-primary text-xs">
-          <span className="opacity-60">+</span>
+        <button onClick={() => openCreate('expense')} className="btn-primary">
+          <span className="text-lg leading-none">+</span>
           Nova categoria
         </button>
       </div>
@@ -56,8 +56,8 @@ export default function CategoriasPage() {
         <div className="space-y-1">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="db-row px-2 py-2 animate-pulse">
-              <div className="w-2 h-2 rounded-sm bg-white/10" />
-              <div className="ml-3 h-3 bg-white/5 rounded w-28" />
+              <div className="w-2 h-2 rounded-sm bg-[#E5E7EB]" />
+              <div className="ml-3 h-3 bg-[#E5E7EB] rounded w-28" />
             </div>
           ))}
         </div>
@@ -71,15 +71,15 @@ export default function CategoriasPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openCreate('income')}
-                    className="text-[10px] px-2 py-1 rounded transition-colors"
-                    style={{ color: '#6ee7b7', background: 'rgba(110,231,183,0.08)' }}
+                    className="text-[10px] px-2 py-1 rounded transition-colors font-semibold"
+                    style={{ color: '#0d9488', background: 'rgba(45,212,191,0.1)' }}
                   >
                     + Receita
                   </button>
                   <button
                     onClick={() => openCreate('expense')}
-                    className="text-[10px] px-2 py-1 rounded transition-colors"
-                    style={{ color: '#fca5a5', background: 'rgba(252,165,165,0.08)' }}
+                    className="text-[10px] px-2 py-1 rounded transition-colors font-semibold"
+                    style={{ color: '#e86e40', background: 'rgba(255,127,80,0.1)' }}
                   >
                     + Despesa
                   </button>
@@ -88,8 +88,8 @@ export default function CategoriasPage() {
 
               {incomeUser.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
-                    style={{ color: 'rgba(110,231,183,0.5)' }}>Receitas</p>
+                  <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                    style={{ color: '#2DD4BF' }}>Receitas</p>
                   <div className="space-y-0.5">
                     {incomeUser.map(cat => (
                       <CategoryRow key={cat.id} category={cat} onClick={() => handleEdit(cat)} editable />
@@ -100,8 +100,8 @@ export default function CategoriasPage() {
 
               {expenseUser.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
-                    style={{ color: 'rgba(252,165,165,0.5)' }}>Despesas</p>
+                  <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                    style={{ color: '#FF7F50' }}>Despesas</p>
                   <div className="space-y-0.5">
                     {expenseUser.map(cat => (
                       <CategoryRow key={cat.id} category={cat} onClick={() => handleEdit(cat)} editable />
@@ -116,16 +116,15 @@ export default function CategoriasPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <p className="section-heading mb-0">Categorias padrão</p>
-              <span className="text-[10px] px-2 py-0.5 rounded"
-                style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#F3F4F6] text-[#6B7280]">
                 somente leitura
               </span>
             </div>
 
             {incomeSystem.length > 0 && (
               <div className="mb-3">
-                <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
-                  style={{ color: 'rgba(110,231,183,0.5)' }}>Receitas</p>
+                <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                  style={{ color: '#2DD4BF' }}>Receitas</p>
                 <div className="space-y-0.5">
                   {incomeSystem.map(cat => (
                     <CategoryRow key={cat.id} category={cat} />
@@ -136,8 +135,8 @@ export default function CategoriasPage() {
 
             {expenseSystem.length > 0 && (
               <div>
-                <p className="text-[10px] uppercase tracking-widest font-medium mb-1.5 px-2"
-                  style={{ color: 'rgba(252,165,165,0.5)' }}>Despesas</p>
+                <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                  style={{ color: '#FF7F50' }}>Despesas</p>
                 <div className="space-y-0.5">
                   {expenseSystem.map(cat => (
                     <CategoryRow key={cat.id} category={cat} />
@@ -148,17 +147,16 @@ export default function CategoriasPage() {
           </div>
 
           {userCategories.length === 0 && (
-            <div className="py-8 text-center border rounded-xl"
-              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="py-8 text-center border rounded-xl border-[#D1D5DB] bg-white">
               <p className="text-2xl mb-2">🏷️</p>
-              <p className="text-sm font-medium text-[#e8e6e1] mb-1">
+              <p className="text-sm font-semibold text-[#0F172A] mb-1">
                 {c(isCouple, 'Crie suas próprias categorias', 'Criem categorias que façam sentido para vocês')}
               </p>
-              <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-xs mb-4 text-[#6B7280]">
                 {c(isCouple, 'Personalize além das categorias padrão', 'Personalizem além das categorias padrão')}
               </p>
-              <button onClick={() => openCreate('expense')} className="btn-primary text-xs mx-auto">
-                <span className="opacity-60">+</span>
+              <button onClick={() => openCreate('expense')} className="btn-primary mx-auto">
+                <span className="text-lg leading-none">+</span>
                 Nova categoria
               </button>
             </div>
@@ -196,18 +194,15 @@ function CategoryRow({
       className={`group db-row flex items-center gap-3 px-2 py-2 ${
         editable ? 'cursor-pointer' : 'cursor-default'
       }`}
-      style={{ opacity: editable ? 1 : 0.65 }}
+      style={{ opacity: editable ? 1 : 0.6 }}
     >
       <div
         className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
         style={{ background: category.color ?? '#888' }}
       />
-      <span className="text-sm text-[#e8e6e1] flex-1">{category.name}</span>
+      <span className="text-sm text-[#0F172A] flex-1">{category.name}</span>
       {editable && (
-        <span
-          className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: 'rgba(200,198,190,0.5)' }}
-        >
+        <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-[#6B7280]">
           editar →
         </span>
       )}

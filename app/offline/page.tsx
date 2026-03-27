@@ -4,10 +4,10 @@
 
 export default function OfflinePage() {
   return (
-    <div className="min-h-screen bg-[#111110] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#FDFCF0] flex items-center justify-center p-6">
       <div className="text-center max-w-xs">
         <p className="text-4xl mb-4">📡</p>
-        <h1 className="text-lg font-semibold text-[#f0ede8] mb-2">
+        <h1 className="text-lg font-semibold text-[#0F172A] mb-2">
           Você está offline
         </h1>
         <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
