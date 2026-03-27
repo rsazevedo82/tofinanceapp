@@ -2,6 +2,7 @@
 
 import { createClient }   from '@/lib/supabase/server'
 import { adminClient }    from '@/lib/supabase/admin'
+import { getRequestAuditMeta, recordAuditEvent } from '@/lib/audit'
 import { ratelimit }      from '@/lib/rateLimit'
 import { headers }        from 'next/headers'
 import { NextResponse }   from 'next/server'
@@ -21,8 +22,16 @@ async function getIP() {
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<CoupleInvitation>>> {
   try {
+    const auditMeta = await getRequestAuditMeta()
     const { success: allowed } = await ratelimit.limit(await getIP())
     if (!allowed) {
+      await recordAuditEvent({
+        action: 'couple_invite_create',
+        status: 'failure',
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'rate_limited' },
+      })
       return NextResponse.json(
         { data: null, error: 'Muitas requisições. Tente novamente em 1 minuto.' },
         { status: 429 }
@@ -32,12 +41,29 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      await recordAuditEvent({
+        action: 'couple_invite_create',
+        status: 'failure',
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'unauthorized' },
+      })
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
 
     const body   = await request.json()
     const parsed = inviteSchema.safeParse(body)
     if (!parsed.success) {
+      await recordAuditEvent({
+        action: 'couple_invite_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invalid_payload' },
+      })
       return NextResponse.json(
         { data: null, error: parsed.error.issues[0]?.message ?? 'Email inválido' },
         { status: 400 }
@@ -48,6 +74,16 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
 
     // Não pode convidar a si mesmo
     if (email.toLowerCase() === user.email?.toLowerCase()) {
+      await recordAuditEvent({
+        action: 'couple_invite_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'self_invite' },
+      })
       return NextResponse.json(
         { data: null, error: 'Você não pode se convidar' },
         { status: 400 }
@@ -62,6 +98,16 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       .maybeSingle()
 
     if (existingCouple) {
+      await recordAuditEvent({
+        action: 'couple_invite_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'active_couple_exists' },
+      })
       return NextResponse.json(
         { data: null, error: 'Você já possui um perfil de casal ativo' },
         { status: 400 }
@@ -78,6 +124,16 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       .maybeSingle()
 
     if (existingInvite) {
+      await recordAuditEvent({
+        action: 'couple_invite_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'invitation',
+        targetId: existingInvite.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'pending_invitation_exists' },
+      })
       return NextResponse.json(
         { data: null, error: 'Já existe um convite pendente para este email' },
         { status: 400 }
@@ -132,12 +188,36 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
         console.error('[POST /api/couple/invite] inviteUserByEmail falhou:', emailError.message)
         // Cancela o convite criado para não deixar registro órfão
         await adminClient.from('couple_invitations').update({ status: 'cancelled' }).eq('id', invitation.id)
+        await recordAuditEvent({
+          action: 'couple_invite_create',
+          status: 'failure',
+          userId: user.id,
+          targetType: 'invitation',
+          targetId: invitation.id,
+          ip: auditMeta.ip,
+          userAgent: auditMeta.userAgent,
+          metadata: { reason: 'invite_email_failed' },
+        })
         return NextResponse.json(
-          { data: null, error: `Erro ao enviar e-mail de convite: ${emailError.message}` },
+          { data: null, error: 'Erro ao enviar o convite.' },
           { status: 500 }
         )
       }
     }
+
+    await recordAuditEvent({
+      action: 'couple_invite_create',
+      status: 'success',
+      userId: user.id,
+      targetType: 'invitation',
+      targetId: invitation.id,
+      ip: auditMeta.ip,
+      userAgent: auditMeta.userAgent,
+      metadata: {
+        invitee_email: email.toLowerCase(),
+        invitee_id: inviteeUser?.id ?? null,
+      },
+    })
 
     return NextResponse.json({ data: invitation, error: null }, { status: 201 })
   } catch (err) {

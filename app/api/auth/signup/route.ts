@@ -3,6 +3,8 @@ import type { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { clearAuthFailures, getAuthLock, registerAuthFailure } from '@/lib/authThrottle'
 import { fail, logInternalError, ok } from '@/lib/apiResponse'
+import { recordAuditEvent } from '@/lib/audit'
+import { tryGetUserIdFromAccessToken } from '@/lib/securityAlerts'
 import type { ApiResponse } from '@/types'
 
 const signupSchema = z.object({
@@ -28,17 +30,29 @@ async function getIP(): Promise<string> {
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<SignupData>>> {
   try {
+    const ip = await getIP()
     const body = await request.json()
     const parsed = signupSchema.safeParse(body)
     if (!parsed.success) {
+      await recordAuditEvent({
+        action: 'auth_signup',
+        status: 'failure',
+        ip,
+        metadata: { reason: 'invalid_payload' },
+      })
       return fail(400, 'Dados invalidos')
     }
 
     const email = parsed.data.email.trim().toLowerCase()
-    const ip = await getIP()
 
     const lock = await getAuthLock('signup', email, ip)
     if (lock.blocked) {
+      await recordAuditEvent({
+        action: 'auth_signup',
+        status: 'failure',
+        ip,
+        metadata: { reason: 'blocked', retry_after: lock.retryAfter },
+      })
       return fail(429, `Muitas tentativas. Aguarde ${lock.retryAfter}s para tentar novamente.`)
     }
 
@@ -58,13 +72,36 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<S
     if (!res.ok || json?.error || json?.msg) {
       const failure = await registerAuthFailure('signup', email, ip)
       if (failure.blocked) {
+        await recordAuditEvent({
+          action: 'auth_signup',
+          status: 'failure',
+          ip,
+          metadata: { reason: 'blocked_after_failure', retry_after: failure.retryAfter },
+        })
         return fail(429, `Cadastro temporariamente bloqueado. Aguarde ${failure.retryAfter}s.`)
       }
 
+      await recordAuditEvent({
+        action: 'auth_signup',
+        status: 'failure',
+        ip,
+        metadata: { reason: 'provider_rejected' },
+      })
       return fail(400, 'Nao foi possivel criar a conta com estes dados.')
     }
 
     await clearAuthFailures('signup', email, ip)
+    const userId = json?.session?.access_token
+      ? tryGetUserIdFromAccessToken(json.session.access_token)
+      : null
+    await recordAuditEvent({
+      action: 'auth_signup',
+      status: 'success',
+      userId,
+      targetType: 'user',
+      targetId: userId ?? null,
+      ip,
+    })
 
     return ok({
       session: json?.session

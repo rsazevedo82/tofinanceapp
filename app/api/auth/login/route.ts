@@ -3,6 +3,7 @@ import type { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { clearAuthFailures, getAuthLock, registerAuthFailure } from '@/lib/authThrottle'
 import { fail, logInternalError, ok } from '@/lib/apiResponse'
+import { recordAuditEvent } from '@/lib/audit'
 import { notifyNewDeviceIfNeeded, tryGetUserIdFromAccessToken } from '@/lib/securityAlerts'
 import type { ApiResponse } from '@/types'
 
@@ -28,18 +29,32 @@ async function getRequestMeta(): Promise<{ ip: string; userAgent: string; city?:
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<LoginSession>>> {
   try {
+    const meta = await getRequestMeta()
     const body = await request.json()
     const parsed = loginSchema.safeParse(body)
     if (!parsed.success) {
+      await recordAuditEvent({
+        action: 'auth_login',
+        status: 'failure',
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        metadata: { reason: 'invalid_payload' },
+      })
       return fail(400, 'Dados invalidos')
     }
 
     const email = parsed.data.email.trim().toLowerCase()
-    const meta = await getRequestMeta()
     const ip = meta.ip
 
     const lock = await getAuthLock('login', email, ip)
     if (lock.blocked) {
+      await recordAuditEvent({
+        action: 'auth_login',
+        status: 'failure',
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        metadata: { reason: 'blocked', retry_after: lock.retryAfter },
+      })
       return fail(429, `Muitas tentativas. Aguarde ${lock.retryAfter}s para tentar novamente.`)
     }
 
@@ -63,9 +78,23 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
     if (!res.ok || !json?.access_token || !json?.refresh_token) {
       const failure = await registerAuthFailure('login', email, ip)
       if (failure.blocked) {
+        await recordAuditEvent({
+          action: 'auth_login',
+          status: 'failure',
+          ip: meta.ip,
+          userAgent: meta.userAgent,
+          metadata: { reason: 'blocked_after_failure', retry_after: failure.retryAfter },
+        })
         return fail(429, `Conta temporariamente bloqueada. Aguarde ${failure.retryAfter}s.`)
       }
 
+      await recordAuditEvent({
+        action: 'auth_login',
+        status: 'failure',
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        metadata: { reason: 'invalid_credentials' },
+      })
       return fail(401, 'Email ou senha incorretos')
     }
 
@@ -73,6 +102,16 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
 
     const userId = tryGetUserIdFromAccessToken(json.access_token)
     if (userId) {
+      await recordAuditEvent({
+        action: 'auth_login',
+        status: 'success',
+        userId,
+        targetType: 'session',
+        targetId: userId,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+      })
+
       notifyNewDeviceIfNeeded({
         userId,
         ip: meta.ip,
@@ -80,6 +119,14 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
         city: meta.city,
         country: meta.country,
       }).catch((notifyErr) => logInternalError('security:new-device:login', notifyErr))
+    } else {
+      await recordAuditEvent({
+        action: 'auth_login',
+        status: 'success',
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        metadata: { reason: 'user_id_not_available' },
+      })
     }
 
     return ok({

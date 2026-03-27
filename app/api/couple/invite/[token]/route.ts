@@ -2,6 +2,7 @@
 
 import { createClient }   from '@/lib/supabase/server'
 import { adminClient }    from '@/lib/supabase/admin'
+import { getRequestAuditMeta, recordAuditEvent } from '@/lib/audit'
 import { NextResponse }   from 'next/server'
 import type { ApiResponse } from '@/types'
 
@@ -14,16 +15,35 @@ export async function POST(
   { params }: Params
 ): Promise<NextResponse<ApiResponse<null>>> {
   try {
+    const auditMeta = await getRequestAuditMeta()
     const { token }  = await params
     const { action } = await request.json() as { action: 'accept' | 'reject' }
 
     if (!['accept', 'reject'].includes(action)) {
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'failure',
+        targetType: 'invitation',
+        targetId: token,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invalid_action' },
+      })
       return NextResponse.json({ data: null, error: 'Ação inválida' }, { status: 400 })
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'failure',
+        targetType: 'invitation',
+        targetId: token,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'unauthorized' },
+      })
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
 
@@ -37,6 +57,16 @@ export async function POST(
 
     if (inviteError) throw inviteError
     if (!invitation) {
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'invitation',
+        targetId: token,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invitation_not_found' },
+      })
       return NextResponse.json(
         { data: null, error: 'Convite não encontrado ou já processado' },
         { status: 404 }
@@ -49,11 +79,31 @@ export async function POST(
         .from('couple_invitations')
         .update({ status: 'cancelled' })
         .eq('id', invitation.id)
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'invitation',
+        targetId: invitation.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invitation_expired' },
+      })
       return NextResponse.json({ data: null, error: 'Convite expirado' }, { status: 410 })
     }
 
     // Verifica se o usuário logado é o destinatário
     if (invitation.invitee_email !== user.email?.toLowerCase() && invitation.invitee_id !== user.id) {
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'invitation',
+        targetId: invitation.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invitation_not_owned' },
+      })
       return NextResponse.json({ data: null, error: 'Este convite não é para você' }, { status: 403 })
     }
 
@@ -62,6 +112,17 @@ export async function POST(
         .from('couple_invitations')
         .update({ status: 'rejected', invitee_id: user.id })
         .eq('id', invitation.id)
+
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'success',
+        userId: user.id,
+        targetType: 'invitation',
+        targetId: invitation.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { response: 'reject' },
+      })
 
       return NextResponse.json({ data: null, error: null })
     }
@@ -76,6 +137,16 @@ export async function POST(
       .maybeSingle()
 
     if (existingCouple) {
+      await recordAuditEvent({
+        action: 'couple_invite_respond',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'active_couple_exists', response: 'accept' },
+      })
       return NextResponse.json(
         { data: null, error: 'Você já possui um perfil de casal ativo' },
         { status: 400 }
@@ -127,6 +198,20 @@ export async function POST(
         created_at: now,
       },
     ])
+
+    await recordAuditEvent({
+      action: 'couple_invite_respond',
+      status: 'success',
+      userId: user.id,
+      targetType: 'invitation',
+      targetId: invitation.id,
+      ip: auditMeta.ip,
+      userAgent: auditMeta.userAgent,
+      metadata: {
+        response: 'accept',
+        inviter_id: invitation.inviter_id,
+      },
+    })
 
     return NextResponse.json({ data: null, error: null })
   } catch (err) {

@@ -2,6 +2,7 @@
 
 import { createClient }                              from '@/lib/supabase/server'
 import { adminClient }                               from '@/lib/supabase/admin'
+import { getRequestAuditMeta, recordAuditEvent }     from '@/lib/audit'
 import { NextResponse }                              from 'next/server'
 import type { ApiResponse, CoupleProfile, UserProfile } from '@/types'
 
@@ -56,14 +57,32 @@ export async function GET(): Promise<NextResponse<ApiResponse<CoupleProfile | nu
 
 export async function DELETE(request: Request): Promise<NextResponse<ApiResponse<null>>> {
   try {
+    const auditMeta = await getRequestAuditMeta()
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      await recordAuditEvent({
+        action: 'couple_unlink',
+        status: 'failure',
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'unauthorized' },
+      })
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
 
     const { password } = await request.json()
     if (!password) {
+      await recordAuditEvent({
+        action: 'couple_unlink',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'missing_password' },
+      })
       return NextResponse.json({ data: null, error: 'Senha obrigatória para desvincular' }, { status: 400 })
     }
 
@@ -73,6 +92,16 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
       password,
     })
     if (signInError) {
+      await recordAuditEvent({
+        action: 'couple_unlink',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invalid_password' },
+      })
       return NextResponse.json({ data: null, error: 'Senha incorreta' }, { status: 403 })
     }
 
@@ -85,6 +114,16 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
 
     if (coupleError) throw coupleError
     if (!couple) {
+      await recordAuditEvent({
+        action: 'couple_unlink',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'couple_not_found' },
+      })
       return NextResponse.json({ data: null, error: 'Nenhum vínculo ativo encontrado' }, { status: 404 })
     }
 
@@ -132,6 +171,17 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
         created_at: now,
       },
     ])
+
+    await recordAuditEvent({
+      action: 'couple_unlink',
+      status: 'success',
+      userId: user.id,
+      targetType: 'couple_profile',
+      targetId: couple.id,
+      ip: auditMeta.ip,
+      userAgent: auditMeta.userAgent,
+      metadata: { partner_id: partnerId },
+    })
 
     return NextResponse.json({ data: null, error: null })
   } catch (err) {

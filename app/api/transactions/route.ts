@@ -4,6 +4,7 @@
 
 import { createClient }                                        from '@/lib/supabase/server'
 import { fail, logInternalError }                              from '@/lib/apiResponse'
+import { getRequestAuditMeta, recordAuditEvent }               from '@/lib/audit'
 import { createTransactionSchema }                             from '@/lib/validations/schemas'
 import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
 import { ratelimit }                                           from '@/lib/rateLimit'
@@ -113,9 +114,18 @@ async function getOrCreateInvoice(
 export async function POST(
   request: Request
 ): Promise<NextResponse<ApiResponse<Transaction | Transaction[]>>> {
+  let auditUserId: string | null = null
   try {
+    const auditMeta = await getRequestAuditMeta()
     const { success: allowed } = await ratelimit.limit(await getIP())
     if (!allowed) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'rate_limited' },
+      })
       return NextResponse.json(
         { data: null, error: 'Muitas requisicoes. Tente novamente em 1 minuto.' },
         { status: 429 }
@@ -125,12 +135,30 @@ export async function POST(
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'unauthorized' },
+      })
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    auditUserId = user.id
 
     const body   = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
     if (!parsed.success) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invalid_payload' },
+      })
       return fail(400, 'Dados invalidos')
     }
 
@@ -140,6 +168,16 @@ export async function POST(
       payload: parsed.data,
     })
     if (preparedIdempotency.conflictError) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'idempotency_conflict' },
+      })
       return fail(409, 'Idempotency-Key invalida para esta operacao.')
     }
     if (preparedIdempotency.replay) {
@@ -149,6 +187,16 @@ export async function POST(
       )
     }
     if (preparedIdempotency.inProgress) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'idempotency_in_progress' },
+      })
       return NextResponse.json(
         { data: null, error: 'Requisicao em processamento com a mesma Idempotency-Key.' },
         { status: 409 }
@@ -174,6 +222,16 @@ export async function POST(
       .single()
 
     if (accountError || !account) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'account',
+        targetId: txData.account_id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'account_not_found' },
+      })
       return respond(404, { data: null, error: 'Conta nao encontrada' })
     }
 
@@ -202,15 +260,49 @@ export async function POST(
         .single()
 
       if (error) throw error
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'success',
+        userId: user.id,
+        targetType: 'transaction',
+        targetId: data.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: {
+          amount: txData.amount,
+          installments: 1,
+          account_id: txData.account_id,
+        },
+      })
       return respond(201, { data, error: null })
     }
 
     // ── Transacao parcelada ───────────────────────────────────────────────────
     if (!isCreditCard) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'account',
+        targetId: account.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'installments_requires_credit_card' },
+      })
       return respond(400, { data: null, error: 'Parcelamento disponivel apenas para cartao de credito' })
     }
 
     if (!account.closing_day || !account.due_day) {
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'account',
+        targetId: account.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'credit_card_without_closing_or_due_day' },
+      })
       return respond(400, { data: null, error: 'Cartao sem dia de fechamento ou vencimento configurado' })
     }
 
@@ -265,8 +357,35 @@ export async function POST(
       .select()
 
     if (insertError) throw insertError
+    await recordAuditEvent({
+      action: 'finance_transaction_create',
+      status: 'success',
+      userId: user.id,
+      targetType: 'installment_group',
+      targetId: group.id,
+      ip: auditMeta.ip,
+      userAgent: auditMeta.userAgent,
+      metadata: {
+        amount: txData.amount,
+        installments,
+        account_id: txData.account_id,
+      },
+    })
     return respond(201, { data: created, error: null })
   } catch (err) {
+    if (auditUserId) {
+      const auditMeta = await getRequestAuditMeta()
+      await recordAuditEvent({
+        action: 'finance_transaction_create',
+        status: 'failure',
+        userId: auditUserId,
+        targetType: 'user',
+        targetId: auditUserId,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'internal_error' },
+      })
+    }
     logInternalError('POST /api/transactions', err)
     return fail(500, 'Erro interno')
   }

@@ -2,6 +2,7 @@
 import { createClient }        from '@/lib/supabase/server'
 import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import { logInternalError }    from '@/lib/apiResponse'
+import { getRequestAuditMeta, recordAuditEvent } from '@/lib/audit'
 import { notifySecurityEvent } from '@/lib/securityAlerts'
 import { updateProfileSchema } from '@/lib/validations/schemas'
 import type { ApiResponse, UserProfile } from '@/types'
@@ -48,9 +49,17 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
   if (limited) return limited
 
   try {
+    const auditMeta = await getRequestAuditMeta()
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      await recordAuditEvent({
+        action: 'profile_update',
+        status: 'failure',
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'unauthorized' },
+      })
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
     const userLimited = await checkRateLimitByUser('profile:write', user.id)
@@ -60,6 +69,16 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
     const parsed = updateProfileSchema.safeParse(body)
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? 'Dados inválidos'
+      await recordAuditEvent({
+        action: 'profile_update',
+        status: 'failure',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { reason: 'invalid_payload' },
+      })
       return NextResponse.json({ data: null, error: message }, { status: 400 })
     }
 
@@ -78,8 +97,30 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
     if (email !== undefined && email !== user.email) {
       const { error: emailError } = await supabase.auth.updateUser({ email })
       if (emailError) {
-        return NextResponse.json({ data: null, error: emailError.message }, { status: 400 })
+        logInternalError('PATCH /api/profile email update', emailError)
+        await recordAuditEvent({
+          action: 'auth_email_change_requested',
+          status: 'failure',
+          userId: user.id,
+          targetType: 'user',
+          targetId: user.id,
+          ip: auditMeta.ip,
+          userAgent: auditMeta.userAgent,
+          metadata: { reason: 'provider_update_failed' },
+        })
+        return NextResponse.json({ data: null, error: 'Nao foi possivel solicitar a alteracao de e-mail' }, { status: 400 })
       }
+
+      await recordAuditEvent({
+        action: 'auth_email_change_requested',
+        status: 'success',
+        userId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+        ip: auditMeta.ip,
+        userAgent: auditMeta.userAgent,
+        metadata: { new_email: email },
+      })
 
       notifySecurityEvent(
         user.id,
@@ -96,6 +137,19 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
       .select('id, name, avatar_url')
       .eq('id', user.id)
       .single()
+
+    await recordAuditEvent({
+      action: 'profile_update',
+      status: 'success',
+      userId: user.id,
+      targetType: 'user',
+      targetId: user.id,
+      ip: auditMeta.ip,
+      userAgent: auditMeta.userAgent,
+      metadata: {
+        changed_fields: Object.keys(parsed.data),
+      },
+    })
 
     return NextResponse.json({
       data: {
