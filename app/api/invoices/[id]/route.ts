@@ -2,6 +2,7 @@
 import { createClient }    from '@/lib/supabase/server'
 import { payInvoiceSchema } from '@/lib/validations/schemas'
 import { checkRateLimit }  from '@/lib/apiHelpers'
+import { finalizeIdempotency, prepareIdempotency } from '@/lib/idempotency'
 import type { ApiResponse, CreditInvoice } from '@/types'
 import { NextResponse }    from 'next/server'
 
@@ -26,6 +27,35 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       )
     }
 
+    const preparedIdempotency = await prepareIdempotency(request, {
+      userId: user.id,
+      scope: `invoices:pay:${params.id}`,
+      payload: parsed.data,
+    })
+    if (preparedIdempotency.conflictError) {
+      return NextResponse.json({ data: null, error: preparedIdempotency.conflictError }, { status: 409 })
+    }
+    if (preparedIdempotency.replay) {
+      return NextResponse.json(
+        preparedIdempotency.replay.body as ApiResponse<CreditInvoice>,
+        { status: preparedIdempotency.replay.status }
+      )
+    }
+    if (preparedIdempotency.inProgress) {
+      return NextResponse.json(
+        { data: null, error: 'Requisicao em processamento com a mesma Idempotency-Key.' },
+        { status: 409 }
+      )
+    }
+
+    const respond = async (
+      status: number,
+      payload: ApiResponse<CreditInvoice>
+    ): Promise<NextResponse<ApiResponse<CreditInvoice>>> => {
+      await finalizeIdempotency(preparedIdempotency, status, payload)
+      return NextResponse.json(payload, { status })
+    }
+
     const { data: invoice, error: findError } = await supabase
       .from('credit_invoices')
       .select('*')
@@ -34,18 +64,15 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       .single()
 
     if (findError || !invoice) {
-      return NextResponse.json({ data: null, error: 'Fatura nao encontrada' }, { status: 404 })
+      return respond(404, { data: null, error: 'Fatura nao encontrada' })
     }
 
     if (invoice.status === 'paid') {
-      return NextResponse.json({ data: null, error: 'Fatura ja foi paga' }, { status: 409 })
+      return respond(409, { data: null, error: 'Fatura ja foi paga' })
     }
 
     if (invoice.status === 'open') {
-      return NextResponse.json(
-        { data: null, error: 'Fatura ainda esta aberta - feche antes de pagar' },
-        { status: 409 }
-      )
+      return respond(409, { data: null, error: 'Fatura ainda esta aberta - feche antes de pagar' })
     }
 
     const { error: txError } = await supabase
@@ -71,7 +98,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       .single()
 
     if (updateError) throw updateError
-    return NextResponse.json({ data: updated, error: null })
+    return respond(200, { data: updated, error: null })
   } catch (err) {
     console.error('[POST /api/invoices/:id]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })

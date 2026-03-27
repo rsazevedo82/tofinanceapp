@@ -6,6 +6,7 @@ import { createClient }                                        from '@/lib/supab
 import { createTransactionSchema }                             from '@/lib/validations/schemas'
 import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
 import { ratelimit }                                           from '@/lib/rateLimit'
+import { finalizeIdempotency, prepareIdempotency }             from '@/lib/idempotency'
 import { headers }                                             from 'next/headers'
 import type { ApiResponse, Transaction }                       from '@/types'
 import { NextResponse }                                        from 'next/server'
@@ -135,6 +136,35 @@ export async function POST(
       )
     }
 
+    const preparedIdempotency = await prepareIdempotency(request, {
+      userId: user.id,
+      scope: 'transactions:create',
+      payload: parsed.data,
+    })
+    if (preparedIdempotency.conflictError) {
+      return NextResponse.json({ data: null, error: preparedIdempotency.conflictError }, { status: 409 })
+    }
+    if (preparedIdempotency.replay) {
+      return NextResponse.json(
+        preparedIdempotency.replay.body as ApiResponse<Transaction | Transaction[]>,
+        { status: preparedIdempotency.replay.status }
+      )
+    }
+    if (preparedIdempotency.inProgress) {
+      return NextResponse.json(
+        { data: null, error: 'Requisicao em processamento com a mesma Idempotency-Key.' },
+        { status: 409 }
+      )
+    }
+
+    const respond = async (
+      status: number,
+      payload: ApiResponse<Transaction | Transaction[]>
+    ): Promise<NextResponse<ApiResponse<Transaction | Transaction[]>>> => {
+      await finalizeIdempotency(preparedIdempotency, status, payload)
+      return NextResponse.json(payload, { status })
+    }
+
     const { installments, ...txData } = parsed.data
 
     // Busca conta
@@ -146,7 +176,7 @@ export async function POST(
       .single()
 
     if (accountError || !account) {
-      return NextResponse.json({ data: null, error: 'Conta nao encontrada' }, { status: 404 })
+      return respond(404, { data: null, error: 'Conta nao encontrada' })
     }
 
     const isCreditCard = account.type === 'credit'
@@ -174,22 +204,16 @@ export async function POST(
         .single()
 
       if (error) throw error
-      return NextResponse.json({ data, error: null }, { status: 201 })
+      return respond(201, { data, error: null })
     }
 
     // ── Transacao parcelada ───────────────────────────────────────────────────
     if (!isCreditCard) {
-      return NextResponse.json(
-        { data: null, error: 'Parcelamento disponivel apenas para cartao de credito' },
-        { status: 400 }
-      )
+      return respond(400, { data: null, error: 'Parcelamento disponivel apenas para cartao de credito' })
     }
 
     if (!account.closing_day || !account.due_day) {
-      return NextResponse.json(
-        { data: null, error: 'Cartao sem dia de fechamento ou vencimento configurado' },
-        { status: 400 }
-      )
+      return respond(400, { data: null, error: 'Cartao sem dia de fechamento ou vencimento configurado' })
     }
 
     const baseAmount       = Math.floor((txData.amount / installments) * 100) / 100
@@ -243,7 +267,7 @@ export async function POST(
       .select()
 
     if (insertError) throw insertError
-    return NextResponse.json({ data: created, error: null }, { status: 201 })
+    return respond(201, { data: created, error: null })
   } catch (err) {
     console.error('[POST /api/transactions]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })

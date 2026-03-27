@@ -1,6 +1,7 @@
 ﻿// hooks/useInvoices.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { CreditInvoice, ApiResponse } from '@/types'
+import { generateIdempotencyKey } from '@/lib/idempotencyKey'
 
 export function useInvoices(accountId: string | null) {
   return useQuery({
@@ -26,9 +27,13 @@ export function usePayInvoice() {
       invoiceId: string
       body: Record<string, unknown>
     }) => {
+      const idempotencyKey = generateIdempotencyKey(`invoice-pay-${invoiceId}`)
       const res  = await fetch(`/api/invoices/${invoiceId}`, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey,
+        },
         body:    JSON.stringify(body),
       })
       const json: ApiResponse<CreditInvoice> = await res.json()

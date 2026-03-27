@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Transaction, ApiResponse } from '@/types'
+import { generateIdempotencyKey } from '@/lib/idempotencyKey'
 
 export function useTransactions(params?: {
   start?:      string
@@ -31,9 +32,13 @@ export function useCreateTransaction() {
 
   return useMutation({
     mutationFn: async (body: Record<string, unknown>) => {
+      const idempotencyKey = generateIdempotencyKey('tx-create')
       const res = await fetch('/api/transactions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey,
+        },
         body: JSON.stringify(body),
       })
       const json: ApiResponse<Transaction> = await res.json()

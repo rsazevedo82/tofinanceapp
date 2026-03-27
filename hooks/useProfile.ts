@@ -1,6 +1,5 @@
 // hooks/useProfile.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { createClient as createBrowserClient }   from '@/lib/supabase/client'
 import type { UserProfile } from '@/types'
 import type { UpdateProfileInput, ChangePasswordInput } from '@/lib/validations/schemas'
 
@@ -60,9 +59,11 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      const supabase = createBrowserClient()
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      const res = await fetch('/api/auth/logout', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok || json.error) {
+        throw new Error(json.error ?? 'Erro ao sair da conta')
+      }
     },
     onSuccess: () => {
       queryClient.clear()
