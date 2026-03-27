@@ -1,13 +1,13 @@
 ﻿// app/api/accounts/[id]/route.ts
 import { createClient }        from '@/lib/supabase/server'
 import { updateAccountSchema } from '@/lib/validations/schemas'
-import { checkRateLimit }      from '@/lib/apiHelpers'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import type { ApiResponse, Account } from '@/types'
 import { NextResponse }        from 'next/server'
 
 export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<Account>>> {
   const params = await props.params;
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('accounts:write')
   if (limited) return limited
 
   try {
@@ -16,6 +16,8 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('accounts:write', user.id)
+    if (userLimited) return userLimited
 
     const body   = await request.json()
     const parsed = updateAccountSchema.safeParse(body)
@@ -53,7 +55,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
 
 export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<null>>> {
   const params = await props.params;
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('accounts:write')
   if (limited) return limited
 
   try {
@@ -62,6 +64,8 @@ export async function DELETE(request: Request, props: { params: Promise<{ id: st
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('accounts:write', user.id)
+    if (userLimited) return userLimited
 
     const { data: existing, error: findError } = await supabase
       .from('accounts')

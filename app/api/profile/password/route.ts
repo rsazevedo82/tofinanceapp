@@ -1,6 +1,6 @@
 // app/api/profile/password/route.ts
 import { createClient }          from '@/lib/supabase/server'
-import { getIP }                 from '@/lib/apiHelpers'
+import { getIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import { fail, logInternalError, ok } from '@/lib/apiResponse'
 import { notifySecurityEvent }   from '@/lib/securityAlerts'
 import { changePasswordSchema }  from '@/lib/validations/schemas'
@@ -32,6 +32,8 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
     if (authError || !user) {
       return fail(401, 'Nao autorizado')
     }
+    const userLimited = await checkRateLimitByUser('profile:write', user.id)
+    if (userLimited) return userLimited
 
     const body   = await request.json()
     const parsed = changePasswordSchema.safeParse(body)

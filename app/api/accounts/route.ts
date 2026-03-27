@@ -1,12 +1,12 @@
 ﻿// app/api/accounts/route.ts
 import { createClient }        from '@/lib/supabase/server'
 import { createAccountSchema } from '@/lib/validations/schemas'
-import { checkRateLimit }      from '@/lib/apiHelpers'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import type { ApiResponse, Account } from '@/types'
 import { NextResponse }        from 'next/server'
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Account[]>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('accounts:get')
   if (limited) return limited
 
   try {
@@ -15,6 +15,8 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Ac
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('accounts:get', user.id)
+    if (userLimited) return userLimited
 
     // Suporte a visão do parceiro — RLS valida se o acesso é permitido
     const { searchParams } = new URL(request.url)
@@ -37,7 +39,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Ac
 }
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<Account>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('accounts:write')
   if (limited) return limited
 
   try {
@@ -46,6 +48,8 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<A
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('accounts:write', user.id)
+    if (userLimited) return userLimited
 
     const body   = await request.json()
     const parsed = createAccountSchema.safeParse(body)

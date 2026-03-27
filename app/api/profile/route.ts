@@ -1,6 +1,6 @@
 // app/api/profile/route.ts
 import { createClient }        from '@/lib/supabase/server'
-import { checkRateLimit }      from '@/lib/apiHelpers'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import { logInternalError }    from '@/lib/apiResponse'
 import { notifySecurityEvent } from '@/lib/securityAlerts'
 import { updateProfileSchema } from '@/lib/validations/schemas'
@@ -8,7 +8,7 @@ import type { ApiResponse, UserProfile } from '@/types'
 import { NextResponse }        from 'next/server'
 
 export async function GET(): Promise<NextResponse<ApiResponse<UserProfile>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('profile:get')
   if (limited) return limited
 
   try {
@@ -17,6 +17,8 @@ export async function GET(): Promise<NextResponse<ApiResponse<UserProfile>>> {
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('profile:get', user.id)
+    if (userLimited) return userLimited
 
     const { data: profile, error } = await supabase
       .from('user_profiles')
@@ -42,7 +44,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<UserProfile>>> {
 }
 
 export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<UserProfile>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('profile:write')
   if (limited) return limited
 
   try {
@@ -51,6 +53,8 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('profile:write', user.id)
+    if (userLimited) return userLimited
 
     const body   = await request.json()
     const parsed = updateProfileSchema.safeParse(body)

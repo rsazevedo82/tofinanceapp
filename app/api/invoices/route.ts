@@ -1,12 +1,12 @@
 ﻿// app/api/invoices/route.ts
 import { createClient }     from '@/lib/supabase/server'
-import { checkRateLimit }   from '@/lib/apiHelpers'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import { shouldAutoClose }  from '@/lib/domain/invoices'
 import type { ApiResponse, CreditInvoice } from '@/types'
 import { NextResponse }     from 'next/server'
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<CreditInvoice[]>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('invoices:get')
   if (limited) return limited
 
   try {
@@ -15,6 +15,8 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Cr
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('invoices:get', user.id)
+    if (userLimited) return userLimited
 
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get('account_id')

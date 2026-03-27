@@ -1,12 +1,12 @@
 ﻿// app/api/categories/route.ts
 import { createClient }          from '@/lib/supabase/server'
 import { createCategorySchema }  from '@/lib/validations/schemas'
-import { checkRateLimit }        from '@/lib/apiHelpers'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import type { ApiResponse, Category } from '@/types'
 import { NextResponse }          from 'next/server'
 
 export async function GET(): Promise<NextResponse<ApiResponse<Category[]>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('categories:get')
   if (limited) return limited
 
   try {
@@ -15,6 +15,8 @@ export async function GET(): Promise<NextResponse<ApiResponse<Category[]>>> {
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('categories:get', user.id)
+    if (userLimited) return userLimited
 
     const { data, error } = await supabase
       .from('categories')
@@ -34,7 +36,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<Category[]>>> {
 }
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<Category>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('categories:write')
   if (limited) return limited
 
   try {
@@ -43,6 +45,8 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('categories:write', user.id)
+    if (userLimited) return userLimited
 
     const body   = await request.json()
     const parsed = createCategorySchema.safeParse(body)

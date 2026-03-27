@@ -1,7 +1,7 @@
 // app/api/reports/route.ts
 import { createClient }     from '@/lib/supabase/server'
 import { NextResponse }     from 'next/server'
-import { checkRateLimit }   from '@/lib/apiHelpers'
+import { checkRateLimitByIP, checkRateLimitByUser }   from '@/lib/apiHelpers'
 import type { ApiResponse } from '@/types'
 
 export interface CategoryData {
@@ -77,7 +77,7 @@ function monthRange(ym: string): { start: string; end: string } {
 }
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<ReportsPayload>>> {
-  const limited = await checkRateLimit()
+  const limited = await checkRateLimitByIP('reports:get')
   if (limited) return limited as NextResponse<ApiResponse<ReportsPayload>>
 
   try {
@@ -86,6 +86,8 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('reports:get', user.id)
+    if (userLimited) return userLimited as NextResponse<ApiResponse<ReportsPayload>>
 
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') ?? new Date().toISOString().slice(0, 7)
