@@ -54,7 +54,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
   const defaultType = account?.type ?? availableTypes[0]?.value ?? 'checking'
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
-    resolver:      zodResolver(createAccountSchema),
+    resolver:      zodResolver(createAccountSchema) as never,
     defaultValues: {
       name:         account?.name        ?? '',
       type:         defaultType,
@@ -113,7 +113,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
   const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-4">
 
       {/* Nome */}
       <div>

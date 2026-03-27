@@ -2,6 +2,7 @@
 import { createClient }          from '@/lib/supabase/server'
 import { getIP }                 from '@/lib/apiHelpers'
 import { fail, logInternalError, ok } from '@/lib/apiResponse'
+import { notifySecurityEvent }   from '@/lib/securityAlerts'
 import { changePasswordSchema }  from '@/lib/validations/schemas'
 import { Ratelimit }             from '@upstash/ratelimit'
 import { Redis }                 from '@upstash/redis'
@@ -54,6 +55,13 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
     if (updateError) {
       return fail(400, 'Nao foi possivel alterar a senha')
     }
+
+    notifySecurityEvent(
+      user.id,
+      'security_password_changed',
+      'Senha alterada',
+      'Sua senha foi alterada com sucesso. Se nao foi voce, altere novamente imediatamente.'
+    ).catch((notifyErr) => logInternalError('security:password-changed', notifyErr))
 
     return ok(null)
   } catch (err) {

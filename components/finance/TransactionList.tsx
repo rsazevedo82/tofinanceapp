@@ -188,9 +188,8 @@ function EditModal({
             {confirmDelete && (
               <button
                 type="button"
-                onClick={onDelete}
-                className="w-full py-2 text-xs mt-1 transition-colors"
-                className="text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                onClick={onClose}
+                className="w-full py-2 text-xs mt-1 text-[#6B7280] hover:text-[#0F172A] transition-colors"
               >
                 Cancelar
               </button>

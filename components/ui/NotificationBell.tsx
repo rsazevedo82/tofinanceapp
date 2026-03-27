@@ -12,6 +12,9 @@ const TYPE_ICONS: Record<string, string> = {
   couple_unlinked: '💔',
   goal_reached:    '🎯',
   invoice_closed:  '💳',
+  security_new_device: '🛡️',
+  security_password_changed: '🔐',
+  security_email_change_requested: '📧',
 }
 
 function timeAgo(dateStr: string): string {

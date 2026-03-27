@@ -35,7 +35,7 @@ type TableRow = Record<string, unknown>
 interface DataTableProps {
   columns: { key: string; label: string; align?: 'left' | 'right' }[]
   rows:    TableRow[]
-  formatValue?: (key: string, value: string | number | null) => string
+  formatValue?: (key: string, value: unknown) => string
 }
 
 export function DataTable({ columns, rows, formatValue }: DataTableProps) {

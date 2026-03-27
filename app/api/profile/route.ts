@@ -1,6 +1,8 @@
 // app/api/profile/route.ts
 import { createClient }        from '@/lib/supabase/server'
 import { checkRateLimit }      from '@/lib/apiHelpers'
+import { logInternalError }    from '@/lib/apiResponse'
+import { notifySecurityEvent } from '@/lib/securityAlerts'
 import { updateProfileSchema } from '@/lib/validations/schemas'
 import type { ApiResponse, UserProfile } from '@/types'
 import { NextResponse }        from 'next/server'
@@ -74,6 +76,14 @@ export async function PATCH(request: Request): Promise<NextResponse<ApiResponse<
       if (emailError) {
         return NextResponse.json({ data: null, error: emailError.message }, { status: 400 })
       }
+
+      notifySecurityEvent(
+        user.id,
+        'security_email_change_requested',
+        'Solicitacao de alteracao de e-mail',
+        `Recebemos uma solicitacao para alterar o e-mail da sua conta para ${email}.`,
+        { new_email: email }
+      ).catch((notifyErr) => logInternalError('security:email-change-requested', notifyErr))
     }
 
     // Retorna perfil atualizado

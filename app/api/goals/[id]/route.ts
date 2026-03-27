@@ -2,7 +2,6 @@
 
 import { createClient }      from '@/lib/supabase/server'
 import { updateGoalSchema }  from '@/lib/validations/schemas'
-import { headers }           from 'next/headers'
 import { NextResponse }      from 'next/server'
 import type { ApiResponse, Goal } from '@/types'
 

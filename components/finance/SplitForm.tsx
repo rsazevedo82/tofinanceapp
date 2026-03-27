@@ -23,7 +23,7 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
 
   const { register, handleSubmit, watch, control, formState: { errors } } =
     useForm<CreateSplitInput>({
-      resolver: zodResolver(createSplitSchema),
+      resolver: zodResolver(createSplitSchema) as never,
       defaultValues: {
         couple_id:           couple.id,
         date:                today,
@@ -41,7 +41,7 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
   const partnerName = couple.partner?.name ?? 'Parceiro(a)'
 
   return (
-    <form onSubmit={handleSubmit(onSave)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSave as never)} className="space-y-5">
       <input type="hidden" {...register('couple_id')} />
 
       {/* Descrição */}

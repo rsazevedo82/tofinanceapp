@@ -137,7 +137,7 @@ export function Sidebar() {
               className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
               style={{ background: 'rgba(255,127,80,0.15)', color: '#FF7F50' }}
             >
-              {(profile.name ?? profile.email).charAt(0).toUpperCase()}
+              {(profile?.name ?? profile?.email ?? '?').charAt(0).toUpperCase()}
             </div>
           ) : (
             <FcManager size={18} className="w-4 shrink-0" />

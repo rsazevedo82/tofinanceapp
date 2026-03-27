@@ -65,6 +65,8 @@ export interface Transaction {
   deleted_at:           string | null
   created_at:           string
   updated_at:           string
+  account?:             { id: string; name: string; color: string | null; icon: string | null }
+  category?:            { id: string; name: string; color: string | null; icon: string | null }
 }
 
 export interface Category {
@@ -88,8 +90,9 @@ export interface ApiResponse<T> {
 export interface UserProfile {
   id:         string
   name:       string | null
+  email:      string
   avatar_url: string | null
-  updated_at: string
+  updated_at?: string
 }
 
 export interface CoupleProfile {
@@ -185,6 +188,9 @@ export type NotificationType =
   | 'couple_unlinked'
   | 'goal_reached'
   | 'invoice_closed'
+  | 'security_new_device'
+  | 'security_password_changed'
+  | 'security_email_change_requested'
 
 export interface Notification {
   id:         string
@@ -254,10 +260,4 @@ export interface ReportsPayload {
     end:   string
     month: string
   }
-}
-export interface UserProfile {
-  id:         string
-  name:       string | null
-  email:      string
-  avatar_url: string | null
 }

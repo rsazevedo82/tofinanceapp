@@ -131,7 +131,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver:      zodResolver(transactionFormSchema),
+    resolver:      zodResolver(transactionFormSchema) as never,
     defaultValues: {
       account_id:  transaction?.account_id  ?? '',
       category_id: transaction?.category_id ?? '',
@@ -234,7 +234,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
   const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-3">
 
       {/* Tipo */}
       <div className="grid grid-cols-3 gap-1.5">

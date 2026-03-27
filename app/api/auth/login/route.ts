@@ -3,6 +3,7 @@ import type { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { clearAuthFailures, getAuthLock, registerAuthFailure } from '@/lib/authThrottle'
 import { fail, logInternalError, ok } from '@/lib/apiResponse'
+import { notifyNewDeviceIfNeeded, tryGetUserIdFromAccessToken } from '@/lib/securityAlerts'
 import type { ApiResponse } from '@/types'
 
 const loginSchema = z.object({
@@ -15,9 +16,14 @@ type LoginSession = {
   refresh_token: string
 }
 
-async function getIP(): Promise<string> {
+async function getRequestMeta(): Promise<{ ip: string; userAgent: string; city?: string | null; country?: string | null }> {
   const h = await headers()
-  return h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1'
+  return {
+    ip: h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1',
+    userAgent: h.get('user-agent') ?? '',
+    city: h.get('x-vercel-ip-city'),
+    country: h.get('x-vercel-ip-country'),
+  }
 }
 
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<LoginSession>>> {
@@ -29,7 +35,8 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
     }
 
     const email = parsed.data.email.trim().toLowerCase()
-    const ip = await getIP()
+    const meta = await getRequestMeta()
+    const ip = meta.ip
 
     const lock = await getAuthLock('login', email, ip)
     if (lock.blocked) {
@@ -63,6 +70,17 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
     }
 
     await clearAuthFailures('login', email, ip)
+
+    const userId = tryGetUserIdFromAccessToken(json.access_token)
+    if (userId) {
+      notifyNewDeviceIfNeeded({
+        userId,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        city: meta.city,
+        country: meta.country,
+      }).catch((notifyErr) => logInternalError('security:new-device:login', notifyErr))
+    }
 
     return ok({
       access_token: json.access_token,

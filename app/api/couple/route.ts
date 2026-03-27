@@ -39,6 +39,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<CoupleProfile | nu
     const partner: UserProfile = {
       id:         partnerId,
       name:       partnerProfile?.name ?? partnerAuth?.email?.split('@')[0] ?? 'Parceiro',
+      email:      partnerAuth?.email ?? '',
       avatar_url: partnerProfile?.avatar_url ?? null,
       updated_at: partnerProfile?.updated_at ?? couple.created_at,
     }

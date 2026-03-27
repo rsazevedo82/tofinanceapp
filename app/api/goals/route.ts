@@ -1,7 +1,6 @@
 // app/api/goals/route.ts
 
 import { createClient }        from '@/lib/supabase/server'
-import { adminClient }         from '@/lib/supabase/admin'
 import { createGoalSchema }    from '@/lib/validations/schemas'
 import { ratelimit }           from '@/lib/rateLimit'
 import { headers }             from 'next/headers'

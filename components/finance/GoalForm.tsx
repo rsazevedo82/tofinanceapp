@@ -51,7 +51,6 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
     })
 
   const selectedCategory = watch('category')
-  const selectedIcon     = watch('icon')
 
   function onCategorySelect(cat: typeof CATEGORY_OPTIONS[0]) {
     setValue('category', cat.value)
