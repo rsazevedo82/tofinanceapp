@@ -3,6 +3,7 @@
 // saldo e total de fatura manualmente — o banco faz isso atomicamente.
 
 import { createClient }                                        from '@/lib/supabase/server'
+import { fail, logInternalError }                              from '@/lib/apiResponse'
 import { createTransactionSchema }                             from '@/lib/validations/schemas'
 import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
 import { ratelimit }                                           from '@/lib/rateLimit'
@@ -130,10 +131,7 @@ export async function POST(
     const body   = await request.json()
     const parsed = createTransactionSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json(
-        { data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' },
-        { status: 400 }
-      )
+      return fail(400, 'Dados invalidos')
     }
 
     const preparedIdempotency = await prepareIdempotency(request, {
@@ -142,7 +140,7 @@ export async function POST(
       payload: parsed.data,
     })
     if (preparedIdempotency.conflictError) {
-      return NextResponse.json({ data: null, error: preparedIdempotency.conflictError }, { status: 409 })
+      return fail(409, 'Idempotency-Key invalida para esta operacao.')
     }
     if (preparedIdempotency.replay) {
       return NextResponse.json(
@@ -269,7 +267,7 @@ export async function POST(
     if (insertError) throw insertError
     return respond(201, { data: created, error: null })
   } catch (err) {
-    console.error('[POST /api/transactions]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
+    logInternalError('POST /api/transactions', err)
+    return fail(500, 'Erro interno')
   }
 }

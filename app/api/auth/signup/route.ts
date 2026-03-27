@@ -1,7 +1,8 @@
 import { headers } from 'next/headers'
-import { NextResponse } from 'next/server'
+import type { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { clearAuthFailures, getAuthLock, registerAuthFailure } from '@/lib/authThrottle'
+import { fail, logInternalError, ok } from '@/lib/apiResponse'
 import type { ApiResponse } from '@/types'
 
 const signupSchema = z.object({
@@ -30,10 +31,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<S
     const body = await request.json()
     const parsed = signupSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json(
-        { data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' },
-        { status: 400 }
-      )
+      return fail(400, 'Dados invalidos')
     }
 
     const email = parsed.data.email.trim().toLowerCase()
@@ -41,13 +39,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<S
 
     const lock = await getAuthLock('signup', email, ip)
     if (lock.blocked) {
-      return NextResponse.json(
-        {
-          data: null,
-          error: `Muitas tentativas. Aguarde ${lock.retryAfter}s para tentar novamente.`,
-        },
-        { status: 429 }
-      )
+      return fail(429, `Muitas tentativas. Aguarde ${lock.retryAfter}s para tentar novamente.`)
     }
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/signup`, {
@@ -66,39 +58,24 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<S
     if (!res.ok || json?.error || json?.msg) {
       const failure = await registerAuthFailure('signup', email, ip)
       if (failure.blocked) {
-        return NextResponse.json(
-          {
-            data: null,
-            error: `Cadastro temporariamente bloqueado. Aguarde ${failure.retryAfter}s.`,
-          },
-          { status: 429 }
-        )
+        return fail(429, `Cadastro temporariamente bloqueado. Aguarde ${failure.retryAfter}s.`)
       }
 
-      return NextResponse.json(
-        { data: null, error: 'Nao foi possivel criar a conta com estes dados.' },
-        { status: 400 }
-      )
+      return fail(400, 'Nao foi possivel criar a conta com estes dados.')
     }
 
     await clearAuthFailures('signup', email, ip)
 
-    return NextResponse.json({
-      data: {
-        session: json?.session
-          ? {
-            access_token: json.session.access_token,
-            refresh_token: json.session.refresh_token,
-          }
-          : null,
-      },
-      error: null,
+    return ok({
+      session: json?.session
+        ? {
+          access_token: json.session.access_token,
+          refresh_token: json.session.refresh_token,
+        }
+        : null,
     })
   } catch (err) {
-    console.error('[POST /api/auth/signup]', err)
-    return NextResponse.json(
-      { data: null, error: 'Erro interno' },
-      { status: 500 }
-    )
+    logInternalError('POST /api/auth/signup', err)
+    return fail(500, 'Erro interno')
   }
 }

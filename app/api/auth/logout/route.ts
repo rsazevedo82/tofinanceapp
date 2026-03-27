@@ -1,6 +1,7 @@
 // app/api/auth/logout/route.ts
 import { createClient }  from '@/lib/supabase/server'
-import { NextResponse }  from 'next/server'
+import type { NextResponse } from 'next/server'
+import { fail, logInternalError, ok } from '@/lib/apiResponse'
 import type { ApiResponse } from '@/types'
 
 export async function POST(): Promise<NextResponse<ApiResponse<null>>> {
@@ -8,11 +9,11 @@ export async function POST(): Promise<NextResponse<ApiResponse<null>>> {
     const supabase = await createClient()
     const { error } = await supabase.auth.signOut({ scope: 'global' })
     if (error) {
-      return NextResponse.json({ data: null, error: 'Nao foi possivel encerrar a sessao' }, { status: 500 })
+      return fail(500, 'Nao foi possivel encerrar a sessao')
     }
-    return NextResponse.json({ data: null, error: null })
+    return ok(null)
   } catch (err) {
-    console.error('[POST /api/auth/logout]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
+    logInternalError('POST /api/auth/logout', err)
+    return fail(500, 'Erro interno')
   }
 }

@@ -108,7 +108,7 @@ export default function AtualizarSenhaPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password })
 
     if (updateError) {
-      setError(updateError.message || 'Nao foi possivel atualizar a senha. Solicite um novo link.')
+      setError('Nao foi possivel atualizar a senha. Solicite um novo link.')
       setLoading(false)
       return
     }

@@ -1,5 +1,6 @@
 ﻿// app/api/invoices/[id]/route.ts
 import { createClient }    from '@/lib/supabase/server'
+import { fail, logInternalError } from '@/lib/apiResponse'
 import { payInvoiceSchema } from '@/lib/validations/schemas'
 import { checkRateLimit }  from '@/lib/apiHelpers'
 import { finalizeIdempotency, prepareIdempotency } from '@/lib/idempotency'
@@ -21,10 +22,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const body   = await request.json()
     const parsed = payInvoiceSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json(
-        { data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' },
-        { status: 400 }
-      )
+      return fail(400, 'Dados invalidos')
     }
 
     const preparedIdempotency = await prepareIdempotency(request, {
@@ -33,7 +31,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       payload: parsed.data,
     })
     if (preparedIdempotency.conflictError) {
-      return NextResponse.json({ data: null, error: preparedIdempotency.conflictError }, { status: 409 })
+      return fail(409, 'Idempotency-Key invalida para esta operacao.')
     }
     if (preparedIdempotency.replay) {
       return NextResponse.json(
@@ -100,7 +98,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     if (updateError) throw updateError
     return respond(200, { data: updated, error: null })
   } catch (err) {
-    console.error('[POST /api/invoices/:id]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
+    logInternalError('POST /api/invoices/:id', err)
+    return fail(500, 'Erro interno')
   }
 }

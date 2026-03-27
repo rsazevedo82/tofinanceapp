@@ -1,7 +1,8 @@
 import { headers } from 'next/headers'
-import { NextResponse } from 'next/server'
+import type { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { clearAuthFailures, getAuthLock, registerAuthFailure } from '@/lib/authThrottle'
+import { fail, logInternalError, ok } from '@/lib/apiResponse'
 import type { ApiResponse } from '@/types'
 
 const loginSchema = z.object({
@@ -24,10 +25,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
     const body = await request.json()
     const parsed = loginSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json(
-        { data: null, error: parsed.error.issues[0]?.message ?? 'Dados invalidos' },
-        { status: 400 }
-      )
+      return fail(400, 'Dados invalidos')
     }
 
     const email = parsed.data.email.trim().toLowerCase()
@@ -35,13 +33,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
 
     const lock = await getAuthLock('login', email, ip)
     if (lock.blocked) {
-      return NextResponse.json(
-        {
-          data: null,
-          error: `Muitas tentativas. Aguarde ${lock.retryAfter}s para tentar novamente.`,
-        },
-        { status: 429 }
-      )
+      return fail(429, `Muitas tentativas. Aguarde ${lock.retryAfter}s para tentar novamente.`)
     }
 
     const res = await fetch(
@@ -64,35 +56,20 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<L
     if (!res.ok || !json?.access_token || !json?.refresh_token) {
       const failure = await registerAuthFailure('login', email, ip)
       if (failure.blocked) {
-        return NextResponse.json(
-          {
-            data: null,
-            error: `Conta temporariamente bloqueada. Aguarde ${failure.retryAfter}s.`,
-          },
-          { status: 429 }
-        )
+        return fail(429, `Conta temporariamente bloqueada. Aguarde ${failure.retryAfter}s.`)
       }
 
-      return NextResponse.json(
-        { data: null, error: 'Email ou senha incorretos' },
-        { status: 401 }
-      )
+      return fail(401, 'Email ou senha incorretos')
     }
 
     await clearAuthFailures('login', email, ip)
 
-    return NextResponse.json({
-      data: {
-        access_token: json.access_token,
-        refresh_token: json.refresh_token,
-      },
-      error: null,
+    return ok({
+      access_token: json.access_token,
+      refresh_token: json.refresh_token,
     })
   } catch (err) {
-    console.error('[POST /api/auth/login]', err)
-    return NextResponse.json(
-      { data: null, error: 'Erro interno' },
-      { status: 500 }
-    )
+    logInternalError('POST /api/auth/login', err)
+    return fail(500, 'Erro interno')
   }
 }
