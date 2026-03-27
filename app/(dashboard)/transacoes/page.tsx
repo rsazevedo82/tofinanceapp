@@ -42,11 +42,11 @@ function MonthSelect({
   }, [])
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative w-full sm:w-auto">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="input text-xs py-1.5 px-3 flex items-center gap-2 text-[#0F172A]"
+        className="input w-full sm:w-auto min-h-[44px] text-sm py-2 px-3 flex items-center gap-2 text-[#0F172A]"
         style={{ minWidth: '140px' }}
       >
         <span className="flex-1 text-left">{selected?.label ?? value}</span>
@@ -55,7 +55,7 @@ function MonthSelect({
 
       {open && (
         <div
-          className="absolute right-0 z-50 mt-1 rounded-xl shadow-xl bg-white"
+          className="absolute left-0 sm:left-auto sm:right-0 z-50 mt-1 rounded-xl shadow-xl bg-white w-full sm:w-auto"
           style={{
             border:     '1px solid #D1D5DB',
             minWidth:   '160px',
