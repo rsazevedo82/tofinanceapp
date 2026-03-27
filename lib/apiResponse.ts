@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { sanitizeForLog } from '@/lib/logSanitizer'
 import type { ApiResponse } from '@/types'
 
 export function ok<T>(data: T, status = 200): NextResponse<ApiResponse<T>> {
@@ -10,5 +11,5 @@ export function fail<T>(status: number, message: string): NextResponse<ApiRespon
 }
 
 export function logInternalError(context: string, err: unknown): void {
-  console.error(`[${context}]`, err)
+  console.error(`[${context}]`, sanitizeForLog(err))
 }

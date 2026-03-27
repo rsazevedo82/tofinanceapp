@@ -145,6 +145,9 @@ Soft delete — define `deleted_at` com o timestamp atual.
 - **RLS:** Row Level Security no Supabase — usuários acessam apenas seus próprios dados
 - **Headers de segurança:** CSP, HSTS, X-Frame-Options configurados via `next.config.mjs`
 - **Senhas:** Mínimo 10 caracteres com letras e números
+- **Auditoria:** Eventos sensíveis registrados em trilha de auditoria
+- **Logs seguros:** Sanitização automática para redigir segredos e tokens
+- **Runbook operacional:** rotação de segredos + política de logs em `docs/security-operations.md`
 
 ---
 
@@ -256,6 +259,7 @@ Crie um arquivo `.env.local` na raiz:
 NEXT_PUBLIC_APP_URL=https://www.nos2reais.com.br
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```

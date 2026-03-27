@@ -1,3 +1,5 @@
+import { sanitizeForLog } from '@/lib/logSanitizer'
+
 type LogLevel = 'info' | 'warn' | 'error'
 
 interface LogEntry {
@@ -16,7 +18,7 @@ export function log(level: LogLevel, action: string, details?: {
     level,
     action,
     userId:    details?.userId,
-    details,
+    details: sanitizeForLog(details) as Record<string, unknown> | undefined,
     timestamp: new Date().toISOString(),
   }
 
