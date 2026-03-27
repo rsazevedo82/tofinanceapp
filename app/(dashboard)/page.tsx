@@ -58,19 +58,19 @@ export default function DashboardPage() {
   })
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 md:mb-10">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Visão geral', 'Como vocês estão hoje')}
           </h1>
-          <p className="text-base font-bold capitalize mt-1 text-[#6B7280]">
+          <p className="text-sm md:text-base font-bold capitalize mt-1 text-[#6B7280]">
             {month}
           </p>
         </div>
-        <button onClick={() => setShowTx(true)} className="btn-primary">
+        <button onClick={() => setShowTx(true)} className="btn-primary w-full sm:w-auto">
           <span className="text-lg leading-none">+</span>
           Registrar gasto
         </button>
@@ -79,7 +79,7 @@ export default function DashboardPage() {
       {/* ── Notificações não lidas ── */}
       {unread.length > 0 && (
         <div
-          className="mb-8 rounded-xl overflow-hidden"
+          className="mb-6 md:mb-8 rounded-xl overflow-hidden"
           style={{ border: '1px solid rgba(255,127,80,0.25)', background: 'rgba(255,127,80,0.05)' }}
         >
           <div
@@ -98,33 +98,43 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {unread.slice(0, 3).map((n: Notification) => (
-            <div
-              key={n.id}
-              className="flex items-start gap-3 px-5 py-4"
-              style={{ borderBottom: '1px solid #D1D5DB' }}
-            >
-              <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '🔔'}</span>
-              <div>
-                <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
-                <p className="text-sm mt-0.5 text-[#6B7280]">{n.body}</p>
+          <div className="md:hidden">
+            {unread.slice(0, 1).map((n: Notification) => (
+              <div
+                key={n.id}
+                className="flex items-start gap-3 px-4 py-3.5"
+                style={{ borderBottom: '1px solid #D1D5DB' }}
+              >
+                <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '🔔'}</span>
+                <div>
+                  <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
+                  <p className="text-sm mt-0.5 text-[#6B7280] line-clamp-2">{n.body}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="hidden md:block">
+            {unread.slice(0, 3).map((n: Notification) => (
+              <div
+                key={n.id}
+                className="flex items-start gap-3 px-5 py-4"
+                style={{ borderBottom: '1px solid #D1D5DB' }}
+              >
+                <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '🔔'}</span>
+                <div>
+                  <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
+                  <p className="text-sm mt-0.5 text-[#6B7280]">{n.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
           {unread.length > 3 && (
             <p className="px-5 py-3 text-xs text-[#6B7280]">
               +{unread.length - 3} notificações no sino acima
             </p>
           )}
         </div>
-      )}
-
-      {/* ── Onboarding ── */}
-      {data && (
-        <OnboardingChecklist
-          dashboardData={data}
-          onNewTransaction={() => setShowTx(true)}
-        />
       )}
 
       {isLoading ? (
@@ -134,12 +144,12 @@ export default function DashboardPage() {
       ) : data ? (
         <>
           {/* ── KPIs principais ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 mb-5 md:mb-6">
 
             {/* Saldo */}
             <div className="card sm:col-span-1">
               <p className="label">Saldo em contas</p>
-              <p className={`text-3xl font-black tracking-tight mt-1 ${
+              <p className={`text-2xl md:text-3xl font-black tracking-tight mt-1 ${
                 data.total_balance >= 0 ? 'text-[#0F172A]' : 'text-[#EF4444]'
               }`}>
                 {formatCurrency(data.total_balance)}
@@ -152,7 +162,7 @@ export default function DashboardPage() {
             {/* Receitas */}
             <div className="card">
               <p className="label">Receitas</p>
-              <p className="text-3xl font-black tracking-tight mt-1 text-[#2DD4BF]">
+              <p className="text-2xl md:text-3xl font-black tracking-tight mt-1 text-[#2DD4BF]">
                 {formatCurrency(data.income_month)}
               </p>
               <p className="text-xs mt-2 text-[#6B7280]">Entradas no mês</p>
@@ -161,7 +171,7 @@ export default function DashboardPage() {
             {/* Despesas */}
             <div className="card">
               <p className="label">Despesas</p>
-              <p className="text-3xl font-black tracking-tight mt-1 text-[#EF4444]">
+              <p className="text-2xl md:text-3xl font-black tracking-tight mt-1 text-[#EF4444]">
                 {formatCurrency(data.expense_month)}
               </p>
               <p className="text-xs mt-2 text-[#6B7280]">Saídas no mês</p>
@@ -188,6 +198,14 @@ export default function DashboardPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* ── Onboarding ── */}
+          <div className="mb-6">
+            <OnboardingChecklist
+              dashboardData={data}
+              onNewTransaction={() => setShowTx(true)}
+            />
           </div>
 
           {/* ── Cartões de crédito ── */}
@@ -253,7 +271,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
 
             {/* ── Transações recentes ── */}
             <div>

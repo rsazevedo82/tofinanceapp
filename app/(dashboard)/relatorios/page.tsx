@@ -28,7 +28,7 @@ function MonthSelector({ value, onChange }: { value: string; onChange: (v: strin
 
   return (
     <select
-      className="input text-xs py-1.5 px-2"
+      className="input text-sm py-2 px-3 min-h-[44px]"
       value={value}
       onChange={e => onChange(e.target.value)}
       style={{ width: 'auto' }}
@@ -97,28 +97,30 @@ export default function RelatoriosPage() {
   const { data, isLoading, error } = useReports(month)
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 mb-7 md:mb-8">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Seus relatórios', 'Relatórios de vocês')}
           </h1>
           <p className="text-sm mt-1 text-[#6B7280]">
             {c(isCouple, 'Entenda melhor seu dinheiro', 'Entendam como vocês estão usando o dinheiro')}
           </p>
         </div>
-        <MonthSelector value={month} onChange={setMonth} />
+        <div className="w-full sm:w-auto">
+          <MonthSelector value={month} onChange={setMonth} />
+        </div>
       </div>
 
       {/* Abas */}
-      <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
+      <div className="flex gap-1 mb-5 md:mb-6 overflow-x-auto pb-1">
         {TABS.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0"
+            className="px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0"
             style={{
               background: activeTab === tab.key ? 'rgba(255,127,80,0.1)' : 'transparent',
               color:      activeTab === tab.key ? '#FF7F50' : '#6B7280',

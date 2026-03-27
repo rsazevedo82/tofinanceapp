@@ -163,20 +163,20 @@ export default function TransacoesPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 mb-7 md:mb-8">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Seus gastos', 'Gastos de vocês')}
           </h1>
           <p className="text-sm mt-1 text-[#6B7280]">
             {transactions.length} movimentação{transactions.length !== 1 ? 'ões' : ''} no período
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <MonthSelect value={selectedMonth} onChange={setSelectedMonth} options={monthOptions} />
-          <button onClick={() => setShowCreate(true)} className="btn-primary">
+          <button onClick={() => setShowCreate(true)} className="btn-primary w-full sm:w-auto">
             <span className="text-lg leading-none">+</span>
             Registrar gasto
           </button>
@@ -184,22 +184,22 @@ export default function TransacoesPage() {
       </div>
 
       {/* Resumo */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 md:mb-8">
         <div className="card">
           <p className="label">Receitas</p>
-          <p className="text-lg font-bold" style={{ color: '#2DD4BF' }}>
+          <p className="text-base sm:text-lg font-bold" style={{ color: '#2DD4BF' }}>
             {formatCurrency(totalIncome)}
           </p>
         </div>
         <div className="card">
           <p className="label">Despesas</p>
-          <p className="text-lg font-bold" style={{ color: '#FF7F50' }}>
+          <p className="text-base sm:text-lg font-bold" style={{ color: '#FF7F50' }}>
             {formatCurrency(totalExpense)}
           </p>
         </div>
         <div className="card">
           <p className="label">Saldo</p>
-          <p className={`text-lg font-bold ${
+          <p className={`text-base sm:text-lg font-bold ${
             totalIncome - totalExpense >= 0 ? 'text-[#0F172A]' : 'text-[#FF7F50]'
           }`}>
             {formatCurrency(totalIncome - totalExpense)}
