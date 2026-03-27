@@ -2,6 +2,7 @@
 'use client'
 
 import { useState }          from 'react'
+import Link                  from 'next/link'
 import { useGoals, useCreateGoal, useUpdateGoal } from '@/hooks/useGoals'
 import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
@@ -87,7 +88,7 @@ export default function ObjetivosPage() {
           <p className="text-[#0F172A] font-semibold mb-1">Nenhum perfil de casal vinculado</p>
           <p className="text-sm text-[#6B7280]">
             Vincule-se ao seu parceiro em{' '}
-            <a href="/casal" className="text-[#FF7F50] hover:underline font-medium">Perfil Casal</a>{' '}
+            <Link href="/casal" className="text-[#FF7F50] hover:underline font-medium">Perfil Casal</Link>{' '}
             para criar objetivos compartilhados.
           </p>
         </div>

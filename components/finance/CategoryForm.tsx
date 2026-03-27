@@ -170,7 +170,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             type="button"
             onClick={handleDelete}
             disabled={deleteCategory.isPending}
-            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            className={`touch-target w-full rounded-xl text-sm font-medium transition-colors ${
               confirmDelete
                 ? 'bg-red-500 text-white hover:bg-red-600'
                 : 'bg-transparent text-red-500 border border-red-200 hover:bg-red-50'
@@ -187,7 +187,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="w-full py-2 text-xs text-[#6B7280] hover:text-[#0F172A] transition-colors"
+              className="touch-target w-full text-xs text-[#6B7280] hover:text-[#0F172A] transition-colors"
             >
               Cancelar exclusão
             </button>

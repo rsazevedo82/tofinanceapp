@@ -2,6 +2,7 @@
 
 import { useState }       from 'react'
 import Image              from 'next/image'
+import Link               from 'next/link'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
 
@@ -151,17 +152,17 @@ export default function LoginPage() {
             </button>
 
             <p className="text-right">
-              <a href="/recuperar-senha" className="text-xs text-[#6B7280] hover:text-[#FF7F50] transition-colors">
+              <Link href="/recuperar-senha" className="text-xs text-[#6B7280] hover:text-[#FF7F50] transition-colors">
                 Esqueci minha senha
-              </a>
+              </Link>
             </p>
           </form>
 
           <p className="text-center text-sm mt-6 text-[#6B7280]">
             Não tem conta?{' '}
-            <a href="/cadastro" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+            <Link href="/cadastro" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
               Criar conta
-            </a>
+            </Link>
           </p>
         </div>
       </div>

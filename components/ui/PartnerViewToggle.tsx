@@ -19,7 +19,7 @@ export function PartnerViewToggle() {
       {/* Meu perfil */}
       <button
         onClick={() => isViewingPartner && togglePartnerView()}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+        className="touch-target flex items-center gap-1.5 px-3 rounded-lg text-sm font-medium transition-all"
         style={{
           background: !isViewingPartner ? '#ffffff' : 'transparent',
           color:      !isViewingPartner ? '#0F172A' : '#6B7280',
@@ -33,7 +33,7 @@ export function PartnerViewToggle() {
       {/* Perfil do parceiro */}
       <button
         onClick={() => !isViewingPartner && togglePartnerView()}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+        className="touch-target flex items-center gap-1.5 px-3 rounded-lg text-sm font-medium transition-all"
         style={{
           background: isViewingPartner ? 'rgba(255,127,80,0.1)' : 'transparent',
           color:      isViewingPartner ? '#FF7F50' : '#6B7280',

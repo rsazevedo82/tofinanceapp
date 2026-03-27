@@ -81,7 +81,7 @@ function DeleteCardModal({
         <button
           onClick={handleConfirm}
           disabled={deleteAccount.isPending || !password}
-          className="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+          className="touch-target flex-1 px-4 rounded-lg text-sm font-medium transition-colors"
           style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626',
                    border: '1px solid rgba(239,68,68,0.2)' }}
         >
@@ -252,7 +252,7 @@ function CardItem({
           {/* Botão excluir */}
           <button
             onClick={onDelete}
-            className="text-[10px] px-2 py-1 rounded-lg transition-colors"
+            className="touch-target text-xs px-3 rounded-lg transition-colors"
             style={{ color: '#dc2626', background: 'rgba(239,68,68,0.06)' }}
           >
             Excluir
@@ -260,7 +260,7 @@ function CardItem({
           {/* Botão editar */}
           <button
             onClick={onEdit}
-            className="text-[10px] px-2 py-1 rounded-lg transition-colors"
+            className="touch-target text-xs px-3 rounded-lg transition-colors"
             style={{
               color:      '#6B7280',
               background: 'rgba(107,114,128,0.08)',

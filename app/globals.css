@@ -84,9 +84,10 @@
 
   /* ── Botões ── */
   .btn-primary {
-    @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold
            transition-all duration-150
            disabled:opacity-40 disabled:cursor-not-allowed;
+    min-height: 44px;
     background: #FF7F50;
     color: #FDFCF0;
     border: none;
@@ -95,13 +96,31 @@
   .btn-primary:active { transform: scale(0.98); }
 
   .btn-ghost {
-    @apply px-3 py-2 rounded-lg text-sm font-medium
-           transition-all duration-150;
+    @apply inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium
+           transition-all duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    min-height: 44px;
     color: #0F172A;
     border: 1px solid rgba(148,163,184,0.35);
     background: transparent;
   }
   .btn-ghost:hover { background: rgba(15,23,42,0.04); }
+
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+           transition-all duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    min-height: 44px;
+    color: #0F172A;
+    border: 1px solid rgba(148,163,184,0.35);
+    background: #ffffff;
+  }
+  .btn-secondary:hover { background: rgba(15,23,42,0.04); }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
 
   /* ── Inputs ── */
   .input {
@@ -124,6 +143,29 @@
     color: #6B7280;
     text-transform: uppercase;
     letter-spacing: 0.6px;
+  }
+
+  .label-sm {
+    @apply block text-xs font-semibold mb-1.5;
+    color: #6B7280;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2.5 rounded-lg transition-all duration-150
+           focus:outline-none;
+    font-size: 1rem;
+    line-height: 1.25rem;
+    color: #0F172A;
+    background: #ffffff;
+    border: 1px solid rgba(148,163,184,0.35);
+  }
+  .input-field::placeholder { color: #94A3B8; }
+  .input-field:hover  { border-color: rgba(148,163,184,0.6); }
+  .input-field:focus  { border-color: #FF7F50; box-shadow: 0 0 0 3px rgba(255,127,80,0.12); }
+
+  .error-msg {
+    @apply mt-1 text-xs;
+    color: #DC2626;
   }
 
   /* ── Tags / badges ── */

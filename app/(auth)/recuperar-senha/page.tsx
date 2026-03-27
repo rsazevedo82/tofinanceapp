@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function RecuperarSenhaPage() {
@@ -112,9 +113,9 @@ export default function RecuperarSenhaPage() {
 
             <p className="text-center text-sm mt-6 text-[#6B7280]">
               Lembrou sua senha?{' '}
-              <a href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+              <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
                 Voltar para login
-              </a>
+              </Link>
             </p>
           </div>
         </div>

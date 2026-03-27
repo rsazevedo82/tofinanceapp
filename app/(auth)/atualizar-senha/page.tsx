@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -245,9 +246,9 @@ export default function AtualizarSenhaPage() {
 
             <p className="text-center text-sm mt-6 text-[#6B7280]">
               Voltar para{' '}
-              <a href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+              <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
                 login
-              </a>
+              </Link>
             </p>
           </div>
         </div>

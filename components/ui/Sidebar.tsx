@@ -233,7 +233,7 @@ export function Sidebar() {
             <NotificationBell />
             <button
               onClick={() => setMobileOpen(true)}
-              className="text-[#6B7280] hover:text-[#0F172A] transition-colors p-1 text-xl"
+              className="touch-target text-[#6B7280] hover:text-[#0F172A] transition-colors p-2 text-xl"
             >
               ☰
             </button>
@@ -254,7 +254,7 @@ export function Sidebar() {
           >
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-[#6B7280] hover:text-[#0F172A] text-sm p-1"
+              className="touch-target absolute top-4 right-4 text-[#6B7280] hover:text-[#0F172A] text-sm p-2"
             >✕</button>
             <NavContent />
           </div>

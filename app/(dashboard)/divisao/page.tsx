@@ -2,6 +2,7 @@
 'use client'
 
 import { useState }          from 'react'
+import Link                  from 'next/link'
 import { useCouple }         from '@/hooks/useCouple'
 import { useSplits, useCreateSplit, useSettleSplit, useDeleteSplit, computeBalance } from '@/hooks/useSplits'
 import { SplitForm }         from '@/components/finance/SplitForm'
@@ -197,7 +198,7 @@ export default function DivisaoPage() {
           <p className="text-[#0F172A] font-semibold mb-1">Perfil de casal não vinculado</p>
           <p className="text-sm mb-4 text-[#6B7280]">
             Vincule-se ao seu parceiro em{' '}
-            <a href="/casal" className="text-[#FF7F50] hover:underline font-medium">Conexão do casal</a>{' '}
+            <Link href="/casal" className="text-[#FF7F50] hover:underline font-medium">Conexão do casal</Link>{' '}
             para dividir despesas.
           </p>
         </div>

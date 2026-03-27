@@ -329,7 +329,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
       ) : (
         <button
           onClick={() => setShowUnlink(true)}
-          className="w-full py-2.5 rounded-xl text-sm transition-colors text-red-500 border border-red-100 hover:bg-red-50"
+          className="touch-target w-full rounded-xl text-sm transition-colors text-red-500 border border-red-100 hover:bg-red-50"
         >
           Encerrar vínculo do casal
         </button>
@@ -392,7 +392,7 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
           <button
             type="submit"
             disabled={unlinkCouple.isPending || !password}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+            className="touch-target flex-1 rounded-xl text-sm font-semibold transition-colors"
             style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }}
           >
             {unlinkCouple.isPending ? 'Encerrando...' : 'Confirmar encerramento'}

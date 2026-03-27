@@ -2,6 +2,7 @@
 
 import { useState }       from 'react'
 import Image              from 'next/image'
+import Link               from 'next/link'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
 
@@ -203,9 +204,9 @@ export default function CadastroPage() {
 
           <p className="text-center text-sm mt-6 text-[#6B7280]">
             Já tem conta?{' '}
-            <a href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+            <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
               Entrar
-            </a>
+            </Link>
           </p>
         </div>
       </div>
