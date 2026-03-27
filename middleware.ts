@@ -69,7 +69,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
-  const publicRoutes = ['/login', '/cadastro']
+  const publicRoutes = ['/login', '/cadastro', '/recuperar-senha', '/atualizar-senha']
   const isPublicRoute = publicRoutes.includes(path)
 
   if (!user && !isPublicRoute) {
@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (user && isPublicRoute) {
+  if (user && isPublicRoute && path !== '/atualizar-senha') {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)

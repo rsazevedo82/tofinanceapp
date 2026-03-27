@@ -123,6 +123,12 @@ export default function LoginPage() {
                 </span>
               ) : 'Entrar'}
             </button>
+
+            <p className="text-right">
+              <a href="/recuperar-senha" className="text-xs text-[#6B7280] hover:text-[#FF7F50] transition-colors">
+                Esqueci minha senha
+              </a>
+            </p>
           </form>
 
           <p className="text-center text-sm mt-6 text-[#6B7280]">
