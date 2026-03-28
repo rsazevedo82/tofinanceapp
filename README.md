@@ -8,8 +8,8 @@ Aplicação de controle financeiro para casais. Permite gerenciar contas, transa
 
 | Camada | Tecnologia |
 |---|---|
-| Framework | Next.js 14 (App Router) |
-| Frontend | React 18, Tailwind CSS 3.4 |
+| Framework | Next.js 15 (App Router) |
+| Frontend | React 18, Tailwind CSS 4 |
 | Banco de dados / Auth | Supabase (PostgreSQL) |
 | Estado | TanStack React Query 5 |
 | Validação | Zod 4 |
@@ -270,6 +270,7 @@ UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 NEXT_PUBLIC_PRIVACY_REQUEST_EMAIL=
 NEXT_PUBLIC_PRIVACY_SLA_DAYS=15
+NEXT_PUBLIC_DPO_EMAIL=
 OBS_SERVICE_NAME=tofinanceapp
 ```
 

@@ -29,8 +29,11 @@ export async function fetchServerApi<T>(path: string): Promise<T> {
     throw new Error(json.error ?? `Falha ao buscar ${path}`)
   }
 
-  if (json.data == null) {
-    throw new Error(`Resposta sem dados em ${path}`)
+  // Alguns endpoints retornam `data: null` de forma legítima
+  // (ex.: ausência de vínculo de casal). Só falha se o campo
+  // vier ausente/undefined, indicando resposta inválida.
+  if (json.data === undefined) {
+    throw new Error(`Resposta sem campo data em ${path}`)
   }
 
   return json.data

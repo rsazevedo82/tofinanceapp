@@ -11,11 +11,15 @@ Canal oficial para solicitações do titular (ex.: `privacidade@seudominio.com`)
 Prazo de atendimento exibido na política pública.  
 Padrão recomendado: `15`.
 
+3. `NEXT_PUBLIC_DPO_EMAIL`  
+Contato público do encarregado (DPO) exibido na política de privacidade.
+
 ## Exemplo de configuração
 
 ```env
 NEXT_PUBLIC_PRIVACY_REQUEST_EMAIL=privacidade@seudominio.com
 NEXT_PUBLIC_PRIVACY_SLA_DAYS=15
+NEXT_PUBLIC_DPO_EMAIL=encarregado@seudominio.com
 ```
 
 ## Passo a passo de aplicação

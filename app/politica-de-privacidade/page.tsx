@@ -10,6 +10,12 @@ function resolvePrivacyContactEmail() {
   return null
 }
 
+function resolveDpoContactEmail(privacyEmail: string | null) {
+  const configured = process.env.NEXT_PUBLIC_DPO_EMAIL?.trim()
+  if (configured) return configured
+  return privacyEmail
+}
+
 export const metadata: Metadata = {
   title: 'Política de Privacidade | Nós 2 Reais',
   description: 'Transparência sobre tratamento de dados pessoais, direitos do titular e canais LGPD.',
@@ -17,6 +23,7 @@ export const metadata: Metadata = {
 
 export default function PoliticaDePrivacidadePage() {
   const contactEmail = resolvePrivacyContactEmail()
+  const dpoEmail = resolveDpoContactEmail(contactEmail)
   const slaDays = Number.parseInt(process.env.NEXT_PUBLIC_PRIVACY_SLA_DAYS ?? `${DEFAULT_SLA_DAYS}`, 10)
   const validSla = Number.isFinite(slaDays) && slaDays > 0 ? slaDays : DEFAULT_SLA_DAYS
 
@@ -31,8 +38,11 @@ export default function PoliticaDePrivacidadePage() {
         <section className="card space-y-3">
           <h2 className="text-xl font-bold">1. Quais dados tratamos</h2>
           <p className="text-sm leading-6 text-[#334155]">
-            O dado pessoal principal coletado no produto é o e-mail da conta. Também podem ser gerados metadados
-            técnicos de segurança e operação, como endereço IP, user-agent, data/hora de acesso e trilhas de auditoria.
+            O dado pessoal principal coletado no produto é o e-mail da conta.
+          </p>
+          <p className="text-sm leading-6 text-[#334155]">
+            Também tratamos metadados técnicos de segurança e operação, como endereço IP, user-agent, data/hora de
+            acesso e trilhas de auditoria, para prevenção de abuso e investigação de incidentes.
           </p>
         </section>
 
@@ -57,7 +67,19 @@ export default function PoliticaDePrivacidadePage() {
         </section>
 
         <section className="card space-y-3">
-          <h2 className="text-xl font-bold">4. Compartilhamento e armazenamento</h2>
+          <h2 className="text-xl font-bold">4. Incidentes de segurança</h2>
+          <p className="text-sm leading-6 text-[#334155]">
+            Mantemos procedimentos técnicos e organizacionais para detecção, resposta e registro de incidentes de
+            segurança.
+          </p>
+          <p className="text-sm leading-6 text-[#334155]">
+            Quando aplicável, comunicaremos incidentes relevantes aos titulares e autoridades competentes nos termos
+            da legislação.
+          </p>
+        </section>
+
+        <section className="card space-y-3">
+          <h2 className="text-xl font-bold">5. Compartilhamento e armazenamento</h2>
           <p className="text-sm leading-6 text-[#334155]">
             Os dados podem ser tratados por operadores essenciais para operação da plataforma (ex.: hospedagem,
             autenticação e banco de dados), sob controles técnicos e organizacionais proporcionais ao risco.
@@ -65,7 +87,7 @@ export default function PoliticaDePrivacidadePage() {
         </section>
 
         <section className="card space-y-3">
-          <h2 className="text-xl font-bold">5. Direitos do titular</h2>
+          <h2 className="text-xl font-bold">6. Direitos do titular</h2>
           <p className="text-sm leading-6 text-[#334155]">
             Você pode solicitar confirmação de tratamento, acesso, correção e eliminação de dados quando aplicável.
           </p>
@@ -85,7 +107,22 @@ export default function PoliticaDePrivacidadePage() {
         </section>
 
         <section className="card space-y-3">
-          <h2 className="text-xl font-bold">6. Contato e atualização desta política</h2>
+          <h2 className="text-xl font-bold">7. Contato do encarregado (DPO)</h2>
+          <p className="text-sm leading-6 text-[#334155]">
+            Contato do encarregado pelo tratamento de dados pessoais:{' '}
+            {dpoEmail ? (
+              <a className="text-[#FF7F50] font-semibold hover:underline" href={`mailto:${dpoEmail}`}>
+                {dpoEmail}
+              </a>
+            ) : (
+              <span className="font-semibold">não configurado no ambiente de produção</span>
+            )}
+            .
+          </p>
+        </section>
+
+        <section className="card space-y-3">
+          <h2 className="text-xl font-bold">8. Atualização desta política</h2>
           <p className="text-sm leading-6 text-[#334155]">
             Esta política pode ser atualizada para refletir mudanças de produto, segurança e requisitos legais.
           </p>
