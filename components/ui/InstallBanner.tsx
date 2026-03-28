@@ -5,9 +5,22 @@
 // Detecta: iOS + Safari + não está em modo standalone.
 
 import { useState, useEffect } from 'react'
-import { X, Share } from 'lucide-react'
+import { X, Share, Download } from 'lucide-react'
 
-const DISMISSED_KEY = 'pwa-install-dismissed'
+const INSTALL_BANNER_CAMPAIGN = 'v2'
+const DISMISSED_KEY = `pwa-install-dismissed:${INSTALL_BANNER_CAMPAIGN}`
+const LEGACY_DISMISSED_KEY = 'pwa-install-dismissed'
+const DISMISS_TTL_MS = 30 * 24 * 60 * 60 * 1000
+type BannerMode = 'ios' | 'android'
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+}
+
+type InstallDismissRecord = {
+  dismissedAt: number
+}
 
 function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -18,21 +31,87 @@ function isSafari() {
 }
 
 function isStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches
+  return (
+    window.matchMedia('(display-mode: standalone)').matches
+    || (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+  )
+}
+
+function readDismissRecord(): InstallDismissRecord | null {
+  const raw = localStorage.getItem(DISMISSED_KEY)
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as InstallDismissRecord
+    if (typeof parsed?.dismissedAt !== 'number') return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+function isDismissActive(): boolean {
+  const record = readDismissRecord()
+  if (!record) return false
+  return (Date.now() - record.dismissedAt) < DISMISS_TTL_MS
+}
+
+function persistDismiss() {
+  const payload: InstallDismissRecord = { dismissedAt: Date.now() }
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify(payload))
 }
 
 export function InstallBanner() {
   const [visible, setVisible] = useState(false)
+  const [mode, setMode] = useState<BannerMode>('ios')
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(DISMISSED_KEY)
-    if (!dismissed && isIOS() && isSafari() && !isStandalone()) {
+    if (isStandalone()) return
+
+    // Limpa chave antiga para migrar para estratégia com TTL/versionamento.
+    localStorage.removeItem(LEGACY_DISMISSED_KEY)
+    if (isDismissActive()) return
+
+    if (isIOS() && isSafari()) {
+      setMode('ios')
       setVisible(true)
+      return
+    }
+
+    const onBeforeInstallPrompt = (event: Event) => {
+      const e = event as BeforeInstallPromptEvent
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setMode('android')
+      setVisible(true)
+    }
+
+    const onInstalled = () => {
+      setVisible(false)
+      setDeferredPrompt(null)
+      persistDismiss()
+    }
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+    window.addEventListener('appinstalled', onInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', onInstalled)
     }
   }, [])
 
   function dismiss() {
-    localStorage.setItem(DISMISSED_KEY, '1')
+    persistDismiss()
+    setVisible(false)
+  }
+
+  async function installOnAndroid() {
+    if (!deferredPrompt) return
+    await deferredPrompt.prompt()
+    await deferredPrompt.userChoice
+    setDeferredPrompt(null)
     setVisible(false)
   }
 
@@ -40,7 +119,7 @@ export function InstallBanner() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe"
+      className="fixed bottom-0 left-0 right-0 z-50 px-4"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
     >
       <div
@@ -64,11 +143,27 @@ export function InstallBanner() {
           <p className="text-xs font-semibold text-[#0F172A] leading-snug">
             Instale o Nós 2 Reais
           </p>
-          <p className="text-[11px] mt-0.5 leading-snug text-[#6B7280]">
-            Toque em <Share size={10} className="inline-block mx-0.5 align-middle" /> e depois{' '}
-            <strong className="text-[#0F172A]">Adicionar à Tela de Início</strong>
-          </p>
+          {mode === 'ios' ? (
+            <p className="text-[11px] mt-0.5 leading-snug text-[#6B7280]">
+              Toque em <Share size={10} className="inline-block mx-0.5 align-middle" /> e depois{' '}
+              <strong className="text-[#0F172A]">Adicionar à Tela de Início</strong>
+            </p>
+          ) : (
+            <p className="text-[11px] mt-0.5 leading-snug text-[#6B7280]">
+              Instale o app para abrir mais rápido e usar em tela cheia.
+            </p>
+          )}
         </div>
+
+        {mode === 'android' ? (
+          <button
+            onClick={installOnAndroid}
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-white bg-[#0F172A]"
+          >
+            <Download size={14} />
+            Instalar
+          </button>
+        ) : null}
 
         {/* Fechar */}
         <button

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { PWA_THEME } from '@/lib/pwaTheme'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -9,19 +10,25 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',
-    background_color: '#1c1c1a',
-    theme_color: '#1c1c1a',
+    background_color: PWA_THEME.backgroundColor,
+    theme_color: PWA_THEME.themeColor,
     categories: ['finance', 'productivity'],
     icons: [
       {
-        src: '/n2r-simbolo-principal-claro-V1.png',
+        src: '/icon-192.png',
         sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-512.png',
+        sizes: '512x512',
         type: 'image/png',
         purpose: 'maskable',
       },
       {
-        src: '/n2r-simbolo-principal-claro-V1.png',
-        sizes: '512x512',
+        src: '/apple-touch-icon.png',
+        sizes: '180x180',
         type: 'image/png',
         purpose: 'any',
       },

@@ -32,3 +32,8 @@ jobs:
 
       - name: Build (includes TS check)
         run: npm run build
+
+      - name: Precache budget
+        env:
+          PRECACHE_BUDGET_KB: 5000
+        run: npm run pwa:check-precache

@@ -1,7 +1,5 @@
 // app/offline/page.tsx
 // Exibida pelo service worker quando não há conexão
-'use client'
-
 export default function OfflinePage() {
   return (
     <div className="min-h-screen bg-[#FDFCF0] flex items-center justify-center p-6">
@@ -13,12 +11,9 @@ export default function OfflinePage() {
         <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
           Verifique sua conexão e tente novamente.
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="btn-primary text-sm px-6 py-2.5"
-        >
+        <a href="" className="btn-primary inline-flex text-sm px-6 py-2.5">
           Tentar novamente
-        </button>
+        </a>
       </div>
     </div>
   )

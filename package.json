@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "ci:check": "npm run lint && npm run build",
+    "pwa:check-precache": "node scripts/check-precache-budget.mjs",
+    "ci:check": "npm run lint && npm run build && npm run pwa:check-precache",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:e2e:pwa": "playwright test tests/e2e/pwa.spec.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
@@ -39,6 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20",

@@ -7,6 +7,10 @@ const withPWA = withPWAInit({
   cacheOnFrontEndNav: false,
   aggressiveFrontEndNavCaching: false,
   reloadOnOnline: true,
+  // Fallback explícito para navegação quando estiver offline
+  fallbacks: {
+    document: '/offline',
+  },
   // Service worker ativo apenas em produção
   disable: process.env.NODE_ENV === 'development',
   workboxOptions: {
@@ -15,16 +19,12 @@ const withPWA = withPWAInit({
     clientsClaim: true,
     skipWaiting: true,
     cleanupOutdatedCaches: true,
+    navigateFallback: '/offline',
     runtimeCaching: [
       {
-        // Dados da API sempre via rede — nunca sirva financeiros do cache
+        // API (incluindo dados financeiros) sem cache no Service Worker
         urlPattern: /^\/api\//,
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'api-cache',
-          networkTimeoutSeconds: 10,
-          expiration: { maxEntries: 32, maxAgeSeconds: 60 },
-        },
+        handler: 'NetworkOnly',
       },
     ],
   },
