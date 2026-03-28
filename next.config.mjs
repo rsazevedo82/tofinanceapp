@@ -2,13 +2,19 @@ import withPWAInit from '@ducanh2912/next-pwa'
 
 const withPWA = withPWAInit({
   dest: 'public',
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  // Evita cache agressivo de navegação que pode causar mismatch de hidratação
+  // quando há deploy com chunks novos.
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
   reloadOnOnline: true,
   // Service worker ativo apenas em produção
   disable: process.env.NODE_ENV === 'development',
   workboxOptions: {
     disableDevLogs: true,
+    // Força atualização mais previsível de SW e remove caches obsoletos
+    clientsClaim: true,
+    skipWaiting: true,
+    cleanupOutdatedCaches: true,
     runtimeCaching: [
       {
         // Dados da API sempre via rede — nunca sirva financeiros do cache
