@@ -4,6 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiResponse, CoupleProfile, CoupleInvitation } from '@/types'
 
 const PENDING_INVITE_KEY = ['couple', 'pending-invite'] as const
+const RECEIVED_INVITE_KEY = ['couple', 'received-invite'] as const
+
+export type ReceivedCoupleInvite = {
+  invitation: CoupleInvitation
+  inviter_name: string | null
+}
 
 // ── Leitura ───────────────────────────────────────────────────────────────────
 
@@ -28,6 +34,21 @@ export function usePendingInvite() {
     queryFn:  async (): Promise<CoupleInvitation | null> => {
       const res  = await fetch('/api/couple/invite/pending')
       const json: ApiResponse<CoupleInvitation | null> = await res.json()
+      if (json.error) throw new Error(json.error)
+      return json.data ?? null
+    },
+    staleTime: 1000 * 30,
+  })
+}
+
+// ── Convite pendente recebido ────────────────────────────────────────────────
+
+export function useReceivedInvite() {
+  return useQuery({
+    queryKey: RECEIVED_INVITE_KEY,
+    queryFn: async (): Promise<ReceivedCoupleInvite | null> => {
+      const res = await fetch('/api/couple/invite/received')
+      const json: ApiResponse<ReceivedCoupleInvite | null> = await res.json()
       if (json.error) throw new Error(json.error)
       return json.data ?? null
     },
@@ -114,6 +135,8 @@ export function useRespondInvite() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['couple'] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      queryClient.invalidateQueries({ queryKey: PENDING_INVITE_KEY })
+      queryClient.invalidateQueries({ queryKey: RECEIVED_INVITE_KEY })
     },
   })
 }

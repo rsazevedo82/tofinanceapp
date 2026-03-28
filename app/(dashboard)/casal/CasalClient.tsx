@@ -4,23 +4,18 @@
 import { useState }                                      from 'react'
 import {
   useCouple, useSendInvite, useUnlinkCouple,
-  useRespondInvite, usePendingInvite,
+  useRespondInvite, usePendingInvite, useReceivedInvite,
   useResendInvite, useCancelInvite,
 } from '@/hooks/useCouple'
-import { useNotifications }   from '@/hooks/useNotifications'
-import type { Notification, CoupleInvitation } from '@/types'
+import type { ReceivedCoupleInvite } from '@/hooks/useCouple'
+import type { CoupleInvitation } from '@/types'
 
 export default function CasalPage() {
   const { data: couple,      isLoading: loadingCouple }  = useCouple()
   const { data: sentInvite,  isLoading: loadingSent }    = usePendingInvite()
-  const { data: notifications = [] }                     = useNotifications()
+  const { data: receivedInvite, isLoading: loadingReceived } = useReceivedInvite()
 
-  // Convite pendente recebido (notificação do tipo couple_invite não lida)
-  const receivedInvite = notifications.find(
-    (n: Notification) => n.type === 'couple_invite' && !n.read_at
-  )
-
-  const isLoading = loadingCouple || loadingSent
+  const isLoading = loadingCouple || loadingSent || loadingReceived
 
   if (isLoading) {
     return (
@@ -43,7 +38,7 @@ export default function CasalPage() {
 
       {/* 1. Convite recebido aguardando resposta */}
       {receivedInvite && !couple && (
-        <PendingInviteCard notification={receivedInvite} />
+        <PendingInviteCard invite={receivedInvite} />
       )}
 
       {/* 2. Convite enviado aguardando resposta do parceiro */}
@@ -62,30 +57,33 @@ export default function CasalPage() {
 
 // ── Convite pendente ──────────────────────────────────────────────────────────
 
-function PendingInviteCard({ notification }: { notification: Notification }) {
+function PendingInviteCard({ invite }: { invite: ReceivedCoupleInvite }) {
   const respondInvite = useRespondInvite()
   const [error, setError] = useState('')
 
-  const token = notification.payload?.token as string | undefined
+  const token = invite.invitation.token
 
-  if (!token) return null
+  const inviterName = invite.inviter_name || 'Seu parceiro'
 
   function respond(action: 'accept' | 'reject') {
     setError('')
     respondInvite.mutate(
-      { token: token!, action },
+      { token, action },
       { onError: (err) => setError(err.message) }
     )
   }
 
   return (
     <div className="card mb-6"
-      style={{ border: '1px solid rgba(255,127,80,0.3)', background: 'rgba(255,127,80,0.04)' }}>
+      style={{ border: '2px solid rgba(255,127,80,0.45)', background: 'rgba(255,127,80,0.08)' }}>
       <div className="flex items-start gap-3 mb-4">
         <span className="text-2xl">💌</span>
         <div>
-          <p className="text-sm font-bold text-[#0F172A]">{notification.title}</p>
-          <p className="text-xs mt-0.5 text-[#6B7280]">{notification.body}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#EA580C]">Ação necessária</p>
+          <p className="text-sm font-bold text-[#0F172A]">Você recebeu um convite de perfil compartilhado</p>
+          <p className="text-xs mt-0.5 text-[#6B7280]">
+            {inviterName} convidou você para conectar as finanças.
+          </p>
         </div>
       </div>
 
