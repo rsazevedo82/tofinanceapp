@@ -700,3 +700,35 @@ OK 9. Publicar política de privacidade e fluxo de direitos do titular
 OK 10. Evoluir observabilidade para padrão de produção
 - Ganho esperado: menor MTTR e melhor operação contínua.
 - Ação estrutural: logs estruturados, métricas por endpoint, alertas e correlação.
+
+### Pendências após execução
+
+### FALTA ESSE
+Configurar **branch protection** no GitHub para exigir os checks de qualidade (incluindo `npm run test:run`) antes de merge.
+
+### FALTA ESSE
+Concluir hardening de CSP em enforcement: coletar 7–14 dias de relatórios, corrigir violações reais e remover `unsafe-inline` da CSP principal em PR final.
+
+### FALTA ESSE
+Corrigir `setState` durante render em `PartnerViewProvider` (mover ajuste para `useEffect`).
+
+### FALTA ESSE
+Completar acessibilidade do drawer mobile com **focus trap** e retorno explícito de foco ao botão de abertura.
+
+### FALTA ESSE
+Remover elementos clicáveis não semânticos (ex.: `div` com `onClick`) e padronizar interação por `button`/`Link` com suporte de teclado.
+
+### FALTA ESSE
+Endurecer `fetchServerApi` contra host spoofing com allowlist/fail-closed quando `NEXT_PUBLIC_APP_URL` não estiver definida.
+
+### FALTA ESSE
+Limpar artefatos legados (`.bak`, `.old`, `.deleted`) em PR dedicado de higiene do repositório.
+
+### FALTA ESSE
+Atualizar README para refletir stack atual (Next.js 15 e Tailwind 4).
+
+### FALTA ESSE
+Reduzir PII em auditoria/logs (evitar e-mail em claro em metadata quando hash/identificador for suficiente).
+
+### FALTA ESSE
+Operacionalizar alertas e dashboards no provedor de observabilidade (configuração fora do código).

@@ -60,25 +60,34 @@ function TxRow({ tx, accountName, onClick }: {
 }) {
   const isIncome = tx.type === 'income'
   return (
-    <div onClick={onClick} className="db-row flex items-center justify-between px-2 py-2.5">
-      <div className="flex items-center gap-3 min-w-0">
-        <span className="text-xs w-4 text-center flex-shrink-0"
-          style={{ color: isIncome ? '#2DD4BF' : '#FF7F50' }}>
+    <button
+      type="button"
+      onClick={onClick}
+      className="db-row flex w-full items-center justify-between px-2 py-2.5 text-left"
+      aria-label={`Abrir transação ${tx.description}`}
+    >
+      <span className="flex min-w-0 items-center gap-3">
+        <span
+          className="w-4 flex-shrink-0 text-center text-xs"
+          style={{ color: isIncome ? '#2DD4BF' : '#FF7F50' }}
+        >
           {isIncome ? '↑' : '↓'}
         </span>
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-[#0F172A] truncate">{tx.description}</p>
-          <p className="text-xs text-[#475569]">
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium text-[#0F172A]">{tx.description}</span>
+          <span className="block text-xs text-[#475569]">
             {accountName} · {formatDate(tx.date)}
             {tx.installment_number ? ` · Parcela ${tx.installment_number}` : ''}
-          </p>
-        </div>
-      </div>
-      <p className="text-sm font-semibold flex-shrink-0 ml-3"
-        style={{ color: isIncome ? '#2DD4BF' : '#FF7F50' }}>
+          </span>
+        </span>
+      </span>
+      <span
+        className="ml-3 flex-shrink-0 text-sm font-semibold"
+        style={{ color: isIncome ? '#2DD4BF' : '#FF7F50' }}
+      >
         {isIncome ? '+' : '-'}{formatCurrency(Number(tx.amount))}
-      </p>
-    </div>
+      </span>
+    </button>
   )
 }
 
