@@ -1,15 +1,93 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import type { ApiResponse } from '@/types'
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: HTMLElement | string,
+        options: {
+          sitekey: string
+          callback?: (token: string) => void
+          'expired-callback'?: () => void
+          'error-callback'?: () => void
+        }
+      ) => string
+      reset: (widgetId?: string) => void
+      remove: (widgetId: string) => void
+    }
+  }
+}
 
 export default function RecuperarSenhaPage() {
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [requiresCaptcha, setRequiresCaptcha] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const widgetContainerRef = useRef<HTMLDivElement | null>(null)
+  const widgetIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!requiresCaptcha || !turnstileSiteKey || !widgetContainerRef.current) return
+
+    let disposed = false
+    let currentScript: HTMLScriptElement | null = null
+
+    const renderWidget = () => {
+      if (disposed || !window.turnstile || !widgetContainerRef.current || widgetIdRef.current) return
+      widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
+        sitekey: turnstileSiteKey,
+        callback: (token: string) => setCaptchaToken(token),
+        'expired-callback': () => setCaptchaToken(''),
+        'error-callback': () => setCaptchaToken(''),
+      })
+    }
+
+    if (window.turnstile) {
+      renderWidget()
+      return () => {
+        disposed = true
+      }
+    }
+
+    const existingScript = document.querySelector('script[data-turnstile="true"]') as HTMLScriptElement | null
+    const handleLoad = () => renderWidget()
+
+    if (existingScript) {
+      existingScript.addEventListener('load', handleLoad)
+      return () => {
+        disposed = true
+        existingScript.removeEventListener('load', handleLoad)
+      }
+    }
+
+    currentScript = document.createElement('script')
+    currentScript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+    currentScript.async = true
+    currentScript.defer = true
+    currentScript.setAttribute('data-turnstile', 'true')
+    currentScript.addEventListener('load', handleLoad)
+    document.head.appendChild(currentScript)
+
+    return () => {
+      disposed = true
+      currentScript?.removeEventListener('load', handleLoad)
+    }
+  }, [requiresCaptcha, turnstileSiteKey])
+
+  function resetCaptchaState() {
+    setCaptchaToken('')
+    if (window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -17,23 +95,36 @@ export default function RecuperarSenhaPage() {
     setError('')
     setSuccess('')
 
-    const supabase = createClient()
-    const redirectTo =
-      typeof window !== 'undefined'
-        ? `${window.location.origin}/atualizar-senha`
-        : undefined
-
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
-    })
-
-    if (resetError) {
-      setError('Nao foi possivel enviar o email de recuperacao. Tente novamente.')
+    if (requiresCaptcha && !captchaToken) {
+      setError('Confirme que voce e humano para continuar.')
       setLoading(false)
       return
     }
 
-    setSuccess('Se o email existir, voce recebera um link para redefinir a senha.')
+    const res = await fetch('/api/auth/password-recovery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        captchaToken: captchaToken || undefined,
+      }),
+    })
+
+    const json: ApiResponse<{ message: string }> = await res.json()
+
+    if (!res.ok || json.error) {
+      if (res.status === 429) {
+        setRequiresCaptcha(true)
+      }
+      resetCaptchaState()
+      setError(json.error ?? 'Nao foi possivel processar a solicitacao. Tente novamente.')
+      setLoading(false)
+      return
+    }
+
+    setRequiresCaptcha(false)
+    resetCaptchaState()
+    setSuccess(json.data?.message ?? 'Se o email existir, voce recebera um link para redefinir a senha.')
     setLoading(false)
   }
 
@@ -104,6 +195,18 @@ export default function RecuperarSenhaPage() {
                 <p className="text-sm px-3 py-2 rounded-lg bg-green-50 border border-green-100 text-green-700">
                   {success}
                 </p>
+              )}
+
+              {requiresCaptcha && (
+                <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+                  {turnstileSiteKey ? (
+                    <div ref={widgetContainerRef} className="min-h-[65px]" />
+                  ) : (
+                    <p className="text-xs text-red-600">
+                      Configuracao ausente: defina `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+                    </p>
+                  )}
+                </div>
               )}
 
               <button

@@ -1,10 +1,10 @@
-### 1) Cálculo do dashboard limitado a 200 transações [Criticidade: Crítica]
+OK ### 1) Cálculo do dashboard limitado a 200 transações [Criticidade: Crítica]
 O que é: `GET /api/dashboard` busca transações do mês com `.limit(200)` e calcula receitas, despesas e top categorias em memória a partir desse recorte.
 Por que importa: usuários com volume acima de 200 transações no mês recebem números incorretos.
 Impacto: decisão financeira baseada em dados incompletos em desktop e mobile; risco direto de confiança no produto.
 Como melhorar: remover o limite para cálculos agregados e migrar totais/top categorias para SQL com `SUM/GROUP BY`, mantendo limite apenas para lista de “recentes”.
 
-### 2) N+1 de requisições em cartões [Criticidade: Alta]
+OK ### 2) N+1 de requisições em cartões [Criticidade: Alta]
 O que é: cada `CardItem` chama `useInvoices(card.id)`, disparando uma consulta por cartão na renderização da lista.
 Por que importa: escala mal conforme cresce a quantidade de cartões.
 Impacto: tempo de carregamento maior e mais tráfego no mobile; pior TTI e maior latência percebida no desktop.

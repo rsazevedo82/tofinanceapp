@@ -69,11 +69,11 @@ const nextConfig = {
       // Next.js requer unsafe-inline para scripts internos
       // unsafe-eval necessário para desenvolvimento — removido em produção
       process.env.NODE_ENV === 'development'
-        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live"
-        : "script-src 'self' 'unsafe-inline' https://vercel.live",
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://challenges.cloudflare.com"
+        : "script-src 'self' 'unsafe-inline' https://vercel.live https://challenges.cloudflare.com",
 
       // Supabase API + WebSocket para realtime
-      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live`,
+      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live https://challenges.cloudflare.com`,
 
       // Estilos inline necessários para Tailwind
       "style-src 'self' 'unsafe-inline'",
@@ -86,6 +86,8 @@ const nextConfig = {
 
       // Iframes — nenhum permitido (substitui X-Frame-Options)
       "frame-ancestors 'none'",
+      // Turnstile renderiza desafio em iframe próprio
+      "frame-src 'self' https://challenges.cloudflare.com",
 
       // Formulários só submetem para o próprio domínio
       "form-action 'self'",
