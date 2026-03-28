@@ -63,6 +63,7 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
     }
 
     const inviteeEmail = existing.invitee_email
+    const normalizedInviteeEmail = inviteeEmail.trim().toLowerCase()
 
     // 4. Cancela o convite antigo (invalida token anterior)
     const { error: cancelError } = await adminClient
@@ -75,19 +76,19 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
 
     // 5. Reavalia se o invitee criou conta desde o convite original
     // (evita enviar e-mail para quem já tem conta e espera notificação in-app)
-    const { data: { users: allUsers } } = await adminClient.auth.admin.listUsers()
-    const currentInviteeUser = allUsers.find(
-      u => u.email?.toLowerCase() === inviteeEmail.toLowerCase()
+    const { data: currentInviteeId, error: inviteeLookupError } = await adminClient.rpc(
+      'find_auth_user_id_by_email',
+      { p_email: normalizedInviteeEmail }
     )
-    const currentInviteeId = currentInviteeUser?.id ?? null
+    if (inviteeLookupError) throw inviteeLookupError
 
     // 6. Cria novo convite com nova expiração e invitee_id atualizado
     const { data: invitation, error: inviteError } = await adminClient
       .from('couple_invitations')
       .insert({
         inviter_id:    user.id,
-        invitee_email: inviteeEmail,
-        invitee_id:    currentInviteeId,
+        invitee_email: normalizedInviteeEmail,
+        invitee_id:    currentInviteeId ?? null,
         status:        'pending',
       })
       .select()
@@ -116,7 +117,7 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
       })
     } else {
       // Usuário novo → reenvio via Supabase Auth
-      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(inviteeEmail, {
+      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(normalizedInviteeEmail, {
         data: {
           couple_invitation_token: invitation.token,
           invited_by:              inviterName,

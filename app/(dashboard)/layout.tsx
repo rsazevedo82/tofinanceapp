@@ -3,6 +3,7 @@ import { PartnerViewToggle }  from '@/components/ui/PartnerViewToggle'
 import { PartnerViewBanner }  from '@/components/ui/PartnerViewBanner'
 import { InstallBanner }      from '@/components/ui/InstallBanner'
 import Image                  from 'next/image'
+import Link                   from 'next/link'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,12 +22,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         {children}
         <footer className="px-6 py-8 mt-6 border-t border-[#D1D5DB]">
-          <Image
-            src="/n2r-wordmark-horizontal-v1.png"
-            alt="Nós 2 Reais"
-            width={220}
-            height={40}
-          />
+          <Link href="/" aria-label="Ir para Visão geral">
+            <Image
+              src="/n2r-wordmark-horizontal-v1.png"
+              alt="Nós 2 Reais"
+              width={220}
+              height={40}
+            />
+          </Link>
         </footer>
       </main>
       {/* Banner de instalação iOS — só aparece no Safari/iOS fora do modo standalone */}

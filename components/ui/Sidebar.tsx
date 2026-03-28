@@ -63,13 +63,15 @@ export function Sidebar() {
     <>
       {/* Marca principal */}
       <div className="flex items-center justify-between px-5 py-5 mb-2">
-        <Image
-          src="/n2r-logo-completo-horizontal-cor-V1.png"
-          alt="Nós 2 Reais"
-          width={164}
-          height={34}
-          priority
-        />
+        <Link href="/" aria-label="Ir para Visão geral">
+          <Image
+            src="/n2r-logo-completo-horizontal-cor-V1.png"
+            alt="Nós 2 Reais"
+            width={164}
+            height={34}
+            priority
+          />
+        </Link>
         <NotificationBell />
       </div>
 
@@ -222,13 +224,15 @@ export function Sidebar() {
         }}
       >
         <div className="flex items-center justify-between h-14">
-          <Image
-            src="/n2r-logo-completo-horizontal-cor-V1.png"
-            alt="Nós 2 Reais"
-            width={138}
-            height={28}
-            priority
-          />
+          <Link href="/" aria-label="Ir para Visão geral">
+            <Image
+              src="/n2r-logo-completo-horizontal-cor-V1.png"
+              alt="Nós 2 Reais"
+              width={138}
+              height={28}
+              priority
+            />
+          </Link>
           <div className="flex items-center gap-3">
             <NotificationBell />
             <button

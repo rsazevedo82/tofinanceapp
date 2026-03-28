@@ -70,10 +70,10 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       )
     }
 
-    const { email } = parsed.data
+    const normalizedEmail = parsed.data.email.trim().toLowerCase()
 
     // Não pode convidar a si mesmo
-    if (email.toLowerCase() === user.email?.toLowerCase()) {
+    if (normalizedEmail === user.email?.toLowerCase()) {
       await recordAuditEvent({
         action: 'couple_invite_create',
         status: 'failure',
@@ -119,7 +119,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       .from('couple_invitations')
       .select('id')
       .eq('inviter_id', user.id)
-      .eq('invitee_email', email.toLowerCase())
+      .eq('invitee_email', normalizedEmail)
       .eq('status', 'pending')
       .maybeSingle()
 
@@ -140,17 +140,20 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       )
     }
 
-    // Busca se o invitee já tem conta
-    const { data: { users: existingUsers } } = await adminClient.auth.admin.listUsers()
-    const inviteeUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase())
+    // Busca invitee por e-mail via função indexada no banco (evita listUsers completo)
+    const { data: inviteeUserId, error: inviteeLookupError } = await adminClient.rpc(
+      'find_auth_user_id_by_email',
+      { p_email: normalizedEmail }
+    )
+    if (inviteeLookupError) throw inviteeLookupError
 
     // Cria o convite
     const { data: invitation, error: inviteError } = await adminClient
       .from('couple_invitations')
       .insert({
         inviter_id:    user.id,
-        invitee_email: email.toLowerCase(),
-        invitee_id:    inviteeUser?.id ?? null,
+        invitee_email: normalizedEmail,
+        invitee_id:    inviteeUserId ?? null,
         status:        'pending',
       })
       .select()
@@ -167,10 +170,10 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
 
     const inviterName = inviterProfile?.name ?? user.email?.split('@')[0] ?? 'Alguém'
 
-    if (inviteeUser) {
+    if (inviteeUserId) {
       // Usuário existente → notificação in-app
       await adminClient.from('notifications').insert({
-        user_id: inviteeUser.id,
+        user_id: inviteeUserId,
         type:    'couple_invite',
         title:   'Convite de perfil de casal',
         body:    `${inviterName} convidou você para criar um perfil de casal.`,
@@ -178,7 +181,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       })
     } else {
       // Usuário novo → cria conta e envia email via Supabase
-      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(normalizedEmail, {
         data: {
           couple_invitation_token: invitation.token,
           invited_by:              inviterName,
@@ -214,8 +217,8 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       ip: auditMeta.ip,
       userAgent: auditMeta.userAgent,
       metadata: {
-        invitee_email: email.toLowerCase(),
-        invitee_id: inviteeUser?.id ?? null,
+        invitee_email: normalizedEmail,
+        invitee_id: inviteeUserId ?? null,
       },
     })
 

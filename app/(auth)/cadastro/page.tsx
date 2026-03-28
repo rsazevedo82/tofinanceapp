@@ -107,13 +107,15 @@ export default function CadastroPage() {
       {/* ── Painel esquerdo (oculto em mobile) ── */}
       <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center bg-[#FFF5F0]">
         <div className="flex flex-col items-center gap-8 px-12">
-          <Image
-            src="/n2r-logo-completo-horizontal-cor-V1.png"
-            alt="Nós 2 Reais"
-            width={260}
-            height={80}
-            priority
-          />
+          <Link href="/" aria-label="Ir para Visão geral">
+            <Image
+              src="/n2r-logo-completo-horizontal-cor-V1.png"
+              alt="Nós 2 Reais"
+              width={260}
+              height={80}
+              priority
+            />
+          </Link>
           <div className="text-center space-y-1.5">
             <p className="text-sm text-[#6B7280]">Sem brigas por dinheiro.</p>
             <p className="text-sm text-[#6B7280]">Organizem a vida financeira juntos.</p>
@@ -128,13 +130,15 @@ export default function CadastroPage() {
         <div className="w-full max-w-sm">
 
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <Image
-              src="/n2r-simbolo-principal-claro-V1.png"
-              alt="Nós 2 Reais"
-              width={28}
-              height={28}
-              className="rounded-md"
-            />
+            <Link href="/" aria-label="Ir para Visão geral">
+              <Image
+                src="/n2r-simbolo-principal-claro-V1.png"
+                alt="Nós 2 Reais"
+                width={28}
+                height={28}
+                className="rounded-md"
+              />
+            </Link>
             <span className="text-base font-bold text-[#0F172A] tracking-tight">
               Nós 2 Reais
             </span>
