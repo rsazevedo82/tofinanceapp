@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 const port = 4173
 const baseURL = `http://127.0.0.1:${port}`
+const webServerCommand = process.env.CI
+  ? `npm run start -- -p ${port}`
+  : `npm run build && npm run start -- -p ${port}`
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -21,7 +24,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run build && npm run start -- -p ${port}`,
+    command: webServerCommand,
     url: baseURL,
     timeout: 420 * 1000,
     reuseExistingServer: !process.env.CI,
