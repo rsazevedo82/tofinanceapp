@@ -213,7 +213,7 @@ export function useInfiniteTransactions(params?: {
   user_id?: string
   pageSize?: number
 }) {
-  const pageSize = params?.pageSize ?? 100
+  const pageSize = params?.pageSize ?? 60
 
   return useInfiniteQuery({
     queryKey: ['transactions-infinite', { ...params, pageSize }],
@@ -227,7 +227,7 @@ export function useInfiniteTransactions(params?: {
       searchParams.set('limit', String(pageSize))
       searchParams.set('offset', String(pageParam))
 
-      const res = await fetch(`/api/transactions?${searchParams.toString()}`)
+      const res = await fetch(`/api/transactions/summary?${searchParams.toString()}`)
       const json: ApiResponse<Transaction[]> = await res.json()
       if (json.error) throw new Error(json.error)
       return json.data ?? []

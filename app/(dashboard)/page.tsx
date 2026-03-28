@@ -1,8 +1,6 @@
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import DashboardClient from '@/app/(dashboard)/DashboardClient'
-import { fetchServerApi } from '@/lib/serverApi'
-import type { Notification, CoupleProfile } from '@/types'
-import type { DashboardData } from '@/app/api/dashboard/route'
+import { getCoupleProfileServer, getDashboardServer, getNotificationsServer } from '@/lib/serverQueries'
 
 export default async function DashboardPage() {
   const queryClient = new QueryClient()
@@ -10,15 +8,15 @@ export default async function DashboardPage() {
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: ['dashboard'],
-      queryFn: () => fetchServerApi<DashboardData>('/api/dashboard'),
+      queryFn: getDashboardServer,
     }),
     queryClient.prefetchQuery({
       queryKey: ['notifications'],
-      queryFn: () => fetchServerApi<Notification[]>('/api/notifications'),
+      queryFn: () => getNotificationsServer(),
     }),
     queryClient.prefetchQuery({
       queryKey: ['couple'],
-      queryFn: () => fetchServerApi<CoupleProfile | null>('/api/couple'),
+      queryFn: getCoupleProfileServer,
     }),
   ])
 

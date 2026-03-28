@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import CartoesClient from '@/app/(dashboard)/cartoes/CartoesClient'
-import { fetchServerApi } from '@/lib/serverApi'
+import { getCardsOverviewServer, getCoupleProfileServer } from '@/lib/serverQueries'
 import { CARDS_OVERVIEW_KEY } from '@/hooks/useCardsOverview'
 import { buildSocialMetadata } from '@/lib/socialMeta'
-import type { CardOverviewItem, CoupleProfile } from '@/types'
 
 export const metadata: Metadata = {
   title: 'Cartões | Nós 2 Reais',
@@ -23,11 +22,11 @@ export default async function CartoesPage() {
   await Promise.all([
     queryClient.fetchQuery({
       queryKey: ['couple'],
-      queryFn: () => fetchServerApi<CoupleProfile | null>('/api/couple'),
+      queryFn: getCoupleProfileServer,
     }),
     queryClient.fetchQuery({
       queryKey: CARDS_OVERVIEW_KEY,
-      queryFn: () => fetchServerApi<CardOverviewItem[]>('/api/cards/overview'),
+      queryFn: getCardsOverviewServer,
     }),
   ])
 

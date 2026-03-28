@@ -1,14 +1,13 @@
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import PerfilClient from '@/app/(dashboard)/perfil/PerfilClient'
-import { fetchServerApi } from '@/lib/serverApi'
-import type { UserProfile } from '@/types'
+import { getProfileServer } from '@/lib/serverQueries'
 
 export default async function PerfilPage() {
   const queryClient = new QueryClient()
 
   await queryClient.prefetchQuery({
     queryKey: ['profile'],
-    queryFn: () => fetchServerApi<UserProfile>('/api/profile'),
+    queryFn: getProfileServer,
   })
 
   return (

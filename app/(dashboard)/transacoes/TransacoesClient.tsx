@@ -124,7 +124,7 @@ export default function TransacoesPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteTransactions({ start, end, pageSize: 120 })
+  } = useInfiniteTransactions({ start, end, pageSize: 60 })
   const { data: accounts = [] } = useAccounts()
   const deleteTransaction = useDeleteTransaction()
 

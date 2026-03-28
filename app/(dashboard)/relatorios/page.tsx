@@ -1,7 +1,6 @@
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import RelatoriosClient from '@/app/(dashboard)/relatorios/RelatoriosClient'
-import { fetchServerApi } from '@/lib/serverApi'
-import type { CoupleProfile, ReportsPayload } from '@/types'
+import { getCoupleProfileServer, getReportsServer } from '@/lib/serverQueries'
 
 function getCurrentMonthInSaoPaulo() {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -22,11 +21,11 @@ export default async function RelatoriosPage() {
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: ['couple'],
-      queryFn: () => fetchServerApi<CoupleProfile | null>('/api/couple'),
+      queryFn: getCoupleProfileServer,
     }),
     queryClient.prefetchQuery({
       queryKey: ['reports', month],
-      queryFn: () => fetchServerApi<ReportsPayload>(`/api/reports?month=${month}`),
+      queryFn: () => getReportsServer(month),
     }),
   ])
 

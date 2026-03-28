@@ -14,7 +14,7 @@ Como melhorar:
 - Reduzir budget de precache (ex.: 5000 KB -> 2500 KB) para forçar disciplina.
 - Eliminar qualquer derivado de `nos-dois-reais.jpeg` do build e do SW.
 
-### 2) JavaScript inicial elevado no cliente
+OK ### 2) JavaScript inicial elevado no cliente
 O que é: chunk `app/layout.js` está com ~**614 KB** e há múltiplos chunks grandes adicionais (ex.: ~313 KB, ~184 KB, ~179 KB).
 Por que importa: aumenta parse/compile/execute no navegador, com impacto forte em Android intermediário.
 Impacto: TTI/INP pioram; navegação e interação inicial ficam lentas.
@@ -24,7 +24,7 @@ Como melhorar:
 - Revisar dependências globais no layout e no sidebar.
 - Rodar análise de bundle por rota e impor orçamento de KB por página.
 
-### 3) Prefetch server-side via HTTP interno com `no-store` em várias páginas
+OK ### 3) Prefetch server-side via HTTP interno com `no-store` em várias páginas
 O que é: páginas do dashboard usam `fetchServerApi()` para chamar `/api/*` internamente por HTTP, sem cache (`cache: 'no-store'`), antes de renderizar.
 Por que importa: adiciona latência de rede interna + serialização JSON + checks repetidos (auth/rate-limit), elevando TTFB.
 Impacto: tempo de navegação inicial pior em desktop e mobile, mesmo com servidor rápido.
