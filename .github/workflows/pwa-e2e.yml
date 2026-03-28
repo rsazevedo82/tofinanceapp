@@ -35,6 +35,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: public-anon-key-for-e2e
           NEXT_PUBLIC_APP_URL: http://127.0.0.1:4173
+          SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
           UPSTASH_REDIS_REST_URL: https://example.upstash.io
           UPSTASH_REDIS_REST_TOKEN: test-token
         run: npm run build
@@ -47,6 +48,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: public-anon-key-for-e2e
           NEXT_PUBLIC_APP_URL: http://127.0.0.1:4173
+          SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
           UPSTASH_REDIS_REST_URL: https://example.upstash.io
           UPSTASH_REDIS_REST_TOKEN: test-token
           PRECACHE_BUDGET_KB: 5000
