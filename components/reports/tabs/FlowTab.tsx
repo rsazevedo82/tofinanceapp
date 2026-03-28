@@ -1,0 +1,44 @@
+'use client'
+
+import { ChartCard, DataTable } from '@/components/reports/ChartCard'
+import { chartColors, CustomTooltip, fmtCur } from '@/components/reports/reportShared'
+import type { ReportsPayload } from '@/types'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+
+interface FlowTabProps {
+  data: ReportsPayload
+  isCouple: boolean
+}
+
+export default function FlowTab({ data }: FlowTabProps) {
+  return (
+    <ChartCard title="Fluxo de caixa diário" subtitle={`Entradas, saídas e saldo acumulado em ${data.period.month}`}>
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={data.daily_flow}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
+          <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
+          <YAxis
+            tick={{ fill: '#6B7280', fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={v => `R$${(v / 1000).toFixed(1)}k`}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Line dataKey="income" name="Entrada" stroke={chartColors.income} dot={false} strokeWidth={2} />
+          <Line dataKey="expense" name="Saída" stroke={chartColors.expense} dot={false} strokeWidth={2} />
+          <Line dataKey="balance" name="Saldo" stroke={chartColors.balance} dot={false} strokeWidth={2} strokeDasharray="4 2" />
+        </LineChart>
+      </ResponsiveContainer>
+      <DataTable
+        columns={[
+          { key: 'label', label: 'Dia' },
+          { key: 'income', label: 'Entrada', align: 'right' },
+          { key: 'expense', label: 'Saída', align: 'right' },
+          { key: 'balance', label: 'Acumulado', align: 'right' },
+        ]}
+        rows={data.daily_flow.filter(d => d.income > 0 || d.expense > 0) as unknown as Record<string, unknown>[]}
+        formatValue={(k, v) => (['income', 'expense', 'balance'].includes(k) ? fmtCur(Number(v)) : String(v ?? '—'))}
+      />
+    </ChartCard>
+  )
+}

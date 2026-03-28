@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect }      from 'react'
 import { Bell }                             from 'lucide-react'
-import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '@/hooks/useNotifications'
+import { useNotificationsLive, useMarkAsRead, useMarkAllAsRead } from '@/hooks/useNotifications'
 import type { Notification }                from '@/types'
 
 const TYPE_ICONS: Record<string, string> = {
@@ -32,7 +32,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const ref             = useRef<HTMLDivElement>(null)
 
-  const { data, unreadCount }  = useNotifications()
+  const { data, unreadCount }  = useNotificationsLive({ enableLivePolling: open })
   const markAsRead             = useMarkAsRead()
   const markAllAsRead          = useMarkAllAsRead()
 
