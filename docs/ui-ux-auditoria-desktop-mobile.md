@@ -1,70 +1,70 @@
-### 1) Classes de UI ausentes em formulários críticos (Objetivos/Divisão)
+OK ### 1) Classes de UI ausentes em formulários críticos (Objetivos/Divisão)
 O que é: formulários usam classes como `input-field`, `label-sm`, `btn-secondary` e `error-msg` sem definição no CSS global.
 Por que importa: quebra de estilo em produção reduz clareza visual e confiança do usuário em fluxos financeiros importantes.
 Impacto: experiência inconsistente e percepção de produto “quebrado”, principalmente em mobile.
 Como melhorar: criar tokens/classes faltantes no `globals.css` (ou migrar tudo para `input`, `label`, `btn-ghost`) e revisar `GoalForm`, `SplitForm` e `ContributionForm`.
 
-### 2) Acessibilidade de zoom bloqueada no mobile
+OK ### 2) Acessibilidade de zoom bloqueada no mobile
 O que é: `viewport` está com `maximumScale: 1` e `userScalable: false`.
 Por que importa: impede zoom para usuários com baixa visão e viola boas práticas de acessibilidade.
 Impacto: exclusão de parte dos usuários e pior usabilidade em telas pequenas.
 Como melhorar: remover bloqueio de zoom e usar `userScalable: true` (ou omitir as flags).
 
-### 3) Navegação com `<a href>` em vez de `Link` do Next
+OK ### 3) Navegação com `<a href>` em vez de `Link` do Next
 O que é: links internos em auth e outras telas usam âncora HTML comum.
 Por que importa: causa recarregamento completo de página, piorando fluidez e percepção de performance.
 Impacto: transições menos suaves e maior tempo de navegação em mobile.
 Como melhorar: padronizar navegação interna com `next/link`.
 
-### 4) Selects customizados sem acessibilidade de teclado/ARIA
+OK ### 4) Selects customizados sem acessibilidade de teclado/ARIA
 O que é: selects próprios abrem com clique, mas não implementam navegação por setas, `aria-expanded`, `role=listbox`, foco gerenciado.
 Por que importa: usuários de teclado e leitores de tela perdem capacidade de uso.
 Impacto: barreira de acessibilidade em formulários centrais (transações e filtros).
 Como melhorar: trocar para componente acessível (Radix/shadcn Select) ou implementar semântica WAI-ARIA completa.
 
-### 5) Modais sem foco preso e sem fechamento por tecla `Esc`
+OK ### 5) Modais sem foco preso e sem fechamento por tecla `Esc`
 O que é: modal atual não faz focus trap, não restaura foco e não trata `Escape`.
 Por que importa: navegação por teclado e leitores de tela ficam confusas, principalmente em fluxos longos.
 Impacto: usabilidade pior e risco de erro em ações críticas.
 Como melhorar: migrar para dialog acessível (Radix Dialog) com trap de foco, `Esc`, `aria-modal` e lock de scroll.
 
-### 6) Botões e alvos de toque muito pequenos
+OK ### 6) Botões e alvos de toque muito pequenos
 O que é: vários CTAs e ações usam `text-xs` e alturas visuais abaixo do ideal de toque (44px).
 Por que importa: em mobile aumenta erro de toque e frustração.
 Impacto: queda de conversão em tarefas como editar/excluir/lidar com convites.
 Como melhorar: padronizar alturas mínimas de ação (`min-h-[44px]`) e espaçamento interno maior.
 
-### 7) Densidade alta em desktop e compressão excessiva em mobile
+OK ### 7) Densidade alta em desktop e compressão excessiva em mobile
 O que é: telas misturam muitos cards, textos pequenos e grids rígidos sem adaptação progressiva.
 Por que importa: leitura fica cansativa e escaneabilidade cai em ambos os contextos.
 Impacto: usuários demoram mais para achar ações e interpretar status financeiro.
 Como melhorar: definir escala tipográfica por breakpoint e reduzir blocos simultâneos na dobra inicial.
 
-### 8) Grid com colunas fixas em lista de transações
+OK ### 8) Grid com colunas fixas em lista de transações
 O que é: layout “database” usa colunas fixas (`100px`, `80px`, `90px`) sem ajuste responsivo.
 Por que importa: quebra/clipa informação em telas menores e idiomas com textos mais longos.
 Impacto: perda de contexto da transação no mobile.
 Como melhorar: usar grid responsivo com colunas fluidas e fallback para layout em pilha no mobile.
 
-### 9) Header de transações pode estourar no mobile
+OK ### 9) Header de transações pode estourar no mobile
 O que é: mês + botão primário ficam lado a lado sem estratégia de quebra consistente.
 Por que importa: em largura menor ocorrem colisões visuais e perda de legibilidade.
 Impacto: acesso ao filtro/período e CTA principal fica prejudicado.
 Como melhorar: empilhar ações no mobile (`flex-col`), com CTA full-width e filtro em linha separada.
 
-### 10) Inconsistência semântica de cor (tag income/expense)
+OK ### 10) Inconsistência semântica de cor (tag income/expense)
 O que é: classes de tags usam cores invertidas/confusas em alguns pontos.
 Por que importa: cor comunica tipo de movimento financeiro; inconsistência gera erro cognitivo.
 Impacto: leitura financeira menos confiável e mais lenta.
 Como melhorar: definir semântica única de cor por tipo (`income`, `expense`, `neutral`) em tokens globais.
 
-### 11) Contraste baixo em textos auxiliares pequenos
+OK ### 11) Contraste baixo em textos auxiliares pequenos
 O que é: uso intenso de `text-xs` com cinza claro em fundos claros.
 Por que importa: dificulta leitura em ambientes externos e telas de menor qualidade.
 Impacto: perda de informação de contexto (datas, subtítulos, status).
 Como melhorar: elevar contraste mínimo para texto auxiliar e reduzir uso de `text-[10px]/[11px]`.
 
-### 12) Falta de padrões de feedback temporal (toast/snackbar)
+OK ### 12) Falta de padrões de feedback temporal (toast/snackbar)
 O que é: muitas ações dependem apenas de mensagens inline, sem confirmação global breve.
 Por que importa: usuário nem sempre vê o resultado após rolagem/fechamento de modal.
 Impacto: incerteza sobre sucesso/erro em operações financeiras.

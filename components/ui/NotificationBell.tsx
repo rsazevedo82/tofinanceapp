@@ -62,7 +62,7 @@ export function NotificationBell() {
         onClick={() => setOpen(prev => !prev)}
         className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
         style={{
-          color:      unreadCount > 0 ? '#0F172A' : '#6B7280',
+          color:      unreadCount > 0 ? '#0F172A' : '#475569',
           background: open ? '#F3F4F6' : 'transparent',
         }}
         aria-label={`Notificações${unreadCount > 0 ? ` (${unreadCount} não lidas)` : ''}`}
@@ -95,7 +95,7 @@ export function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead.mutate()}
-                className="text-[10px] text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                className="text-xs text-[#475569] hover:text-[#0F172A] transition-colors"
                 disabled={markAllAsRead.isPending}
               >
                 Marcar todas como lidas
@@ -107,7 +107,7 @@ export function NotificationBell() {
           {preview.length === 0 ? (
             <div className="px-4 py-8 text-center">
               <p className="text-2xl mb-2">🔔</p>
-              <p className="text-xs text-[#6B7280]">
+              <p className="text-xs text-[#475569]">
                 Nenhuma notificação
               </p>
             </div>
@@ -128,7 +128,7 @@ export function NotificationBell() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={`text-xs font-medium truncate ${n.read_at ? 'text-[#6B7280]' : 'text-[#0F172A]'}`}>
+                      <p className={`text-xs font-medium truncate ${n.read_at ? 'text-[#475569]' : 'text-[#0F172A]'}`}>
                         {n.title}
                       </p>
                       {!n.read_at && (
@@ -136,10 +136,10 @@ export function NotificationBell() {
                           style={{ background: '#FF7F50' }} />
                       )}
                     </div>
-                    <p className="text-[11px] mt-0.5 line-clamp-2 text-[#6B7280]">
+                    <p className="text-xs mt-0.5 line-clamp-2 text-[#475569]">
                       {n.body}
                     </p>
-                    <p className="text-[10px] mt-1 text-[#9CA3AF]">
+                    <p className="text-xs mt-1 text-[#64748B]">
                       {timeAgo(n.created_at)}
                     </p>
                   </div>
@@ -150,7 +150,7 @@ export function NotificationBell() {
 
           {data.length > 5 && (
             <div className="px-4 py-2.5 text-center border-t border-[#D1D5DB]">
-              <span className="text-[10px] text-[#6B7280]">
+              <span className="text-xs text-[#475569]">
                 +{data.length - 5} notificações anteriores
               </span>
             </div>

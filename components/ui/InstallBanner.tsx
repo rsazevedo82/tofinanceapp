@@ -144,12 +144,12 @@ export function InstallBanner() {
             Instale o Nós 2 Reais
           </p>
           {mode === 'ios' ? (
-            <p className="text-[11px] mt-0.5 leading-snug text-[#6B7280]">
+            <p className="text-xs mt-0.5 leading-snug text-[#475569]">
               Toque em <Share size={10} className="inline-block mx-0.5 align-middle" /> e depois{' '}
               <strong className="text-[#0F172A]">Adicionar à Tela de Início</strong>
             </p>
           ) : (
-            <p className="text-[11px] mt-0.5 leading-snug text-[#6B7280]">
+            <p className="text-xs mt-0.5 leading-snug text-[#475569]">
               Instale o app para abrir mais rápido e usar em tela cheia.
             </p>
           )}

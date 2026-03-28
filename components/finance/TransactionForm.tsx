@@ -1,13 +1,14 @@
 // components/finance/TransactionForm.tsx
 'use client'
 
-import { useState, useEffect, useRef }  from 'react'
+import { useState, useEffect }  from 'react'
 import { useForm, Controller }           from 'react-hook-form'
 import { zodResolver }                   from '@hookform/resolvers/zod'
 import { z }                             from 'zod'
 import { useAccounts }                   from '@/hooks/useAccounts'
 import { useCategories }                 from '@/hooks/useCategories'
 import { useQueryClient }                from '@tanstack/react-query'
+import { useToast }                      from '@/components/providers/ToastProvider'
 import { createTransactionSchema }       from '@/lib/validations/schemas'
 import type { Transaction }              from '@/types'
 
@@ -20,11 +21,11 @@ interface TransactionFormProps {
   onSuccess:    () => void
 }
 
-// ── Select customizado ────────────────────────────────────────────────────────
+// ── Select acessivel ──────────────────────────────────────────────────────────
 
 interface SelectOption { value: string; label: string }
 
-function CustomSelect({
+function AccessibleSelect({
   value,
   onChange,
   options,
@@ -37,64 +38,27 @@ function CustomSelect({
   placeholder?: string
   disabled?:    boolean
 }) {
-  const [open, setOpen] = useState(false)
-  const ref             = useRef<HTMLDivElement>(null)
-  const selected        = options.find(o => o.value === value)
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  const hasExplicitEmptyOption = options.some(opt => opt.value === '')
+  const showPlaceholderOption = !hasExplicitEmptyOption
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => !disabled && setOpen(o => !o)}
-        className="input w-full text-left flex items-center justify-between"
-        style={{
-          color:   selected ? '#0F172A' : '#94A3B8',
-          opacity: disabled ? 0.5 : 1,
-          cursor:  disabled ? 'not-allowed' : 'pointer',
-        }}
-      >
-        <span className="truncate">{selected ? selected.label : placeholder}</span>
-        {!disabled && (
-          <span className="text-[10px] opacity-40 ml-2 flex-shrink-0">{open ? '▲' : '▼'}</span>
-        )}
-      </button>
-
-      {open && !disabled && (
-        <div
-          className="absolute z-50 w-full mt-1 rounded-xl shadow-xl bg-white"
-          style={{
-            border:    '1px solid #D1D5DB',
-            maxHeight: '220px',
-            overflowY: 'auto',
-          }}
-        >
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { onChange(opt.value); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-sm transition-colors"
-              style={{
-                color:      opt.value === value ? '#0F172A' : '#6B7280',
-                background: opt.value === value ? 'rgba(255,127,80,0.06)' : 'transparent',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,127,80,0.04)')}
-              onMouseLeave={e => (e.currentTarget.style.background = opt.value === value ? 'rgba(255,127,80,0.06)' : 'transparent')}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+      className="input w-full min-h-[44px] h-11 text-sm"
+    >
+      {showPlaceholderOption ? (
+        <option value="" disabled>
+          {placeholder}
+        </option>
+      ) : null}
+      {options.map(opt => (
+        <option key={opt.value || 'empty-option'} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   )
 }
 
@@ -105,12 +69,13 @@ const INSTALLMENT_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const TYPE_CONFIG = {
   expense:  { label: '↓ Despesa',       bg: 'rgba(255,127,80,0.12)',  color: '#FF7F50', border: 'rgba(255,127,80,0.3)'  },
   income:   { label: '↑ Receita',       bg: 'rgba(45,212,191,0.12)',  color: '#2DD4BF', border: 'rgba(45,212,191,0.3)'  },
-  transfer: { label: '⇄ Transferência', bg: 'rgba(107,114,128,0.1)',  color: '#6B7280', border: 'rgba(107,114,128,0.25)' },
+  transfer: { label: '⇄ Transferência', bg: 'rgba(107,114,128,0.1)',  color: '#475569', border: 'rgba(107,114,128,0.25)' },
 }
 
 export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
   const isEditing   = !!transaction
   const queryClient = useQueryClient()
+  const { showToast } = useToast()
 
   const { data: accounts   = [] } = useAccounts()
   const { data: categories = [] } = useCategories()
@@ -191,7 +156,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     if (useCustomInstallments) {
       const n = parseInt(customInstallments)
       if (isNaN(n) || n < 13 || n > 360) {
-        setApiError('Informe um número de parcelas entre 13 e 360.')
+        const message = 'Informe um número de parcelas entre 13 e 360.'
+        setApiError(message)
+        showToast({ title: 'Dados inválidos', description: message, variant: 'error' })
         return
       }
     }
@@ -220,6 +187,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
     if (json.error) {
       setApiError(json.error)
+      showToast({ title: 'Não foi possível salvar', description: json.error, variant: 'error' })
       return
     }
 
@@ -227,6 +195,10 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     queryClient.invalidateQueries({ queryKey: ['accounts'] })
     queryClient.invalidateQueries({ queryKey: ['invoices'] })
     queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    showToast({
+      title: isEditing ? 'Transação atualizada' : 'Transação criada',
+      variant: 'success',
+    })
     onSuccess()
   }
 
@@ -249,7 +221,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
               className="py-2 rounded-xl text-xs font-medium transition-all"
               style={{
                 background: sel ? c.bg    : '#F3F4F6',
-                color:      sel ? c.color : '#6B7280',
+                color:      sel ? c.color : '#475569',
                 border:     sel ? `1px solid ${c.border}` : '1px solid transparent',
               }}
             >
@@ -292,7 +264,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           name="account_id"
           control={control}
           render={({ field }) => (
-            <CustomSelect
+            <AccessibleSelect
               value={field.value}
               onChange={field.onChange}
               options={accountOptions}
@@ -306,7 +278,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       {isCreditCard && !isEditing && watchedType === 'expense' && (
         <div>
           <label className="label">Parcelas</label>
-          <CustomSelect
+          <AccessibleSelect
             value={useCustomInstallments ? 'custom' : installments}
             onChange={v => {
               if (v === 'custom') {
@@ -332,7 +304,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             />
           )}
           {effectiveInstallments > 1 && watchedAmount > 0 && (
-            <p className="mt-1 text-[11px] text-[#6B7280]">
+            <p className="mt-1 text-xs text-[#475569]">
               {effectiveInstallments}x de R$ {(watchedAmount / effectiveInstallments).toFixed(2)} · Total R$ {watchedAmount.toFixed(2)}
             </p>
           )}
@@ -347,7 +319,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             name="category_id"
             control={control}
             render={({ field }) => (
-              <CustomSelect
+              <AccessibleSelect
                 value={field.value ?? ''}
                 onChange={field.onChange}
                 options={categoryOptions}
@@ -372,7 +344,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       <button
         type="button"
         onClick={() => setShowExtras(v => !v)}
-        className="w-full text-left text-[11px] py-1 transition-colors flex items-center gap-1 text-[#6B7280]"
+        className="w-full text-left text-xs py-1 transition-colors flex items-center gap-1 text-[#475569]"
       >
         <span>{showExtras ? '▲' : '▼'}</span>
         {showExtras ? 'Menos opções' : 'Mais opções (status, observações)'}
@@ -386,7 +358,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
               name="status"
               control={control}
               render={({ field }) => (
-                <CustomSelect
+                <AccessibleSelect
                   value={field.value}
                   onChange={field.onChange}
                   options={[

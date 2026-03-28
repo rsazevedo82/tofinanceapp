@@ -5,6 +5,7 @@ import Image              from 'next/image'
 import Link               from 'next/link'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
+import { useToast }       from '@/components/providers/ToastProvider'
 
 type LoginResponse = {
   data: {
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
   const router = useRouter()
+  const { showToast } = useToast()
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -35,7 +37,9 @@ export default function LoginPage() {
     const json: LoginResponse = await res.json()
 
     if (!res.ok || json.error || !json.data) {
-      setError(json.error ?? 'Email ou senha incorretos')
+      const message = json.error ?? 'Email ou senha incorretos'
+      setError(message)
+      showToast({ title: 'Falha no login', description: message, variant: 'error' })
       setLoading(false)
       return
     }
@@ -46,11 +50,14 @@ export default function LoginPage() {
       refresh_token: json.data.refresh_token,
     })
     if (sessionError) {
-      setError('Falha ao iniciar sessao. Tente novamente.')
+      const message = 'Falha ao iniciar sessao. Tente novamente.'
+      setError(message)
+      showToast({ title: 'Falha no login', description: message, variant: 'error' })
       setLoading(false)
       return
     }
 
+    showToast({ title: 'Login realizado', variant: 'success' })
     router.push('/')
     router.refresh()
   }

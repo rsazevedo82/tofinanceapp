@@ -5,6 +5,7 @@ import Image              from 'next/image'
 import Link               from 'next/link'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
+import { useToast }       from '@/components/providers/ToastProvider'
 
 function getPasswordStrength(password: string): { label: string; color: string; width: string } {
   if (!password) return { label: 'Digite sua senha', color: '#D1D5DB', width: '0%' }
@@ -32,6 +33,7 @@ export default function CadastroPage() {
   const [success,  setSuccess]  = useState('')
   const [loading,  setLoading]  = useState(false)
   const router = useRouter()
+  const { showToast } = useToast()
   const strength = getPasswordStrength(password)
 
   async function handleCadastro(e: React.FormEvent) {
@@ -41,12 +43,16 @@ export default function CadastroPage() {
     setSuccess('')
 
     if (password.length < 10) {
-      setError('Senha deve ter pelo menos 10 caracteres')
+      const message = 'Senha deve ter pelo menos 10 caracteres'
+      setError(message)
+      showToast({ title: 'Dados inválidos', description: message, variant: 'error' })
       setLoading(false)
       return
     }
     if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      setError('Senha deve conter letras e números')
+      const message = 'Senha deve conter letras e números'
+      setError(message)
+      showToast({ title: 'Dados inválidos', description: message, variant: 'error' })
       setLoading(false)
       return
     }
@@ -62,13 +68,17 @@ export default function CadastroPage() {
     } = await res.json()
 
     if (!res.ok || json.error || !json.data) {
-      setError(json.error ?? 'Nao foi possivel criar a conta.')
+      const message = json.error ?? 'Nao foi possivel criar a conta.'
+      setError(message)
+      showToast({ title: 'Falha no cadastro', description: message, variant: 'error' })
       setLoading(false)
       return
     }
 
     if (!json.data.session) {
-      setSuccess('Conta criada. Confirme seu e-mail antes de entrar.')
+      const message = 'Conta criada. Confirme seu e-mail antes de entrar.'
+      setSuccess(message)
+      showToast({ title: 'Conta criada', description: message, variant: 'success' })
       setLoading(false)
       return
     }
@@ -79,11 +89,14 @@ export default function CadastroPage() {
       refresh_token: json.data.session.refresh_token,
     })
     if (sessionError) {
-      setError('Conta criada, mas houve falha ao iniciar sessao. Faca login manualmente.')
+      const message = 'Conta criada, mas houve falha ao iniciar sessao. Faca login manualmente.'
+      setError(message)
+      showToast({ title: 'Cadastro concluído com alerta', description: message, variant: 'info' })
       setLoading(false)
       return
     }
 
+    showToast({ title: 'Conta criada com sucesso', variant: 'success' })
     router.push('/')
     router.refresh()
   }

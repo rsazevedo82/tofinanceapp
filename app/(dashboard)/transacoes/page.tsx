@@ -1,7 +1,7 @@
 // app/(dashboard)/transacoes/page.tsx
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useTransactions,
          useDeleteTransaction }         from '@/hooks/useTransactions'
 import { useAccounts }                  from '@/hooks/useAccounts'
@@ -10,6 +10,7 @@ import { Modal }                        from '@/components/ui/Modal'
 import { TransactionForm }              from '@/components/finance/TransactionForm'
 import { useCouple }                    from '@/hooks/useCouple'
 import { c }                            from '@/lib/utils/copy'
+import { useToast }                     from '@/components/providers/ToastProvider'
 import type { Transaction }             from '@/types'
 
 function formatDate(date: string) {
@@ -29,59 +30,20 @@ function MonthSelect({
   onChange: (v: string) => void
   options:  { value: string; label: string }[]
 }) {
-  const [open, setOpen] = useState(false)
-  const ref             = useRef<HTMLDivElement>(null)
-  const selected        = options.find(o => o.value === value)
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
   return (
-    <div ref={ref} className="relative w-full sm:w-auto">
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="input w-full sm:w-auto min-h-[44px] text-sm py-2 px-3 flex items-center gap-2 text-[#0F172A]"
-        style={{ minWidth: '140px' }}
-      >
-        <span className="flex-1 text-left">{selected?.label ?? value}</span>
-        <span className="text-[10px] text-[#6B7280]">{open ? '▲' : '▼'}</span>
-      </button>
-
-      {open && (
-        <div
-          className="absolute left-0 sm:left-auto sm:right-0 z-50 mt-1 rounded-xl shadow-xl bg-white w-full sm:w-auto"
-          style={{
-            border:     '1px solid #D1D5DB',
-            minWidth:   '160px',
-            maxHeight:  '260px',
-            overflowY:  'auto',
-          }}
-        >
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { onChange(opt.value); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-xs transition-colors"
-              style={{
-                color:      opt.value === value ? '#0F172A' : '#6B7280',
-                background: opt.value === value ? 'rgba(255,127,80,0.06)' : 'transparent',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,127,80,0.04)')}
-              onMouseLeave={e => (e.currentTarget.style.background = opt.value === value ? 'rgba(255,127,80,0.06)' : 'transparent')}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="input w-full sm:w-auto min-h-[44px] h-11 text-sm px-3 text-[#0F172A]"
+      style={{ minWidth: '140px' }}
+      aria-label="Selecionar mês"
+    >
+      {options.map(opt => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   )
 }
 
@@ -100,7 +62,7 @@ function TxRow({ tx, accountName, onClick }: {
         </span>
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#0F172A] truncate">{tx.description}</p>
-          <p className="text-[10px] text-[#6B7280]">
+          <p className="text-xs text-[#475569]">
             {accountName} · {formatDate(tx.date)}
             {tx.installment_number ? ` · Parcela ${tx.installment_number}` : ''}
           </p>
@@ -135,6 +97,7 @@ export default function TransacoesPage() {
   ).toISOString().split('T')[0]
 
   const { data: couple }                       = useCouple()
+  const { showToast }                          = useToast()
   const isCouple                               = !!couple
   const { data: transactions = [], isLoading } = useTransactions({ start, end })
   const { data: accounts     = [] }            = useAccounts()
@@ -158,7 +121,18 @@ export default function TransacoesPage() {
     if (!editing) return
     if (!confirmDelete) { setConfirmDelete(true); return }
     deleteTransaction.mutate(editing.id, {
-      onSuccess: () => { setEditing(null); setConfirmDelete(false) },
+      onSuccess: () => {
+        showToast({ title: 'Transação excluída', variant: 'success' })
+        setEditing(null)
+        setConfirmDelete(false)
+      },
+      onError: (err) => {
+        showToast({
+          title: 'Falha ao excluir',
+          description: err instanceof Error ? err.message : 'Tente novamente.',
+          variant: 'error',
+        })
+      },
     })
   }
 
@@ -170,7 +144,7 @@ export default function TransacoesPage() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Seus gastos', 'Gastos de vocês')}
           </h1>
-          <p className="text-sm mt-1 text-[#6B7280]">
+          <p className="text-sm mt-1 text-[#475569]">
             {transactions.length} movimentação{transactions.length !== 1 ? 'ões' : ''} no período
           </p>
         </div>
@@ -220,7 +194,7 @@ export default function TransacoesPage() {
             className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all"
             style={{
               background: activeTab === tab.key ? tab.bg    : 'transparent',
-              color:      activeTab === tab.key ? tab.color : '#6B7280',
+              color:      activeTab === tab.key ? tab.color : '#475569',
             }}
           >
             {tab.label}
@@ -244,7 +218,7 @@ export default function TransacoesPage() {
       ) : displayed.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-3xl mb-3">{activeTab === 'expense' ? '💸' : '💰'}</p>
-          <p className="text-sm text-[#6B7280]">
+          <p className="text-sm text-[#475569]">
             {activeTab === 'expense'
               ? c(isCouple, 'Nenhuma despesa registrada neste período', 'Nenhuma despesa registrada por vocês neste período')
               : c(isCouple, 'Nenhuma receita registrada neste período', 'Nenhuma receita registrada por vocês neste período')}
@@ -267,7 +241,7 @@ export default function TransacoesPage() {
       {displayed.length > 0 && (
         <div className="flex items-center justify-between px-2 py-2.5 mt-2 rounded-lg bg-white"
           style={{ border: '1px solid #D1D5DB' }}>
-          <p className="text-xs font-medium text-[#6B7280]">
+          <p className="text-xs font-medium text-[#475569]">
             Total {activeTab === 'expense' ? 'de despesas' : 'de receitas'}
           </p>
           <p className="text-sm font-semibold"
@@ -302,7 +276,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="touch-target w-full text-xs mt-1 text-[#6B7280]"
+                  className="touch-target w-full text-xs mt-1 text-[#475569]"
                 >
                   Cancelar
                 </button>

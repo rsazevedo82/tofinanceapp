@@ -32,8 +32,8 @@
 @layer base {
   :root {
     /* ── Tokens semânticos N2R ─────────────────────────────────────── */
-    --text-muted:  #6B7280;
-    --text-faint:  rgba(107,114,128,0.6);
+    --text-muted:  #475569;
+    --text-faint:  rgba(71,85,105,0.72);
     --text-body:   #0F172A;
     --border:      #D1D5DB;
     --surface:     #ffffff;
@@ -145,15 +145,15 @@
 
   /* ── Labels ── */
   .label {
-    @apply block text-xs font-semibold mb-2;
-    color: #6B7280;
+    @apply block text-sm font-semibold mb-2;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.6px;
   }
 
   .label-sm {
-    @apply block text-xs font-semibold mb-1.5;
-    color: #6B7280;
+    @apply block text-sm font-semibold mb-1.5;
+    color: var(--text-muted);
   }
 
   .input-field {
@@ -176,7 +176,7 @@
 
   /* ── Tags / badges ── */
   .tag {
-    @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium;
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
   }
   .tag-income {
     background: var(--semantic-income-bg);
@@ -205,8 +205,8 @@
 
   /* ── Section heading ── */
   .section-heading {
-    @apply text-xs font-bold uppercase tracking-widest mb-4;
-    color: #6B7280;
+    @apply text-sm font-bold uppercase tracking-widest mb-4;
+    color: var(--text-muted);
   }
 
   /* ── Database row ── */
