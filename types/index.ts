@@ -69,6 +69,17 @@ export interface Transaction {
   category?:            { id: string; name: string; color: string | null; icon: string | null }
 }
 
+export interface CardInvoicesSummary {
+  open_invoice: CreditInvoice | null
+  closed_invoice: CreditInvoice | null
+  used_amount: number
+}
+
+export interface CardOverviewItem {
+  card: Account
+  summary: CardInvoicesSummary
+}
+
 export interface Category {
   id:         string
   user_id:    string | null

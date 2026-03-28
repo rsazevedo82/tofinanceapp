@@ -4,13 +4,13 @@
 import { useMemo, useState } from 'react'
 import dynamic               from 'next/dynamic'
 import { useRouter }         from 'next/navigation'
-import { useAccounts, useDeleteAccount } from '@/hooks/useAccounts'
-import { useInvoices }       from '@/hooks/useInvoices'
+import { useDeleteAccount } from '@/hooks/useAccounts'
+import { useCardsOverview } from '@/hooks/useCardsOverview'
 import { formatCurrency }    from '@/lib/utils/format'
 import { Modal }             from '@/components/ui/Modal'
 import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
-import type { Account }      from '@/types'
+import type { Account, CardInvoicesSummary } from '@/types'
 
 const AccountForm = dynamic(
   () => import('@/components/finance/AccountForm').then(m => m.AccountForm),
@@ -103,16 +103,13 @@ export default function CartoesPage() {
   const router                              = useRouter()
   const { data: couple }                    = useCouple()
   const isCouple                            = !!couple
-  const { data: accounts = [], isLoading } = useAccounts()
+  const { data: cardsOverview = [], isLoading } = useCardsOverview()
 
   const [showCreate, setShowCreate]     = useState(false)
   const [editing,    setEditing]        = useState<Account | null>(null)
   const [deleting,   setDeleting]       = useState<Account | null>(null)
 
-  const creditCards = useMemo(
-    () => accounts.filter(a => a.type === 'credit' && a.is_active),
-    [accounts]
-  )
+  const creditCards = useMemo(() => cardsOverview.map(item => item.card), [cardsOverview])
 
   function handleRowClick(card: Account) {
     router.push(`/fatura/${card.id}`)
@@ -167,10 +164,11 @@ export default function CartoesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {creditCards.map(card => (
+          {cardsOverview.map(({ card, summary }) => (
             <CardItem
               key={card.id}
               card={card}
+              summary={summary}
               onClick={() => handleRowClick(card)}
               onEdit={e => handleEditClick(e, card)}
               onDelete={e => handleDeleteClick(e, card)}
@@ -215,23 +213,20 @@ export default function CartoesPage() {
 
 function CardItem({
   card,
+  summary,
   onClick,
   onEdit,
   onDelete,
 }: {
   card:     Account
+  summary:  CardInvoicesSummary
   onClick:  () => void
   onEdit:   (e: React.MouseEvent) => void
   onDelete: (e: React.MouseEvent) => void
 }) {
-  const { data: invoices = [] } = useInvoices(card.id)
-
-  const openInvoice   = invoices.find(i => i.status === 'open')
-  const closedInvoice = invoices.find(i => i.status === 'closed')
-
-  const usedAmount = invoices
-    .filter(i => i.status !== 'paid')
-    .reduce((sum, i) => sum + Number(i.total_amount), 0)
+  const openInvoice = summary.open_invoice
+  const closedInvoice = summary.closed_invoice
+  const usedAmount = Number(summary.used_amount ?? 0)
 
   const available   = (card.credit_limit ?? 0) - usedAmount
   const usedPercent = card.credit_limit
