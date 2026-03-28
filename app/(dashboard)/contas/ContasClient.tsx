@@ -1,14 +1,19 @@
 // app/(dashboard)/contas/page.tsx
 'use client'
 
-import { useState }       from 'react'
+import { useMemo, useState } from 'react'
+import dynamic            from 'next/dynamic'
 import { useAccounts }    from '@/hooks/useAccounts'
 import { formatCurrency } from '@/lib/utils/format'
 import { Modal }          from '@/components/ui/Modal'
-import { AccountForm }    from '@/components/finance/AccountForm'
 import { useCouple }      from '@/hooks/useCouple'
 import { c }              from '@/lib/utils/copy'
 import type { Account }   from '@/types'
+
+const AccountForm = dynamic(
+  () => import('@/components/finance/AccountForm').then(m => m.AccountForm),
+  { ssr: false }
+)
 
 
 export default function ContasPage() {
@@ -20,8 +25,14 @@ export default function ContasPage() {
   const [editing, setEditing]       = useState<Account | null>(null)
 
   // Saldo consolidado — apenas contas reais, sem cartões de crédito
-  const otherAccounts = accounts.filter(a => a.type !== 'credit')
-  const totalBalance  = otherAccounts.reduce((sum, a) => sum + Number(a.balance), 0)
+  const otherAccounts = useMemo(
+    () => accounts.filter(a => a.type !== 'credit'),
+    [accounts]
+  )
+  const totalBalance = useMemo(
+    () => otherAccounts.reduce((sum, a) => sum + Number(a.balance), 0),
+    [otherAccounts]
+  )
 
   function handleRowClick(account: Account) {
     setEditing(account)

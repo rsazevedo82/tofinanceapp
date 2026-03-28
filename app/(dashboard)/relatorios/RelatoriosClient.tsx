@@ -39,12 +39,12 @@ const TABS: { key: ReportsTabKey; label: string }[] = [
 ]
 
 const tabComponents: Record<ReportsTabKey, React.ComponentType<ReportsTabProps>> = {
-  categories: dynamic(() => import('@/components/reports/tabs/CategoriesTab'), { loading: () => <ReportTabLoading /> }),
-  monthly: dynamic(() => import('@/components/reports/tabs/MonthlyTab'), { loading: () => <ReportTabLoading /> }),
-  flow: dynamic(() => import('@/components/reports/tabs/FlowTab'), { loading: () => <ReportTabLoading /> }),
-  compare: dynamic(() => import('@/components/reports/tabs/CompareTab'), { loading: () => <ReportTabLoading /> }),
-  cards: dynamic(() => import('@/components/reports/tabs/CardsTab'), { loading: () => <ReportTabLoading /> }),
-  projection: dynamic(() => import('@/components/reports/tabs/ProjectionTab'), { loading: () => <ReportTabLoading /> }),
+  categories: dynamic(() => import('@/components/reports/tabs/CategoriesTab'), { loading: () => <ReportTabLoading />, ssr: false }),
+  monthly: dynamic(() => import('@/components/reports/tabs/MonthlyTab'), { loading: () => <ReportTabLoading />, ssr: false }),
+  flow: dynamic(() => import('@/components/reports/tabs/FlowTab'), { loading: () => <ReportTabLoading />, ssr: false }),
+  compare: dynamic(() => import('@/components/reports/tabs/CompareTab'), { loading: () => <ReportTabLoading />, ssr: false }),
+  cards: dynamic(() => import('@/components/reports/tabs/CardsTab'), { loading: () => <ReportTabLoading />, ssr: false }),
+  projection: dynamic(() => import('@/components/reports/tabs/ProjectionTab'), { loading: () => <ReportTabLoading />, ssr: false }),
 }
 
 export default function RelatoriosPage() {

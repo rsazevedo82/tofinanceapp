@@ -1,17 +1,23 @@
 // app/(dashboard)/transacoes/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { useTransactions,
+import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic      from 'next/dynamic'
+import { useInfiniteTransactions,
          useDeleteTransaction }         from '@/hooks/useTransactions'
 import { useAccounts }                  from '@/hooks/useAccounts'
 import { formatCurrency }               from '@/lib/utils/format'
 import { Modal }                        from '@/components/ui/Modal'
-import { TransactionForm }              from '@/components/finance/TransactionForm'
 import { useCouple }                    from '@/hooks/useCouple'
 import { c }                            from '@/lib/utils/copy'
 import { useToast }                     from '@/components/providers/ToastProvider'
+import { useVirtualizer }               from '@tanstack/react-virtual'
 import type { Transaction }             from '@/types'
+
+const TransactionForm = dynamic(
+  () => import('@/components/finance/TransactionForm').then(m => m.TransactionForm),
+  { ssr: false }
+)
 
 function formatDate(date: string) {
   return new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
@@ -79,43 +85,101 @@ function TxRow({ tx, accountName, onClick }: {
 // ── Pagina ────────────────────────────────────────────────────────────────────
 
 export default function TransacoesPage() {
-  const now   = new Date()
-  const year  = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const initialMonth = useMemo(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  }, [])
 
-  const [selectedMonth, setSelectedMonth] = useState(`${year}-${month}`)
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth)
   const [showCreate,    setShowCreate]    = useState(false)
   const [editing,       setEditing]       = useState<Transaction | null>(null)
   const [activeTab,     setActiveTab]     = useState<'expense' | 'income'>('expense')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const start = `${selectedMonth}-01`
-  const end   = new Date(
-    parseInt(selectedMonth.split('-')[0]),
-    parseInt(selectedMonth.split('-')[1]),
-    0
-  ).toISOString().split('T')[0]
+  const { start, end } = useMemo(() => {
+    const [y, m] = selectedMonth.split('-').map(Number)
+    return {
+      start: `${selectedMonth}-01`,
+      end: new Date(y, m, 0).toISOString().split('T')[0],
+    }
+  }, [selectedMonth])
 
-  const { data: couple }                       = useCouple()
-  const { showToast }                          = useToast()
-  const isCouple                               = !!couple
-  const { data: transactions = [], isLoading } = useTransactions({ start, end })
-  const { data: accounts     = [] }            = useAccounts()
-  const deleteTransaction                       = useDeleteTransaction()
+  const { data: couple } = useCouple()
+  const { showToast } = useToast()
+  const isCouple = !!couple
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteTransactions({ start, end, pageSize: 120 })
+  const { data: accounts = [] } = useAccounts()
+  const deleteTransaction = useDeleteTransaction()
 
-  const accountMap   = Object.fromEntries(accounts.map(a => [a.id, a.name]))
-  const expenses     = transactions.filter(t => t.type === 'expense')
-  const incomes      = transactions.filter(t => t.type === 'income')
-  const totalExpense = expenses.reduce((s, t) => s + Number(t.amount), 0)
-  const totalIncome  = incomes.reduce((s, t)  => s + Number(t.amount), 0)
-  const displayed    = activeTab === 'expense' ? expenses : incomes
+  const transactions = useMemo(
+    () => data?.pages.flatMap(page => page) ?? [],
+    [data]
+  )
 
-  const monthOptions = Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const v = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const l = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-    return { value: v, label: l.charAt(0).toUpperCase() + l.slice(1) }
+  const accountMap = useMemo(
+    () => Object.fromEntries(accounts.map(a => [a.id, a.name])),
+    [accounts]
+  )
+
+  const expenses = useMemo(
+    () => transactions.filter(t => t.type === 'expense'),
+    [transactions]
+  )
+
+  const incomes = useMemo(
+    () => transactions.filter(t => t.type === 'income'),
+    [transactions]
+  )
+
+  const totalExpense = useMemo(
+    () => expenses.reduce((s, t) => s + Number(t.amount), 0),
+    [expenses]
+  )
+
+  const totalIncome = useMemo(
+    () => incomes.reduce((s, t) => s + Number(t.amount), 0),
+    [incomes]
+  )
+
+  const displayed = useMemo(
+    () => (activeTab === 'expense' ? expenses : incomes),
+    [activeTab, expenses, incomes]
+  )
+
+  const listRef = useRef<HTMLDivElement>(null)
+  const rowVirtualizer = useVirtualizer({
+    count: displayed.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 58,
+    overscan: 10,
   })
+  const virtualRows = rowVirtualizer.getVirtualItems()
+
+  useEffect(() => {
+    const last = virtualRows[virtualRows.length - 1]
+    if (!last) return
+
+    if (last.index >= displayed.length - 1 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [displayed.length, fetchNextPage, hasNextPage, isFetchingNextPage, virtualRows])
+
+  const monthOptions = useMemo(
+    () => Array.from({ length: 12 }, (_, i) => {
+      const now = new Date()
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const v = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const l = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+      return { value: v, label: l.charAt(0).toUpperCase() + l.slice(1) }
+    }),
+    []
+  )
 
   function handleDelete() {
     if (!editing) return
@@ -225,15 +289,43 @@ export default function TransacoesPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-0.5">
-          {displayed.map(tx => (
-            <TxRow
-              key={tx.id}
-              tx={tx}
-              accountName={accountMap[tx.account_id] ?? '—'}
-              onClick={() => { setEditing(tx); setConfirmDelete(false) }}
-            />
-          ))}
+        <div>
+          <div ref={listRef} className="max-h-[62vh] overflow-auto pr-1">
+            <div
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {virtualRows.map((virtualRow) => {
+                const tx = displayed[virtualRow.index]
+                if (!tx) return null
+
+                return (
+                  <div
+                    key={tx.id}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                  >
+                    <TxRow
+                      tx={tx}
+                      accountName={accountMap[tx.account_id] ?? '—'}
+                      onClick={() => { setEditing(tx); setConfirmDelete(false) }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          {isFetchingNextPage && (
+            <p className="text-xs text-[#475569] text-center mt-2">Carregando mais...</p>
+          )}
         </div>
       )}
 

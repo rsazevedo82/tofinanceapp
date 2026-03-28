@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { ChartCard, DataTable } from '@/components/reports/ChartCard'
 import { chartColors, CustomTooltip, fmtCur } from '@/components/reports/reportShared'
 import type { ReportsPayload } from '@/types'
@@ -11,6 +12,11 @@ interface FlowTabProps {
 }
 
 export default function FlowTab({ data }: FlowTabProps) {
+  const rowsWithMovement = useMemo(
+    () => data.daily_flow.filter(d => d.income > 0 || d.expense > 0),
+    [data.daily_flow]
+  )
+
   return (
     <ChartCard title="Fluxo de caixa diário" subtitle={`Entradas, saídas e saldo acumulado em ${data.period.month}`}>
       <ResponsiveContainer width="100%" height={220}>
@@ -36,7 +42,7 @@ export default function FlowTab({ data }: FlowTabProps) {
           { key: 'expense', label: 'Saída', align: 'right' },
           { key: 'balance', label: 'Acumulado', align: 'right' },
         ]}
-        rows={data.daily_flow.filter(d => d.income > 0 || d.expense > 0) as unknown as Record<string, unknown>[]}
+        rows={rowsWithMovement as unknown as Record<string, unknown>[]}
         formatValue={(k, v) => (['income', 'expense', 'balance'].includes(k) ? fmtCur(Number(v)) : String(v ?? '—'))}
       />
     </ChartCard>

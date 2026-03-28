@@ -2,11 +2,16 @@
 'use client'
 
 import { useState }         from 'react'
+import dynamic              from 'next/dynamic'
 import { Modal }            from '@/components/ui/Modal'
-import { ContributionForm } from '@/components/finance/ContributionForm'
 import { useAddContribution, useDeleteGoal, useGoalContributions, useDeleteContribution } from '@/hooks/useGoals'
 import type { Goal, GoalContribution } from '@/types'
 import type { AddContributionInput } from '@/lib/validations/schemas'
+
+const ContributionForm = dynamic(
+  () => import('@/components/finance/ContributionForm').then(m => m.ContributionForm),
+  { ssr: false }
+)
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)

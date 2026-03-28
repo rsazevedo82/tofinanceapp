@@ -1,16 +1,21 @@
 // app/(dashboard)/objetivos/page.tsx
 'use client'
 
-import { useState }          from 'react'
+import { useMemo, useState } from 'react'
+import dynamic               from 'next/dynamic'
 import Link                  from 'next/link'
 import { useGoals, useCreateGoal, useUpdateGoal } from '@/hooks/useGoals'
 import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
 import { GoalCard }          from '@/components/finance/GoalCard'
-import { GoalForm }          from '@/components/finance/GoalForm'
 import { Modal }             from '@/components/ui/Modal'
 import type { Goal }         from '@/types'
 import type { CreateGoalInput, UpdateGoalInput } from '@/lib/validations/schemas'
+
+const GoalForm = dynamic(
+  () => import('@/components/finance/GoalForm').then(m => m.GoalForm),
+  { ssr: false }
+)
 
 type Scope = 'individual' | 'couple'
 
@@ -29,11 +34,23 @@ export default function ObjetivosPage() {
   const createGoal                          = useCreateGoal()
   const updateGoal                          = useUpdateGoal(editing?.id ?? '')
 
-  const activeGoals    = goals.filter(g => g.status === 'active')
-  const completedGoals = goals.filter(g => g.status === 'completed')
+  const activeGoals = useMemo(
+    () => goals.filter(g => g.status === 'active'),
+    [goals]
+  )
+  const completedGoals = useMemo(
+    () => goals.filter(g => g.status === 'completed'),
+    [goals]
+  )
 
-  const totalTarget  = goals.reduce((s, g) => s + g.target_amount, 0)
-  const totalCurrent = goals.reduce((s, g) => s + (g.current_amount ?? 0), 0)
+  const totalTarget = useMemo(
+    () => goals.reduce((s, g) => s + g.target_amount, 0),
+    [goals]
+  )
+  const totalCurrent = useMemo(
+    () => goals.reduce((s, g) => s + (g.current_amount ?? 0), 0),
+    [goals]
+  )
 
   async function handleCreate(data: CreateGoalInput | UpdateGoalInput) {
     await createGoal.mutateAsync(data as CreateGoalInput)

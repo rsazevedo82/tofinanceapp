@@ -55,6 +55,8 @@
     background-color: #FDFCF0;
     color: #0F172A;
     font-family: var(--font-family-sans);
+    width: 100%;
+    overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-family-heading);
@@ -73,6 +75,18 @@
   ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 4px; }
   html {
     @apply font-sans;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Guard rail global para evitar "estouro lateral" em mobile */
+  main, section, article, aside, header, footer, div {
+    min-width: 0;
+  }
+
+  img, svg, video, canvas {
+    max-width: 100%;
+    height: auto;
   }
 }
 

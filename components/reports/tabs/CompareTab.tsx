@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { ChartCard } from '@/components/reports/ChartCard'
 import { chartColors, CustomTooltip, fmtCur } from '@/components/reports/reportShared'
 import type { ReportsPayload } from '@/types'
@@ -11,9 +12,20 @@ interface CompareTabProps {
 }
 
 export default function CompareTab({ data }: CompareTabProps) {
+  const comparison = useMemo(() => {
+    if (data.monthly.length < 2) return null
+
+    const cur = data.monthly[data.monthly.length - 1]
+    const prev = data.monthly[data.monthly.length - 2]
+
+    return { cur, prev }
+  }, [data.monthly])
+
+  const chartData = useMemo(() => data.monthly.slice(-3), [data.monthly])
+
   return (
     <ChartCard title="Comparativo mensal" subtitle="Mês atual vs mês anterior">
-      {data.monthly.length < 2 ? (
+      {!comparison ? (
         <p className="text-xs text-center py-8 text-[#6B7280]">
           Dados insuficientes para comparativo
         </p>
@@ -21,8 +33,8 @@ export default function CompareTab({ data }: CompareTabProps) {
         <>
           <div className="grid grid-cols-2 gap-3 mb-4">
             {(['income', 'expense'] as const).map(type => {
-              const cur = data.monthly[data.monthly.length - 1]
-              const prev = data.monthly[data.monthly.length - 2]
+              const cur = comparison.cur
+              const prev = comparison.prev
               const curV = cur[type]
               const prevV = prev[type]
               const diff = curV - prevV
@@ -45,7 +57,7 @@ export default function CompareTab({ data }: CompareTabProps) {
             })}
           </div>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={data.monthly.slice(-3)} barGap={4}>
+            <BarChart data={chartData} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
               <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis

@@ -1,13 +1,18 @@
 // app/(dashboard)/categorias/page.tsx
 'use client'
 
-import { useState }         from 'react'
+import { useMemo, useState } from 'react'
+import dynamic              from 'next/dynamic'
 import { useCategories }    from '@/hooks/useCategories'
 import { Modal }            from '@/components/ui/Modal'
-import { CategoryForm }     from '@/components/finance/CategoryForm'
 import { useCouple }        from '@/hooks/useCouple'
 import { c }                from '@/lib/utils/copy'
 import type { Category }    from '@/types'
+
+const CategoryForm = dynamic(
+  () => import('@/components/finance/CategoryForm').then(m => m.CategoryForm),
+  { ssr: false }
+)
 
 export default function CategoriasPage() {
   const { data: couple }                     = useCouple()
@@ -18,13 +23,31 @@ export default function CategoriasPage() {
   const [defaultType, setDefaultType] = useState<'income' | 'expense'>('expense')
   const [editing, setEditing]       = useState<Category | null>(null)
 
-  const systemCategories = categories.filter(c => c.user_id === null)
-  const userCategories   = categories.filter(c => c.user_id !== null)
+  const systemCategories = useMemo(
+    () => categories.filter(c => c.user_id === null),
+    [categories]
+  )
+  const userCategories = useMemo(
+    () => categories.filter(c => c.user_id !== null),
+    [categories]
+  )
 
-  const incomeSystem  = systemCategories.filter(c => c.type === 'income')
-  const expenseSystem = systemCategories.filter(c => c.type === 'expense')
-  const incomeUser    = userCategories.filter(c => c.type === 'income')
-  const expenseUser   = userCategories.filter(c => c.type === 'expense')
+  const incomeSystem = useMemo(
+    () => systemCategories.filter(c => c.type === 'income'),
+    [systemCategories]
+  )
+  const expenseSystem = useMemo(
+    () => systemCategories.filter(c => c.type === 'expense'),
+    [systemCategories]
+  )
+  const incomeUser = useMemo(
+    () => userCategories.filter(c => c.type === 'income'),
+    [userCategories]
+  )
+  const expenseUser = useMemo(
+    () => userCategories.filter(c => c.type === 'expense'),
+    [userCategories]
+  )
 
   function openCreate(type: 'income' | 'expense') {
     setDefaultType(type)

@@ -2,12 +2,17 @@
 'use client'
 
 import { useState }          from 'react'
+import dynamic               from 'next/dynamic'
 import Link                  from 'next/link'
 import { useCouple }         from '@/hooks/useCouple'
 import { useSplits, useCreateSplit, useSettleSplit, useDeleteSplit, computeBalance } from '@/hooks/useSplits'
-import { SplitForm }         from '@/components/finance/SplitForm'
 import { Modal }             from '@/components/ui/Modal'
 import type { ExpenseSplit } from '@/types'
+
+const SplitForm = dynamic(
+  () => import('@/components/finance/SplitForm').then(m => m.SplitForm),
+  { ssr: false }
+)
 
 type Tab = 'pending' | 'settled'
 

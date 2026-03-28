@@ -1,8 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Modal } from '@/components/ui/Modal'
-import { TransactionForm } from '@/components/finance/TransactionForm'
+
+const TransactionForm = dynamic(
+  () => import('@/components/finance/TransactionForm').then(m => m.TransactionForm),
+  { ssr: false }
+)
 
 export function NewTransactionButton() {
   const [isOpen, setIsOpen] = useState(false)

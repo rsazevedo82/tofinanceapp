@@ -26,6 +26,30 @@ const withPWA = withPWAInit({
         urlPattern: /^\/api\//,
         handler: 'NetworkOnly',
       },
+      {
+        // Chunks estáticos do Next.js: seguros para cache runtime
+        urlPattern: /^\/_next\/static\/.*/,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'next-static-assets',
+          expiration: {
+            maxEntries: 64,
+            maxAgeSeconds: 60 * 60 * 24 * 30,
+          },
+        },
+      },
+      {
+        // Assets estáticos públicos (ícones/imagens/fontes): seguros para cache
+        urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico|woff2?)$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'public-static-assets',
+          expiration: {
+            maxEntries: 128,
+            maxAgeSeconds: 60 * 60 * 24 * 30,
+          },
+        },
+      },
     ],
   },
 })

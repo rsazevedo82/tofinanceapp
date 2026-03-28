@@ -1,16 +1,21 @@
 // app/(dashboard)/cartoes/page.tsx
 'use client'
 
-import { useState }          from 'react'
+import { useMemo, useState } from 'react'
+import dynamic               from 'next/dynamic'
 import { useRouter }         from 'next/navigation'
 import { useAccounts, useDeleteAccount } from '@/hooks/useAccounts'
 import { useInvoices }       from '@/hooks/useInvoices'
 import { formatCurrency }    from '@/lib/utils/format'
 import { Modal }             from '@/components/ui/Modal'
-import { AccountForm }       from '@/components/finance/AccountForm'
 import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
 import type { Account }      from '@/types'
+
+const AccountForm = dynamic(
+  () => import('@/components/finance/AccountForm').then(m => m.AccountForm),
+  { ssr: false }
+)
 
 // ── Modal de exclusão com confirmação por senha ───────────────────────────────
 
@@ -104,7 +109,10 @@ export default function CartoesPage() {
   const [editing,    setEditing]        = useState<Account | null>(null)
   const [deleting,   setDeleting]       = useState<Account | null>(null)
 
-  const creditCards = accounts.filter(a => a.type === 'credit' && a.is_active)
+  const creditCards = useMemo(
+    () => accounts.filter(a => a.type === 'credit' && a.is_active),
+    [accounts]
+  )
 
   function handleRowClick(card: Account) {
     router.push(`/fatura/${card.id}`)

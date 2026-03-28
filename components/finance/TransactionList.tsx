@@ -2,9 +2,9 @@
 'use client'
 
 import { useState }           from 'react'
+import dynamic                from 'next/dynamic'
 import { formatCurrency }     from '@/lib/utils/format'
 import { Modal }              from '@/components/ui/Modal'
-import { TransactionForm }    from '@/components/finance/TransactionForm'
 import { useDeleteTransaction } from '@/hooks/useTransactions'
 import type { Transaction }   from '@/types'
 
@@ -12,6 +12,11 @@ interface Props {
   transactions: Transaction[]
   layout?:      'default' | 'database'
 }
+
+const TransactionForm = dynamic(
+  () => import('@/components/finance/TransactionForm').then(m => m.TransactionForm),
+  { ssr: false }
+)
 
 function formatDate(date: string) {
   return new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {

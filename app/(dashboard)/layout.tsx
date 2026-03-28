@@ -14,14 +14,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Toggle de visão do parceiro — aparece apenas quando há vínculo ativo */}
-        <div className="flex justify-end px-6 pt-5 md:pt-6">
+        <div className="flex justify-end px-4 sm:px-6 pt-5 md:pt-6">
           <PartnerViewToggle />
         </div>
-        <div className="px-6 pb-2">
+        <div className="px-4 sm:px-6 pb-2">
           <PartnerViewBanner />
         </div>
         {children}
-        <footer className="px-6 py-8 mt-6 border-t border-[#D1D5DB]">
+        <footer className="px-4 sm:px-6 py-8 mt-6 border-t border-[#D1D5DB]">
           <Link href="/" aria-label="Ir para Visão geral">
             <Image
               src="/n2r-wordmark-horizontal-v1.png"

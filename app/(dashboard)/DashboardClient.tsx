@@ -3,10 +3,10 @@
 
 import { useQuery }                              from '@tanstack/react-query'
 import { useRouter }                             from 'next/navigation'
+import dynamic                                   from 'next/dynamic'
 import { formatCurrency }                        from '@/lib/utils/format'
 import { Modal }                                 from '@/components/ui/Modal'
-import { TransactionForm }                       from '@/components/finance/TransactionForm'
-import { useState }                              from 'react'
+import { useMemo, useState }                     from 'react'
 import { useNotifications, useMarkAllAsRead }    from '@/hooks/useNotifications'
 import { useCouple }                             from '@/hooks/useCouple'
 import { c }                                     from '@/lib/utils/copy'
@@ -14,6 +14,11 @@ import { OnboardingChecklist }                   from '@/components/ui/Onboardin
 import type { ApiResponse }                      from '@/types'
 import type { Notification }                     from '@/types'
 import type { DashboardData }                    from '@/app/api/dashboard/route'
+
+const TransactionForm = dynamic(
+  () => import('@/components/finance/TransactionForm').then(m => m.TransactionForm),
+  { ssr: false }
+)
 
 function formatDate(date: string) {
   return new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
@@ -38,7 +43,10 @@ export default function DashboardPage() {
   const { data: notifications = [] } = useNotifications()
   const markAllAsRead                = useMarkAllAsRead()
 
-  const unread = notifications.filter((n: Notification) => !n.read_at)
+  const unread = useMemo(
+    () => notifications.filter((n: Notification) => !n.read_at),
+    [notifications]
+  )
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
@@ -52,10 +60,12 @@ export default function DashboardPage() {
     staleTime: 1000 * 60 * 2,
   })
 
-  const now   = new Date()
-  const month = now.toLocaleDateString('pt-BR', {
-    month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo',
-  })
+  const month = useMemo(
+    () => new Date().toLocaleDateString('pt-BR', {
+      month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo',
+    }),
+    []
+  )
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">

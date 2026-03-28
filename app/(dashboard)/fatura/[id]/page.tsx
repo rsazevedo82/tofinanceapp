@@ -2,16 +2,21 @@
 'use client'
 
 import { useParams, useRouter }       from 'next/navigation'
+import dynamic                        from 'next/dynamic'
 import { useState }                   from 'react'
 import { useInvoices, usePayInvoice } from '@/hooks/useInvoices'
 import { useAccounts }                from '@/hooks/useAccounts'
 import { useQuery }                   from '@tanstack/react-query'
 import { formatCurrency }             from '@/lib/utils/format'
 import { Modal }                      from '@/components/ui/Modal'
-import { TransactionForm }            from '@/components/finance/TransactionForm'
 import { useCouple }                  from '@/hooks/useCouple'
 import { c }                          from '@/lib/utils/copy'
 import type { Transaction, ApiResponse } from '@/types'
+
+const TransactionForm = dynamic(
+  () => import('@/components/finance/TransactionForm').then(m => m.TransactionForm),
+  { ssr: false }
+)
 
 const STATUS_LABEL: Record<string, string> = {
   open:   'Aberta',

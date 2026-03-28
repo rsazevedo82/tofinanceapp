@@ -93,132 +93,113 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
     const month = searchParams.get('month') ?? new Date().toISOString().slice(0, 7)
     const { start, end } = monthRange(month)
 
-    const { data: txs, error: txError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('date', start)
-      .lte('date', end)
-      .eq('status', 'confirmed')
-      .is('deleted_at', null)
-
-    if (txError) throw txError
-    const transactions = txs ?? []
-
-    const { data: cats } = await supabase
-      .from('categories')
-      .select('id, name, color')
-      .or(`user_id.is.null,user_id.eq.${user.id}`)
-
-    const catMap        = Object.fromEntries((cats ?? []).map(c => [c.id, c]))
-    const expenseTxs    = transactions.filter(t => t.type === 'expense')
-    const totalExpenses = expenseTxs.reduce((s, t) => s + Number(t.amount), 0)
-    const catTotals     = new Map<string, { total: number; count: number; color: string | null; name: string }>()
-
-    for (const tx of expenseTxs) {
-      const key      = tx.category_id ?? '__none__'
-      const cat      = tx.category_id ? catMap[tx.category_id] : null
-      const name     = cat?.name  ?? 'Sem categoria'
-      const color    = cat?.color ?? '#94a3b8'
-      const existing = catTotals.get(key)
-      if (existing) { existing.total += Number(tx.amount); existing.count++ }
-      else { catTotals.set(key, { total: Number(tx.amount), count: 1, color, name }) }
-    }
-
-    const categories: CategoryData[] = Array.from(catTotals.entries())
-      .map(([id, v]) => ({
-        category_id:    id === '__none__' ? null : id,
-        category_name:  v.name,
-        category_color: v.color,
-        total:          v.total,
-        count:          v.count,
-        percent:        totalExpenses > 0 ? Math.round((v.total / totalExpenses) * 100) : 0,
-      }))
-      .sort((a, b) => b.total - a.total)
-
     const monthsBack = 5
     const monthList  = Array.from({ length: monthsBack + 1 }, (_, i) => addMonths(month, -monthsBack + i))
+    const monthlyStart = `${monthList[0]}-01`
+    const daysInMonth  = new Date(parseInt(month.split('-')[0]), parseInt(month.split('-')[1]), 0).getDate()
 
-    const { data: allTxs } = await supabase
-      .from('transactions')
-      .select('type, amount, date')
-      .eq('user_id', user.id)
-      .gte('date', `${monthList[0]}-01`)
-      .lte('date', end)
-      .eq('status', 'confirmed')
-      .is('deleted_at', null)
+    const [
+      { data: categoryRows, error: categoryError },
+      { data: monthlyRows, error: monthlyError },
+      { data: dailyRows, error: dailyError },
+      { data: cardRows, error: cardError },
+    ] = await Promise.all([
+      supabase.rpc('report_expense_by_category', {
+        p_user_id: user.id,
+        p_start: start,
+        p_end: end,
+      }),
+      supabase.rpc('report_monthly_totals', {
+        p_user_id: user.id,
+        p_start: monthlyStart,
+        p_end: end,
+      }),
+      supabase.rpc('report_daily_totals', {
+        p_user_id: user.id,
+        p_start: start,
+        p_end: end,
+      }),
+      supabase.rpc('report_card_limits', {
+        p_user_id: user.id,
+      }),
+    ])
+
+    if (categoryError) throw categoryError
+    if (monthlyError) throw monthlyError
+    if (dailyError) throw dailyError
+    if (cardError) throw cardError
+
+    const totalExpenses = (categoryRows ?? []).reduce((sum, row) => sum + Number(row.total), 0)
+
+    const categories: CategoryData[] = (categoryRows ?? []).map(row => ({
+      category_id: row.category_id,
+      category_name: row.category_name,
+      category_color: row.category_color,
+      total: Number(row.total),
+      count: Number(row.tx_count),
+      percent: totalExpenses > 0 ? Math.round((Number(row.total) / totalExpenses) * 100) : 0,
+    }))
+
+    const monthlyMap = new Map(
+      (monthlyRows ?? []).map(row => [
+        row.month,
+        {
+          income: Number(row.income),
+          expense: Number(row.expense),
+        },
+      ])
+    )
 
     const monthly: MonthlyData[] = monthList.map(ym => {
-      const { start: s, end: e } = monthRange(ym)
-      const mTxs   = (allTxs ?? []).filter(t => t.date >= s && t.date <= e)
-      const income  = mTxs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
-      const expense = mTxs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-      return { month: ym, label: monthLabel(ym), income, expense, net: income - expense }
+      const current = monthlyMap.get(ym) ?? { income: 0, expense: 0 }
+      return {
+        month: ym,
+        label: monthLabel(ym),
+        income: current.income,
+        expense: current.expense,
+        net: current.income - current.expense,
+      }
     })
 
-    const daysInMonth  = new Date(parseInt(month.split('-')[0]), parseInt(month.split('-')[1]), 0).getDate()
+    const dailyMap = new Map(
+      (dailyRows ?? []).map(row => [
+        row.day,
+        {
+          income: Number(row.income),
+          expense: Number(row.expense),
+        },
+      ])
+    )
+
     let runningBalance = 0
     const daily_flow: DailyFlowData[] = Array.from({ length: daysInMonth }, (_, i) => {
       const day   = String(i + 1).padStart(2, '0')
       const date  = `${month}-${day}`
-      const dayTx = transactions.filter(t => t.date === date)
-      const inc   = dayTx.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0)
-      const exp   = dayTx.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+      const current = dailyMap.get(date) ?? { income: 0, expense: 0 }
+      const inc = current.income
+      const exp = current.expense
       runningBalance += inc - exp
       return { date, label: `${day}/${month.split('-')[1]}`, income: inc, expense: exp, balance: runningBalance }
     })
 
-    const { data: creditAccounts } = await supabase
-      .from('accounts')
-      .select('id, name, color, credit_limit')
-      .eq('user_id', user.id)
-      .eq('type', 'credit')
-      .eq('is_active', true)
-      .is('deleted_at', null)
-      .not('credit_limit', 'is', null)
-
-    const { data: openInvoices } = await supabase
-      .from('credit_invoices')
-      .select('account_id, total_amount')
-      .eq('user_id', user.id)
-      .neq('status', 'paid')
-
-    const invoiceByAccount = new Map<string, number>()
-    for (const inv of openInvoices ?? []) {
-      invoiceByAccount.set(inv.account_id, (invoiceByAccount.get(inv.account_id) ?? 0) + Number(inv.total_amount))
-    }
-
-    const card_limits: CardLimitData[] = (creditAccounts ?? []).map(acc => {
-      const used  = invoiceByAccount.get(acc.id) ?? 0
-      const limit = Number(acc.credit_limit)
-      return { account_id: acc.id, name: acc.name, color: acc.color,
-        credit_limit: limit, used, available: limit - used,
-        percent: limit > 0 ? Math.round((used / limit) * 100) : 0 }
+    const card_limits: CardLimitData[] = (cardRows ?? []).map(row => {
+      const limit = Number(row.credit_limit)
+      const used = Number(row.used)
+      return {
+        account_id: row.account_id,
+        name: row.name,
+        color: row.color,
+        credit_limit: limit,
+        used,
+        available: limit - used,
+        percent: limit > 0 ? Math.round((used / limit) * 100) : 0,
+      }
     })
 
     const past3    = Array.from({ length: 3 }, (_, i) => addMonths(month, -(i + 1)))
-    const lastDay0 = new Date(parseInt(past3[0].split('-')[0]), parseInt(past3[0].split('-')[1]), 0).getDate()
 
-    const { data: past3Txs } = await supabase
-      .from('transactions')
-      .select('type, amount, date')
-      .eq('user_id', user.id)
-      .gte('date', `${past3[2]}-01`)
-      .lte('date', `${past3[0]}-${String(lastDay0).padStart(2, '0')}`)
-      .eq('status', 'confirmed')
-      .is('deleted_at', null)
-
-    const avgIncome = past3.reduce((s, ym) => {
-      const { start: s2, end: e2 } = monthRange(ym)
-      return s + (past3Txs ?? []).filter(t => t.date >= s2 && t.date <= e2 && t.type === 'income')
-        .reduce((a, t) => a + Number(t.amount), 0)
-    }, 0) / 3
-
-    const avgExpense = past3.reduce((s, ym) => {
-      const { start: s2, end: e2 } = monthRange(ym)
-      return s + (past3Txs ?? []).filter(t => t.date >= s2 && t.date <= e2 && t.type === 'expense')
-        .reduce((a, t) => a + Number(t.amount), 0)
-    }, 0) / 3
+    const avgIncome = past3.reduce((sum, ym) => sum + (monthlyMap.get(ym)?.income ?? 0), 0) / 3
+    const avgExpense = past3.reduce((sum, ym) => sum + (monthlyMap.get(ym)?.expense ?? 0), 0) / 3
 
     const { data: accs } = await supabase
       .from('accounts')
@@ -229,8 +210,8 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
       .neq('type', 'credit')
 
     const currentBalance      = (accs ?? []).reduce((s, a) => s + Number(a.balance), 0)
-    const currentMonthIncome  = transactions.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0)
-    const currentMonthExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+    const currentMonthIncome  = monthlyMap.get(month)?.income ?? 0
+    const currentMonthExpense = monthlyMap.get(month)?.expense ?? 0
 
     let projBalance = currentBalance
     const projection: ProjectionData[] = [
@@ -244,10 +225,17 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
       }),
     ]
 
-    return NextResponse.json({
-      data: { categories, monthly, daily_flow, card_limits, projection, period: { start, end, month } },
-      error: null,
-    })
+    return NextResponse.json(
+      {
+        data: { categories, monthly, daily_flow, card_limits, projection, period: { start, end, month } },
+        error: null,
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=30, stale-while-revalidate=90',
+        },
+      }
+    )
   } catch (err) {
     console.error('[GET /api/reports]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
