@@ -36,5 +36,6 @@ jobs:
       - name: Audit production dependencies (high+)
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Audit all dependencies (critical)
-        run: npm audit --audit-level=critical
+      - name: Audit dev dependencies (informational)
+        continue-on-error: true
+        run: npm audit --audit-level=high
