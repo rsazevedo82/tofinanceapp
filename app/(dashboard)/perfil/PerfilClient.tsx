@@ -4,6 +4,24 @@
 import { useState, useEffect }    from 'react'
 import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/useProfile'
 
+function getPasswordStrength(password: string): { label: string; color: string; width: string } {
+  if (!password) return { label: 'Digite sua senha', color: '#D1D5DB', width: '0%' }
+
+  const hasMinLength = password.length >= 10
+  const hasLetters = /[a-zA-Z]/.test(password)
+  const hasNumbers = /[0-9]/.test(password)
+
+  const checks = [hasMinLength, hasLetters, hasNumbers].filter(Boolean).length
+
+  if (checks <= 1) {
+    return { label: 'Senha fraca', color: '#EF4444', width: '33%' }
+  }
+  if (checks === 2) {
+    return { label: 'Senha média', color: '#F59E0B', width: '66%' }
+  }
+  return { label: 'Senha boa', color: '#22C55E', width: '100%' }
+}
+
 export default function PerfilPage() {
   const { data: profile, isLoading } = useProfile()
 
@@ -159,6 +177,7 @@ function SenhaForm() {
   const [error,    setError]    = useState('')
 
   const changePassword = useChangePassword()
+  const strength = getPasswordStrength(next)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -212,6 +231,17 @@ function SenhaForm() {
             disabled={changePassword.isPending}
             required
           />
+          <div className="mt-2">
+            <div className="h-1.5 w-full rounded-full bg-[#E5E7EB] overflow-hidden">
+              <div
+                className="h-full transition-all duration-300"
+                style={{ width: strength.width, backgroundColor: strength.color }}
+              />
+            </div>
+            <p className="text-xs mt-1" style={{ color: strength.color }}>
+              {strength.label}
+            </p>
+          </div>
         </div>
         <div>
           <label className="label">Confirmar nova senha</label>
