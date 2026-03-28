@@ -15,20 +15,17 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ['finance', 'productivity'],
     icons: [
       {
-        src: '/icon-192.png',
-        sizes: '192x192',
+        src: '/n2r-simbolo-principal-claro-V1.png',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/icon-512.png',
-        sizes: '512x512',
+        src: '/n2r-simbolo-principal-claro-V1.png',
         type: 'image/png',
         purpose: 'maskable',
       },
       {
-        src: '/apple-touch-icon.png',
-        sizes: '180x180',
+        src: '/n2r-simbolo-principal-claro-V1.png',
         type: 'image/png',
         purpose: 'any',
       },

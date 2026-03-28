@@ -1,7 +1,7 @@
 // components/providers/PartnerViewProvider.tsx
 'use client'
 
-import { createContext, useContext, useState, useMemo, useCallback } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react'
 import { useCouple } from '@/hooks/useCouple'
 
 interface PartnerViewContextValue {
@@ -39,10 +39,12 @@ export function PartnerViewProvider({ children }: { children: React.ReactNode })
     setIsViewingPartner(false)
   }, [])
 
-  // Sai da visão do parceiro se o vínculo for desfeito
-  if (!couple && isViewingPartner) {
-    setIsViewingPartner(false)
-  }
+  // Sai da visão do parceiro se o vínculo for desfeito.
+  useEffect(() => {
+    if (!couple && isViewingPartner) {
+      setIsViewingPartner(false)
+    }
+  }, [couple, isViewingPartner])
 
   const value = useMemo(() => ({
     isViewingPartner: isViewingPartner && !!partnerId,

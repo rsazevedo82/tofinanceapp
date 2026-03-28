@@ -32,15 +32,14 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'default',
     title: 'Nós 2 Reais',
-    startupImage: '/apple-touch-icon.png',
+    startupImage: '/n2r-simbolo-principal-claro-V1.png',
   },
   formatDetection: { telephone: false },
   icons: {
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
-    shortcut: ['/icon-192.png'],
+    apple: [{ url: '/n2r-simbolo-principal-claro-V1.png' }],
+    shortcut: ['/n2r-simbolo-principal-claro-V1.png'],
     icon: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/n2r-simbolo-principal-claro-V1.png', type: 'image/png' },
     ],
   },
 }

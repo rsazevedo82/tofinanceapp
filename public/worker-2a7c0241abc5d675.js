@@ -1,0 +1,1 @@
+self.addEventListener("message",e=>{let s=e.data;(null==s?void 0:s.type)==="SKIP_WAITING"&&self.skipWaiting()});

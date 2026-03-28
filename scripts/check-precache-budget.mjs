@@ -3,7 +3,7 @@ import path from 'node:path'
 
 const projectRoot = process.cwd()
 const swPath = path.join(projectRoot, 'public', 'sw.js')
-const defaultBudgetKb = 5000
+const defaultBudgetKb = 2500
 const budgetKb = Number(process.env.PRECACHE_BUDGET_KB ?? defaultBudgetKb)
 
 if (!Number.isFinite(budgetKb) || budgetKb <= 0) {

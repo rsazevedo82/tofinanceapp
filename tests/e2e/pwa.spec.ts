@@ -40,9 +40,7 @@ test.describe('PWA', () => {
     expect(manifest.start_url).toBe('/')
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ src: '/icon-192.png', sizes: '192x192' }),
-        expect.objectContaining({ src: '/icon-512.png', sizes: '512x512' }),
-        expect.objectContaining({ src: '/apple-touch-icon.png', sizes: '180x180' }),
+        expect.objectContaining({ src: '/n2r-simbolo-principal-claro-V1.png' }),
       ]),
     )
   })

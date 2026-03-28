@@ -2,6 +2,16 @@ import withPWAInit from '@ducanh2912/next-pwa'
 
 const withPWA = withPWAInit({
   dest: 'public',
+  // Exclui assets pesados não essenciais do precache para acelerar
+  // primeira instalação/atualização do PWA em redes móveis.
+  publicExcludes: [
+    '!noprecache/**/*',
+    'nos-dois-reais.jpeg',
+    'n2r-simbolo-principal-claro-V1.png',
+    'n2r-wordmark-horizontal-v1.png',
+    'n2r-logo-completo-horizontal-cor-V1.png',
+    'social/*.svg',
+  ],
   // Evita cache agressivo de navegação que pode causar mismatch de hidratação
   // quando há deploy com chunks novos.
   cacheOnFrontEndNav: false,

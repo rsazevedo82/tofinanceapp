@@ -2,7 +2,6 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState }                          from 'react'
-import { PartnerViewProvider }               from '@/components/providers/PartnerViewProvider'
 import { PwaAutoUpdate }                     from '@/components/providers/PwaAutoUpdate'
 import { ToastProvider }                     from '@/components/providers/ToastProvider'
 
@@ -21,9 +20,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <PwaAutoUpdate />
       <ToastProvider>
-        <PartnerViewProvider>
-          {children}
-        </PartnerViewProvider>
+        {children}
       </ToastProvider>
     </QueryClientProvider>
   )

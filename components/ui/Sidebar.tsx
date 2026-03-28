@@ -7,27 +7,28 @@ import { NotificationBell } from '@/components/ui/NotificationBell'
 import { useEffect, useState }         from 'react'
 import { useCouple }        from '@/hooks/useCouple'
 import { useProfile, useLogout } from '@/hooks/useProfile'
-import { Menu, X } from 'lucide-react'
-import { SeverityIcon } from '@/components/ui/SeverityIcon'
 import {
-  FcHome,
-  FcMoneyTransfer,
-  FcSafe,
-  FcSimCard,
-  FcList,
-  FcBarChart,
-  FcPositiveDynamic,
-  FcCollaboration,
-  FcConferenceCall,
-  FcManager,
-} from 'react-icons/fc'
-import type { IconType } from 'react-icons'
+  ArrowRightLeft,
+  BarChart3,
+  CreditCard,
+  HandCoins,
+  Home,
+  List,
+  Menu,
+  Target,
+  UserRound,
+  Users,
+  Wallet,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
+import { SeverityIcon } from '@/components/ui/SeverityIcon'
 
 interface NavItem {
   href:         string
   label:        string
   context:      string
-  icon:         IconType
+  icon:         LucideIcon
   locked?:      boolean
   lockMessage?: string
   lockHint?:    string
@@ -69,29 +70,29 @@ export function Sidebar() {
   }, [mobileMounted])
 
   const navItems: NavItem[] = [
-    { href: '/',           label: 'Visão geral',         context: 'Resumo financeiro principal', icon: FcHome },
-    { href: '/transacoes', label: 'Gastos',              context: 'Entradas e saídas do período', icon: FcMoneyTransfer },
-    { href: '/contas',     label: 'Contas',              context: 'Saldos e contas disponíveis', icon: FcSafe },
-    { href: '/cartoes',    label: 'Cartões',             context: 'Limites, faturas e uso atual', icon: FcSimCard },
-    { href: '/categorias', label: 'Categorias',          context: 'Organização das movimentações', icon: FcList },
-    { href: '/relatorios', label: 'Relatórios',          context: 'Análises e comparativos', icon: FcBarChart },
-    { href: '/objetivos',  label: 'Objetivos',           context: 'Metas e progresso acumulado', icon: FcPositiveDynamic },
+    { href: '/',           label: 'Visão geral',         context: 'Resumo financeiro principal', icon: Home },
+    { href: '/transacoes', label: 'Gastos',              context: 'Entradas e saídas do período', icon: ArrowRightLeft },
+    { href: '/contas',     label: 'Contas',              context: 'Saldos e contas disponíveis', icon: Wallet },
+    { href: '/cartoes',    label: 'Cartões',             context: 'Limites, faturas e uso atual', icon: CreditCard },
+    { href: '/categorias', label: 'Categorias',          context: 'Organização das movimentações', icon: List },
+    { href: '/relatorios', label: 'Relatórios',          context: 'Análises e comparativos', icon: BarChart3 },
+    { href: '/objetivos',  label: 'Objetivos',           context: 'Metas e progresso acumulado', icon: Target },
     {
       href:        '/divisao',
       label:       'Divisão de despesas',
       context:     'Pendências e histórico do casal',
-      icon:        FcCollaboration,
+      icon:        HandCoins,
       locked:      !hasCouple,
       lockMessage: 'A divisão de despesas só está disponível para casais vinculados.',
       lockHint:    'Acesse Conexão do casal e convide seu parceiro(a) para desbloquear.',
     },
-    { href: '/casal',      label: 'Conexão do casal',    context: 'Convites e vínculo com parceiro(a)', icon: FcConferenceCall },
+    { href: '/casal',      label: 'Conexão do casal',    context: 'Convites e vínculo com parceiro(a)', icon: Users },
   ]
 
   const activeNavItem =
     navItems.find(item => pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))) ??
     (pathname === '/perfil'
-      ? { href: '/perfil', label: 'Perfil', context: 'Dados da sua conta', icon: FcManager }
+      ? { href: '/perfil', label: 'Perfil', context: 'Dados da sua conta', icon: UserRound }
       : null)
 
   const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
@@ -185,7 +186,7 @@ export function Sidebar() {
               {(profile?.name ?? profile?.email ?? '?').charAt(0).toUpperCase()}
             </div>
           ) : (
-            <FcManager size={18} className="w-4 shrink-0" />
+            <UserRound size={18} className="w-4 shrink-0" />
           )}
           <div className="flex-1 min-w-0">
             <p className="truncate text-sm font-semibold text-[#0F172A] leading-tight">
