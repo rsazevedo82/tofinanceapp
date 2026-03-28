@@ -57,6 +57,34 @@ export interface ReportsPayload {
   period: { start: string; end: string; month: string }
 }
 
+type CategoryRow = {
+  category_id: string | null
+  category_name: string
+  category_color: string | null
+  total: number | string
+  tx_count: number | string
+}
+
+type MonthlyRow = {
+  month: string
+  income: number | string
+  expense: number | string
+}
+
+type DailyRow = {
+  day: string
+  income: number | string
+  expense: number | string
+}
+
+type CardRow = {
+  account_id: string
+  name: string
+  color: string | null
+  credit_limit: number | string
+  used: number | string
+}
+
 function monthLabel(ym: string): string {
   const [y, m] = ym.split('-')
   const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
@@ -129,9 +157,14 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
     if (dailyError) throw dailyError
     if (cardError) throw cardError
 
-    const totalExpenses = (categoryRows ?? []).reduce((sum, row) => sum + Number(row.total), 0)
+    const safeCategoryRows = (categoryRows ?? []) as CategoryRow[]
+    const safeMonthlyRows = (monthlyRows ?? []) as MonthlyRow[]
+    const safeDailyRows = (dailyRows ?? []) as DailyRow[]
+    const safeCardRows = (cardRows ?? []) as CardRow[]
 
-    const categories: CategoryData[] = (categoryRows ?? []).map(row => ({
+    const totalExpenses = safeCategoryRows.reduce((sum: number, row: CategoryRow) => sum + Number(row.total), 0)
+
+    const categories: CategoryData[] = safeCategoryRows.map((row: CategoryRow) => ({
       category_id: row.category_id,
       category_name: row.category_name,
       category_color: row.category_color,
@@ -141,7 +174,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
     }))
 
     const monthlyMap = new Map(
-      (monthlyRows ?? []).map(row => [
+      safeMonthlyRows.map((row: MonthlyRow) => [
         row.month,
         {
           income: Number(row.income),
@@ -162,7 +195,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
     })
 
     const dailyMap = new Map(
-      (dailyRows ?? []).map(row => [
+      safeDailyRows.map((row: DailyRow) => [
         row.day,
         {
           income: Number(row.income),
@@ -182,7 +215,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
       return { date, label: `${day}/${month.split('-')[1]}`, income: inc, expense: exp, balance: runningBalance }
     })
 
-    const card_limits: CardLimitData[] = (cardRows ?? []).map(row => {
+    const card_limits: CardLimitData[] = safeCardRows.map((row: CardRow) => {
       const limit = Number(row.credit_limit)
       const used = Number(row.used)
       return {
