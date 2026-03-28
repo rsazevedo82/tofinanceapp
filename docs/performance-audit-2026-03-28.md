@@ -80,7 +80,7 @@ Como melhorar:
 - Polling adaptativo (visibilidade + rede + tempo inativo).
 - Preferir eventos/push quando possível.
 
-### 9) Camada de rate limit em endpoints de leitura críticos
+OK ### 9) Camada de rate limit em endpoints de leitura críticos
 O que é: várias rotas de leitura passam por rate-limit remoto (Upstash), agregando round-trip.
 Por que importa: segurança é importante, mas custo por request pode afetar p95/p99.
 Impacto: latência adicional visível em conexões móveis ou sob carga.
@@ -91,7 +91,7 @@ Como melhorar:
 
 ## Criticidade Média
 
-### 10) Biblioteca de ícones e escolha de assets podem inflar bundle/percepção de peso
+OK ### 10) Biblioteca de ícones e escolha de assets podem inflar bundle/percepção de peso
 O que é: uso de `react-icons/fc` no sidebar e assets PNG grandes de marca.
 Por que importa: ícones e branding entram em áreas críticas de navegação.
 Impacto: mais bytes iniciais e UI menos responsiva em aparelhos modestos.

@@ -7,7 +7,7 @@ import { fail, logInternalError }                              from '@/lib/apiRe
 import { getRequestAuditMeta, recordAuditEvent }               from '@/lib/audit'
 import { createTransactionSchema }                             from '@/lib/validations/schemas'
 import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
-import { ratelimit }                                           from '@/lib/rateLimit'
+import { limitFrequentRead, ratelimit }                        from '@/lib/rateLimit'
 import { finalizeIdempotency, prepareIdempotency }             from '@/lib/idempotency'
 import { headers }                                             from 'next/headers'
 import type { ApiResponse, Transaction }                       from '@/types'
@@ -22,18 +22,19 @@ async function getIP(): Promise<string> {
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Transaction[]>>> {
   try {
-    const { success: allowed } = await ratelimit.limit(await getIP())
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
+    }
+
+    const limiterId = `${user.id}:${await getIP()}`
+    const { success: allowed } = await limitFrequentRead(limiterId, 'transactions:get')
     if (!allowed) {
       return NextResponse.json(
         { data: null, error: 'Muitas requisicoes. Tente novamente em 1 minuto.' },
         { status: 429 }
       )
-    }
-
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)

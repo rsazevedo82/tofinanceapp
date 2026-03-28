@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ratelimit } from '@/lib/rateLimit'
+import { limitFrequentRead } from '@/lib/rateLimit'
 import { headers } from 'next/headers'
 import type { ApiResponse, Transaction } from '@/types'
 import { NextResponse } from 'next/server'
@@ -11,18 +11,19 @@ async function getIP(): Promise<string> {
 
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Transaction[]>>> {
   try {
-    const { success: allowed } = await ratelimit.limit(await getIP())
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
+    }
+
+    const limiterId = `${user.id}:${await getIP()}`
+    const { success: allowed } = await limitFrequentRead(limiterId, 'transactions:summary:get')
     if (!allowed) {
       return NextResponse.json(
         { data: null, error: 'Muitas requisicoes. Tente novamente em 1 minuto.' },
         { status: 429 }
       )
-    }
-
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)

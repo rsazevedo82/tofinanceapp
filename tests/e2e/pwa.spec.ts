@@ -40,7 +40,8 @@ test.describe('PWA', () => {
     expect(manifest.start_url).toBe('/')
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ src: '/n2r-simbolo-principal-claro-V1.png' }),
+        expect.objectContaining({ src: '/icons/icon-192.png' }),
+        expect.objectContaining({ src: '/icons/icon-512.png' }),
       ]),
     )
   })
