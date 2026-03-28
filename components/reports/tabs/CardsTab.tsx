@@ -66,6 +66,8 @@ export default function CardsTab({ data }: CardsTabProps) {
               { key: 'percent', label: '%', align: 'right' },
             ]}
             rows={data.card_limits as unknown as Record<string, unknown>[]}
+            mobilePrimaryKey="name"
+            mobilePriorityKeys={['percent', 'available', 'used', 'credit_limit']}
             formatValue={(k, v) => {
               if (['credit_limit', 'used', 'available'].includes(k)) return fmtCur(Number(v))
               if (k === 'percent') return `${v}%`

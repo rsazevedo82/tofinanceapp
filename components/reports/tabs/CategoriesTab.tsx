@@ -48,6 +48,8 @@ export default function CategoriesTab({ data, isCouple }: CategoriesTabProps) {
               { key: 'percent', label: '%', align: 'right' },
             ]}
             rows={data.categories as unknown as Record<string, unknown>[]}
+            mobilePrimaryKey="category_name"
+            mobilePriorityKeys={['total', 'percent']}
             formatValue={(k, v) => {
               if (k === 'total') return fmtCur(Number(v))
               if (k === 'percent') return `${v}%`

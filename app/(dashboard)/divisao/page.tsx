@@ -60,11 +60,11 @@ function SplitCard({
         <div className="text-right shrink-0">
           <p className="font-bold text-[#0F172A]">{formatCurrency(split.total_amount)}</p>
           {isPending ? (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">
+            <span className="badge-status badge-status-warning">
               pendente
             </span>
           ) : (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-[#CCFBF1] text-[#0d9488] border border-teal-100">
+            <span className="badge-status badge-status-success">
               quitado
             </span>
           )}
@@ -204,8 +204,13 @@ export default function DivisaoPage() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         <EmptyStatePanel
           icon={<Handshake size={26} className="text-[#475569]" aria-hidden />}
+          tone="couple"
           title="Perfil de casal não vinculado"
           description="Vincule-se ao seu parceiro para dividir despesas."
+          nextSteps={[
+            'Envie convite de conexão para habilitar divisão de despesas',
+            'Após vincular, registre as despesas compartilhadas do mês',
+          ]}
           action={(
             <Link href="/casal" className="btn-secondary">
               Ir para Conexão do casal
@@ -265,8 +270,12 @@ export default function DivisaoPage() {
               ? <Clock3 size={26} className="text-[#475569]" aria-hidden />
               : <ClipboardList size={26} className="text-[#475569]" aria-hidden />
           }
+          tone={tab === 'pending' ? 'warning' : 'neutral'}
           title={tab === 'pending' ? 'Nenhuma divisão pendente' : 'Nenhuma divisão quitada ainda'}
           description={tab === 'pending' ? 'Registre a primeira divisão para começar o acompanhamento.' : 'Quando uma divisão for quitada, ela aparecerá aqui.'}
+          nextSteps={tab === 'pending'
+            ? ['Registre uma nova divisão com percentuais claros', 'Use a quitação para manter saldos atualizados']
+            : ['Quite ao menos uma divisão pendente para gerar histórico', 'Use o histórico para revisar hábitos do casal']}
           action={tab === 'pending' ? (
             <button onClick={() => setShowCreate(true)} className="btn-primary">
               Registrar primeira divisão

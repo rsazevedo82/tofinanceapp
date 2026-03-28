@@ -24,6 +24,8 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
   const { register, handleSubmit, watch, control, formState: { errors } } =
     useForm<CreateSplitInput>({
       resolver: zodResolver(createSplitSchema) as never,
+      mode: 'onChange',
+      reValidateMode: 'onChange',
       defaultValues: {
         couple_id:           couple.id,
         date:                today,
@@ -34,6 +36,7 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
   const totalAmount        = watch('total_amount') ?? 0
   const payerSharePercent  = watch('payer_share_percent') ?? 50
   const partnerSharePercent = 100 - payerSharePercent
+  const date = watch('date')
 
   const payerAmount   = totalAmount > 0 ? (totalAmount * payerSharePercent  / 100) : 0
   const partnerAmount = totalAmount > 0 ? (totalAmount * partnerSharePercent / 100) : 0
@@ -69,6 +72,9 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
             placeholder="0,00"
           />
           {errors.total_amount && <p className="error-msg">{errors.total_amount.message}</p>}
+          {!errors.total_amount && (
+            <p className="mt-1 text-xs text-[#334155]">Use até 2 casas decimais.</p>
+          )}
         </div>
         <div className="flex-1">
           <label className="label-sm">Data *</label>
@@ -78,6 +84,11 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
             className="input-field"
           />
           {errors.date && <p className="error-msg">{errors.date.message}</p>}
+          {!errors.date && date && (
+            <p className="mt-1 text-xs text-[#334155]">
+              {new Date(`${date}T12:00:00`).toLocaleDateString('pt-BR')}
+            </p>
+          )}
         </div>
       </div>
 

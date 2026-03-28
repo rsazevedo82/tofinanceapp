@@ -36,6 +36,8 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver:      zodResolver(createCategorySchema),
+    mode:          'onChange',
+    reValidateMode:'onChange',
     defaultValues: {
       name:  category?.name  ?? '',
       type:  category?.type  ?? defaultType,
@@ -73,7 +75,6 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
   }
 
   const isPending    = createCategory.isPending || updateCategory.isPending
-  const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -114,6 +115,11 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
           className="input"
           placeholder="Ex: Alimentação, Salário..."
         />
+        {errors.name ? (
+          <p className="error-msg">{errors.name.message}</p>
+        ) : (
+          <p className="mt-1 text-xs text-[#334155]">{currentName?.length ?? 0}/100 caracteres</p>
+        )}
       </div>
 
       {/* Cor */}
@@ -150,9 +156,9 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
         </span>
       </div>
 
-      {displayError && (
-        <p className="text-xs px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
-          {displayError}
+      {apiError && (
+        <p className="alert-box alert-box-error">
+          {apiError}
         </p>
       )}
 

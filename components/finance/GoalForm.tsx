@@ -34,6 +34,8 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
   const { register, handleSubmit, watch, setValue, formState: { errors } } =
     useForm<CreateGoalInput>({
       resolver: zodResolver(isEdit ? updateGoalSchema : createGoalSchema) as never,
+      mode: 'onChange',
+      reValidateMode: 'onChange',
       defaultValues: isEdit ? {
         title:         goal.title,
         description:   goal.description ?? '',
@@ -51,6 +53,9 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
     })
 
   const selectedCategory = watch('category')
+  const watchedTitle = watch('title') ?? ''
+  const watchedTarget = watch('target_amount')
+  const watchedDeadline = watch('deadline')
 
   function onCategorySelect(cat: typeof CATEGORY_OPTIONS[0]) {
     setValue('category', cat.value)
@@ -69,7 +74,11 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
           placeholder="Ex: Viagem para Europa"
           autoFocus
         />
-        {errors.title && <p className="error-msg">{errors.title.message}</p>}
+        {errors.title ? (
+          <p className="error-msg">{errors.title.message}</p>
+        ) : (
+          <p className="mt-1 text-xs text-[#334155]">{watchedTitle.length}/100 caracteres</p>
+        )}
       </div>
 
       {/* Descrição */}
@@ -146,6 +155,9 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
           placeholder="0,00"
         />
         {errors.target_amount && <p className="error-msg">{errors.target_amount.message}</p>}
+        {!errors.target_amount && watchedTarget && watchedTarget > 0 && (
+          <p className="mt-1 text-xs text-[#334155]">Meta de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(watchedTarget)}</p>
+        )}
       </div>
 
       {/* Prazo */}
@@ -156,6 +168,11 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
           type="date"
           className="input-field"
         />
+        {!errors.deadline && watchedDeadline && watchedTarget && watchedTarget > 0 && (
+          <p className="mt-1 text-xs text-[#334155]">
+            Prazo em {new Date(`${watchedDeadline}T12:00:00`).toLocaleDateString('pt-BR')}
+          </p>
+        )}
       </div>
 
       {/* Meta de casal */}

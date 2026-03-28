@@ -111,6 +111,8 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver:      zodResolver(transactionFormSchema) as never,
+    mode:          'onChange',
+    reValidateMode:'onChange',
     defaultValues: {
       account_id:  transaction?.account_id  ?? '',
       category_id: transaction?.category_id ?? '',
@@ -126,6 +128,8 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
   const watchedType      = watch('type')
   const watchedAccountId = watch('account_id')
   const watchedAmount    = watch('amount') ?? 0
+  const watchedDescription = watch('description') ?? ''
+  const watchedDate = watch('date')
 
   const selectedAccount = accounts.find(a => a.id === watchedAccountId)
   const isCreditCard    = selectedAccount?.type === 'credit'
@@ -217,7 +221,6 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
   }
 
   const cfg          = TYPE_CONFIG[watchedType]
-  const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
     <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-3">
@@ -259,6 +262,15 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           style={{ color: cfg.color }}
           autoFocus={!isEditing}
         />
+        {errors.amount ? (
+          <p className="error-msg">{errors.amount.message}</p>
+        ) : watchedAmount > 0 ? (
+          <p className="mt-1 text-xs text-[#334155]">
+            {cfg.label} de R$ {watchedAmount.toFixed(2)}
+          </p>
+        ) : (
+          <p className="mt-1 text-xs text-[#334155]">Use até 2 casas decimais.</p>
+        )}
       </div>
 
       {/* Descrição */}
@@ -271,6 +283,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           className="input"
           placeholder="Ex: Supermercado, Salário..."
         />
+        {errors.description ? (
+          <p className="error-msg">{errors.description.message}</p>
+        ) : (
+          <p className="mt-1 text-xs text-[#334155]">
+            {watchedDescription.length}/255 caracteres
+          </p>
+        )}
       </div>
 
       {/* Conta */}
@@ -289,6 +308,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             />
           )}
         />
+        {errors.account_id ? (
+          <p className="error-msg">{errors.account_id.message}</p>
+        ) : (
+          <p className="mt-1 text-xs text-[#334155]">
+            Escolha a conta onde o valor será registrado.
+          </p>
+        )}
       </div>
 
       {/* Parcelas — somente cartao, despesa, criacao */}
@@ -322,6 +348,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
               autoFocus
             />
           )}
+          {useCustomInstallments && (parseInt(customInstallments) < 13 || parseInt(customInstallments) > 360) && customInstallments !== '' && (
+            <p className="error-msg">Informe entre 13 e 360 parcelas.</p>
+          )}
           {effectiveInstallments > 1 && watchedAmount > 0 && (
             <p className="mt-1 text-xs text-[#334155]">
               {effectiveInstallments}x de R$ {(watchedAmount / effectiveInstallments).toFixed(2)} · Total R$ {watchedAmount.toFixed(2)}
@@ -334,9 +363,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       {watchedType !== 'transfer' && (
         <div>
           <label className="label" htmlFor={categoryId}>Categoria</label>
-          <Controller
-            name="category_id"
-            control={control}
+        <Controller
+          name="category_id"
+          control={control}
             render={({ field }) => (
               <AccessibleSelect
                 id={categoryId}
@@ -344,10 +373,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
                 onChange={field.onChange}
                 options={categoryOptions}
                 placeholder="Sem categoria"
-              />
-            )}
-          />
-        </div>
+            />
+          )}
+        />
+        {errors.category_id && (
+          <p className="error-msg">{errors.category_id.message}</p>
+        )}
+      </div>
       )}
 
       {/* Data */}
@@ -359,6 +391,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           type="date"
           className="input"
         />
+        {errors.date ? (
+          <p className="error-msg">{errors.date.message}</p>
+        ) : watchedDate ? (
+          <p className="mt-1 text-xs text-[#334155]">
+            Data selecionada: {new Date(`${watchedDate}T12:00:00`).toLocaleDateString('pt-BR')}
+          </p>
+        ) : null}
       </div>
 
       {/* Campos secundarios — colapsaveis */}
@@ -404,9 +443,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
         </div>
       )}
 
-      {displayError && (
-        <p className="text-xs px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
-          {displayError}
+      {apiError && (
+        <p className="alert-box alert-box-error">
+          {apiError}
         </p>
       )}
 

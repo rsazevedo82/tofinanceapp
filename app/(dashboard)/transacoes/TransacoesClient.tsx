@@ -288,10 +288,14 @@ export default function TransacoesPage() {
               ? <ArrowDownCircle size={26} className="text-[#FF7F50]" aria-hidden />
               : <ArrowUpCircle size={26} className="text-[#2DD4BF]" aria-hidden />
           }
+          tone={activeTab === 'expense' ? 'warning' : 'finance'}
           title={activeTab === 'expense' ? 'Nenhuma despesa no período' : 'Nenhuma receita no período'}
           description={activeTab === 'expense'
             ? c(isCouple, 'Nenhuma despesa registrada neste período', 'Nenhuma despesa registrada por vocês neste período')
             : c(isCouple, 'Nenhuma receita registrada neste período', 'Nenhuma receita registrada por vocês neste período')}
+          nextSteps={activeTab === 'expense'
+            ? ['Registre uma despesa para iniciar o histórico do mês', 'Classifique por categoria para melhorar os relatórios']
+            : ['Registre uma receita para acompanhar seu fluxo de caixa', 'Use conta correta para manter o saldo confiável']}
         />
       ) : (
         <div>

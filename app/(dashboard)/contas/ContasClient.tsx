@@ -76,8 +76,13 @@ export default function ContasPage() {
       ) : otherAccounts.length === 0 ? (
         <EmptyStatePanel
           icon={<Building2 size={26} className="text-[#475569]" aria-hidden />}
+          tone="finance"
           title={c(isCouple, 'Você ainda não adicionou nenhuma conta', 'Vocês ainda não adicionaram nenhuma conta')}
           description={c(isCouple, 'Adicione sua primeira conta para começar', 'Adicionem a primeira conta de vocês')}
+          nextSteps={[
+            c(isCouple, 'Cadastre conta corrente, poupança ou carteira', 'Definam as contas principais do casal'),
+            'Informe saldo inicial para começar relatórios com base real',
+          ]}
           action={(
             <button onClick={() => setShowCreate(true)} className="btn-primary">
               <span className="text-lg leading-none">+</span>

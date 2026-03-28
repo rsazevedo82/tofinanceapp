@@ -55,6 +55,8 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver:      zodResolver(createAccountSchema) as never,
+    mode:          'onChange',
+    reValidateMode:'onChange',
     defaultValues: {
       name:         account?.name        ?? '',
       type:         defaultType,
@@ -67,6 +69,9 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
 
   const currentType  = watch('type')
   const currentColor = watch('color')
+  const accountName = watch('name') ?? ''
+  const closingDay = watch('closing_day')
+  const dueDay = watch('due_day')
   const isCreditCard = currentType === 'credit'
 
   function onSubmit(data: FormValues) {
@@ -110,7 +115,6 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
   }
 
   const isPending    = createAccount.isPending || updateAccount.isPending
-  const displayError = Object.values(errors)[0]?.message ?? apiError
 
   return (
     <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-4">
@@ -124,6 +128,11 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
           className="input"
           placeholder="Ex: Nubank, Itau, Carteira..."
         />
+        {errors.name ? (
+          <p className="error-msg">{errors.name.message}</p>
+        ) : (
+          <p className="mt-1 text-xs text-[#334155]">{accountName.length}/100 caracteres</p>
+        )}
       </div>
 
       {/* Tipo — oculto quando só há uma opção disponível */}
@@ -157,6 +166,11 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
               className="input"
               placeholder="Ex: 5000,00"
             />
+            {errors.credit_limit ? (
+              <p className="error-msg">{errors.credit_limit.message}</p>
+            ) : (
+              <p className="mt-1 text-xs text-[#334155]">Obrigatório para cartão de crédito.</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -170,6 +184,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
                   <option key={d} value={d}>Dia {d}</option>
                 ))}
               </select>
+              {errors.closing_day && <p className="error-msg">{errors.closing_day.message}</p>}
             </div>
             <div>
               <label className="label">Dia de vencimento</label>
@@ -181,8 +196,14 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
                   <option key={d} value={d}>Dia {d}</option>
                 ))}
               </select>
+              {errors.due_day && <p className="error-msg">{errors.due_day.message}</p>}
             </div>
           </div>
+          {closingDay && dueDay ? (
+            <p className="mt-1 text-xs text-[#334155]">
+              Fechamento dia {closingDay} · Vencimento dia {dueDay}
+            </p>
+          ) : null}
         </div>
       )}
 
@@ -198,6 +219,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             className="input"
             placeholder="0,00 - deixe vazio se não souber"
           />
+          {errors.initial_balance && <p className="error-msg">{errors.initial_balance.message}</p>}
           <p className="mt-1 text-xs text-[#334155]">
             Será registrado como uma transação de receita inicial.
           </p>
@@ -225,9 +247,9 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
         </div>
       </div>
 
-      {displayError && (
-        <p className="text-xs px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
-          {displayError}
+      {apiError && (
+        <p className="alert-box alert-box-error">
+          {apiError}
         </p>
       )}
 

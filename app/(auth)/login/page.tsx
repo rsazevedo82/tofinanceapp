@@ -23,6 +23,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const passwordHasMinLength = password.length >= 8
+  const canSubmit = emailLooksValid && passwordHasMinLength && !loading
   const router = useRouter()
   const { showToast } = useToast()
 
@@ -123,6 +126,9 @@ export default function LoginPage() {
                 disabled={loading}
                 required
               />
+              {email.length > 0 && !emailLooksValid && (
+                <p className="error-msg">Digite um email válido.</p>
+              )}
             </div>
             <div>
               <label className="label" htmlFor={passwordInputId}>Senha</label>
@@ -145,10 +151,13 @@ export default function LoginPage() {
                   {showPassword ? 'Ocultar' : 'Mostrar'}
                 </button>
               </div>
+              {password.length > 0 && !passwordHasMinLength && (
+                <p className="error-msg">Use ao menos 8 caracteres.</p>
+              )}
             </div>
 
             {error && (
-              <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+              <p className="alert-box alert-box-error">
                 {error}
               </p>
             )}
@@ -156,7 +165,7 @@ export default function LoginPage() {
             <button
               type="submit"
               className="btn-primary w-full justify-center py-2.5"
-              disabled={loading}
+              disabled={!canSubmit}
             >
               {loading ? (
                 <span className="flex items-center gap-2">

@@ -144,13 +144,12 @@ function DadosPessoaisForm({ profile }: { profile: { name: string | null; email:
         </div>
 
         {error && (
-          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+          <p className="alert-box alert-box-error">
             {error}
           </p>
         )}
         {success && (
-          <p className="text-sm px-3 py-2 rounded-lg border"
-            style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.2)', color: '#0d9488' }}>
+          <p className="alert-box alert-box-success">
             {success}
           </p>
         )}
@@ -257,13 +256,12 @@ function SenhaForm() {
         </div>
 
         {error && (
-          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+          <p className="alert-box alert-box-error">
             {error}
           </p>
         )}
         {success && (
-          <p className="text-sm px-3 py-2 rounded-lg border"
-            style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.2)', color: '#0d9488' }}>
+          <p className="alert-box alert-box-success">
             {success}
           </p>
         )}

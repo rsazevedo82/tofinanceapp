@@ -47,8 +47,7 @@ function DeleteCardModal({
   return (
     <div className="space-y-4">
       {/* Aviso */}
-      <div className="rounded-lg px-4 py-3 space-y-1 bg-red-50"
-        style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
+      <div className="rounded-lg px-4 py-3 space-y-1 alert-box alert-box-error">
         <p className="text-sm font-semibold text-red-600 flex items-center gap-1.5">
           <AlertTriangle size={14} aria-hidden />
           Ação irreversível
@@ -77,7 +76,7 @@ function DeleteCardModal({
           autoFocus
         />
         {error && (
-          <p className="text-sm mt-1 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+          <p className="alert-box alert-box-error mt-1">
             {error}
           </p>
         )}
@@ -91,9 +90,7 @@ function DeleteCardModal({
         <button
           onClick={handleConfirm}
           disabled={deleteAccount.isPending || !password}
-          className="touch-target flex-1 px-4 rounded-lg text-sm font-medium transition-colors"
-          style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626',
-                   border: '1px solid rgba(239,68,68,0.2)' }}
+          className="touch-target flex-1 px-4 rounded-lg text-sm font-medium transition-colors alert-box alert-box-error"
         >
           {deleteAccount.isPending ? 'Excluindo…' : 'Excluir cartão'}
         </button>
@@ -152,8 +149,13 @@ export default function CartoesPage() {
       ) : creditCards.length === 0 ? (
         <EmptyStatePanel
           icon={<CreditCard size={26} className="text-[#475569]" aria-hidden />}
+          tone="cards"
           title={c(isCouple, 'Você ainda não cadastrou nenhum cartão', 'Vocês ainda não cadastraram nenhum cartão')}
           description={c(isCouple, 'Adicione seu primeiro cartão', 'Adicionem o primeiro cartão de vocês')}
+          nextSteps={[
+            'Cadastre limite, fechamento e vencimento para acompanhar faturas',
+            'Use categorias para ver gastos de cartão nos relatórios',
+          ]}
           action={(
             <button onClick={() => setShowCreate(true)} className="btn-primary">
               <span className="text-lg leading-none">+</span>
@@ -271,8 +273,7 @@ function CardItem({
             Editar
           </button>
           <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{ color: '#FF7F50', background: 'rgba(255,127,80,0.1)' }}
+            className="badge-status badge-status-warning"
           >
             Ver fatura →
           </span>

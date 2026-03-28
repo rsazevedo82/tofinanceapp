@@ -50,6 +50,8 @@ export default function ProjectionTab({ data }: ProjectionTabProps) {
           { key: 'is_projection', label: 'Tipo', align: 'right' },
         ]}
         rows={data.projection as unknown as Record<string, unknown>[]}
+        mobilePrimaryKey="label"
+        mobilePriorityKeys={['projected_balance', 'projected_income', 'projected_expense', 'is_projection']}
         formatValue={(k, v) => {
           if (['projected_income', 'projected_expense', 'projected_balance'].includes(k)) return fmtCur(Number(v))
           if (k === 'is_projection') return v ? 'Projeção' : 'Real'

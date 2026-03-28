@@ -33,6 +33,8 @@ export default function RecuperarSenhaPage() {
   const [captchaToken, setCaptchaToken] = useState('')
   const widgetContainerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const canSubmit = emailLooksValid && (!requiresCaptcha || !!captchaToken) && !loading
 
   useEffect(() => {
     if (!requiresCaptcha || !turnstileSiteKey || !widgetContainerRef.current) return
@@ -183,16 +185,19 @@ export default function RecuperarSenhaPage() {
                   disabled={loading}
                   required
                 />
+                {email.length > 0 && !emailLooksValid && (
+                  <p className="error-msg">Digite um email válido.</p>
+                )}
               </div>
 
               {error && (
-                <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+                <p className="alert-box alert-box-error">
                   {error}
                 </p>
               )}
 
               {success && (
-                <p className="text-sm px-3 py-2 rounded-lg bg-green-50 border border-green-100 text-green-700">
+                <p className="alert-box alert-box-success">
                   {success}
                 </p>
               )}
@@ -212,7 +217,7 @@ export default function RecuperarSenhaPage() {
               <button
                 type="submit"
                 className="btn-primary w-full justify-center py-2.5"
-                disabled={loading}
+                disabled={!canSubmit}
               >
                 {loading ? 'Enviando...' : 'Enviar link'}
               </button>

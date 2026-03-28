@@ -37,6 +37,11 @@ export default function CadastroPage() {
   const router = useRouter()
   const { showToast } = useToast()
   const strength = getPasswordStrength(password)
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const hasMinLength = password.length >= 10
+  const hasLetters = /[a-zA-Z]/.test(password)
+  const hasNumbers = /[0-9]/.test(password)
+  const canSubmit = emailLooksValid && hasMinLength && hasLetters && hasNumbers && !loading
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -162,6 +167,9 @@ export default function CadastroPage() {
                 disabled={loading}
                 required
               />
+              {email.length > 0 && !emailLooksValid && (
+                <p className="error-msg">Digite um email válido.</p>
+              )}
             </div>
             <div>
               <label className="label" htmlFor={passwordInputId}>Senha</label>
@@ -194,17 +202,20 @@ export default function CadastroPage() {
                 <p className="text-xs mt-1" style={{ color: strength.color }}>
                   {strength.label}
                 </p>
+                <p className="text-xs mt-1 text-[#334155]">
+                  {hasMinLength ? '✓' : '•'} 10+ caracteres · {hasLetters ? '✓' : '•'} letras · {hasNumbers ? '✓' : '•'} números
+                </p>
               </div>
             </div>
 
             {error && (
-              <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+              <p className="alert-box alert-box-error">
                 {error}
               </p>
             )}
 
             {success && (
-              <p className="text-sm px-3 py-2 rounded-lg bg-green-50 border border-green-100 text-green-700">
+              <p className="alert-box alert-box-success">
                 {success}
               </p>
             )}
@@ -212,7 +223,7 @@ export default function CadastroPage() {
             <button
               type="submit"
               className="btn-primary w-full justify-center py-2.5"
-              disabled={loading}
+              disabled={!canSubmit}
             >
               {loading ? (
                 <span className="flex items-center gap-2">

@@ -167,8 +167,13 @@ export default function CategoriasPage() {
           {userCategories.length === 0 && (
             <EmptyStatePanel
               icon={<Tag size={26} className="text-[#475569]" aria-hidden />}
+              tone="category"
               title={c(isCouple, 'Crie suas próprias categorias', 'Criem categorias que façam sentido para vocês')}
               description={c(isCouple, 'Personalize além das categorias padrão', 'Personalizem além das categorias padrão')}
+              nextSteps={[
+                'Crie categorias para os gastos que mais se repetem',
+                'Separe receitas e despesas para relatórios mais claros',
+              ]}
               action={(
                 <button onClick={() => openCreate('expense')} className="btn-primary">
                   <span className="text-lg leading-none">+</span>

@@ -50,6 +50,8 @@ export default function FlowTab({ data }: FlowTabProps) {
           { key: 'balance', label: 'Acumulado', align: 'right' },
         ]}
         rows={rowsWithMovement as unknown as Record<string, unknown>[]}
+        mobilePrimaryKey="label"
+        mobilePriorityKeys={['balance', 'income', 'expense']}
         formatValue={(k, v) => (['income', 'expense', 'balance'].includes(k) ? fmtCur(Number(v)) : String(v ?? '—'))}
       />
     </ChartCard>

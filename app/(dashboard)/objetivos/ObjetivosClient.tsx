@@ -105,8 +105,13 @@ export default function ObjetivosPage() {
       {scope === 'couple' && !couple && (
         <EmptyStatePanel
           icon={<Users size={26} className="text-[#475569]" aria-hidden />}
+          tone="couple"
           title="Nenhum perfil de casal vinculado"
           description="Vincule-se ao seu parceiro para criar objetivos compartilhados."
+          nextSteps={[
+            'Conecte o perfil de casal para desbloquear metas em conjunto',
+            'Definam prazo e valor-alvo para acompanhar aportes dos dois',
+          ]}
           action={(
             <Link href="/casal" className="btn-secondary">
               Ir para Perfil Casal
@@ -160,8 +165,13 @@ export default function ObjetivosPage() {
       {!isLoading && goals.length === 0 && !(scope === 'couple' && !couple) && (
         <EmptyStatePanel
           icon={<Target size={26} className="text-[#475569]" aria-hidden />}
+          tone="goals"
           title={scope === 'individual' ? 'Você ainda não criou nenhum objetivo' : 'Vocês ainda não definiram um objetivo em conjunto'}
           description={c(isCouple, 'Defina um objetivo e acompanhe seu progresso', 'Definam um objetivo e acompanhem juntos')}
+          nextSteps={[
+            'Crie uma meta com prazo e valor para acompanhar progresso real',
+            scope === 'individual' ? 'Registre aportes recorrentes para acelerar a conclusão' : 'Contribuam juntos para avançar mais rápido',
+          ]}
           action={(
             <button onClick={() => setShowCreate(true)} className="btn-primary">
               Criar primeiro objetivo

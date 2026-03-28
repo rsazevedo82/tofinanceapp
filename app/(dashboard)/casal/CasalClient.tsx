@@ -88,7 +88,7 @@ function PendingInviteCard({ invite }: { invite: ReceivedCoupleInvite }) {
       </div>
 
       {error && (
-        <p className="text-sm px-3 py-2 rounded-lg mb-3 bg-red-50 border border-red-100 text-red-600">
+        <p className="alert-box alert-box-error mb-3">
           {error}
         </p>
       )}
@@ -171,7 +171,7 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
           {expiryDate}
         </span>
         {isExpired && (
-          <span className="ml-auto text-xs font-semibold px-1.5 py-0.5 rounded bg-red-50 text-red-600">
+          <span className="ml-auto badge-status badge-status-error">
             Reenvie para renovar
           </span>
         )}
@@ -179,12 +179,7 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
 
       {/* Feedback */}
       {feedback && (
-        <p className="text-sm px-3 py-2 rounded-lg mb-3 border"
-          style={{
-            background: feedback.type === 'success' ? 'rgba(45,212,191,0.08)' : 'rgba(239,68,68,0.06)',
-            borderColor: feedback.type === 'success' ? 'rgba(45,212,191,0.2)' : 'rgba(239,68,68,0.15)',
-            color: feedback.type === 'success' ? '#0d9488' : '#dc2626',
-          }}>
+        <p className={`mb-3 ${feedback.type === 'success' ? 'alert-box alert-box-success' : 'alert-box alert-box-error'}`}>
           {feedback.message}
         </p>
       )}
@@ -256,14 +251,13 @@ function InviteForm() {
         </div>
 
         {error && (
-          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+          <p className="alert-box alert-box-error">
             {error}
           </p>
         )}
 
         {success && (
-          <p className="text-sm px-3 py-2 rounded-lg border"
-            style={{ background: 'rgba(45,212,191,0.08)', borderColor: 'rgba(45,212,191,0.2)', color: '#0d9488' }}>
+          <p className="alert-box alert-box-success">
             Convite enviado. Agora é só aguardar seu parceiro aceitar.
           </p>
         )}
@@ -385,7 +379,7 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
         </div>
 
         {error && (
-          <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+          <p className="alert-box alert-box-error">
             {error}
           </p>
         )}

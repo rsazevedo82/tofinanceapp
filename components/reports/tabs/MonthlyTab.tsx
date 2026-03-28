@@ -42,6 +42,8 @@ export default function MonthlyTab({ data }: MonthlyTabProps) {
           { key: 'net', label: 'Saldo', align: 'right' },
         ]}
         rows={data.monthly as unknown as Record<string, unknown>[]}
+        mobilePrimaryKey="label"
+        mobilePriorityKeys={['net', 'income', 'expense']}
         formatValue={(k, v) => (['income', 'expense', 'net'].includes(k) ? fmtCur(Number(v)) : String(v ?? '—'))}
       />
     </ChartCard>

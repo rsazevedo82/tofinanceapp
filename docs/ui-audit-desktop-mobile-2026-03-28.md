@@ -5,39 +5,39 @@ Escopo: telas de auth, dashboard, formulários, relatórios, navegação, modal,
 
 ## Criticidade Crítica
 
-I) Estrutura mobile quebrando em headers com CTA lateral fixa  
+OK I) Estrutura mobile quebrando em headers com CTA lateral fixa  
 O que é: várias telas usam header com `justify-between` e botão à direita sem fallback responsivo, comprimindo título/ação em larguras menores.  
 Por que importa: piora legibilidade, aumenta risco de clique errado e dá sensação de layout “apertado” no mobile.  
 Impacto: navegação e ações principais mais claras em telas pequenas; redução de fricção no uso diário.
 
-II) Contraste insuficiente em textos pequenos e ações secundárias  
+OK II) Contraste insuficiente em textos pequenos e ações secundárias  
 O que é: uso recorrente de texto `#6B7280`, `#FF7F50` e tamanhos `text-xs`/`text-[10px]` em links, labels e CTAs secundários.  
 Por que importa: reduz acessibilidade (WCAG), especialmente em ambientes com brilho alto e para usuários com baixa visão.  
 Impacto: melhor leitura, menos erro de interpretação e maior conformidade de acessibilidade.
 
-III) Relatórios dependem de cor (verde/vermelho) sem redundância visual  
+OK III) Relatórios dependem de cor (verde/vermelho) sem redundância visual  
 O que é: gráficos e comparativos usam majoritariamente cor para significado (receita vs despesa), com poucas redundâncias de padrão/ícone/texto.  
 Por que importa: usuários com daltonismo ou baixa percepção de cor perdem informação.  
 Impacto: interpretação mais segura dos dados financeiros e menor risco de decisão errada.
 
-IV) Falta de padrão robusto para estados de erro/empty/loading nas telas principais  
+OK IV) Falta de padrão robusto para estados de erro/empty/loading nas telas principais  
 O que é: há estados implementados, mas com variação visual grande, baixa hierarquia e mensagens inconsistentes entre páginas.  
 Por que importa: em fluxos financeiros, feedback inconsistente reduz confiança e aumenta retrabalho.  
 Impacto: experiência mais previsível; melhor taxa de conclusão de tarefas.
 
 ## Criticidade Alta
 
-I) Ausência de sistema de animação/microinteração unificado  
+OK I) Ausência de sistema de animação/microinteração unificado  
 O que é: existem transições pontuais, mas sem padrão para entrada de tela, troca de aba, expansão de blocos, confirmação e feedback de sucesso.  
 Por que importa: sem microinterações consistentes, o app parece “duro” e menos confiável em ações críticas.  
 Impacto: percepção de qualidade superior e menor sensação de latência.
 
-II) Modal/bottom sheet sem refinamentos mobile (safe-area, gesto e foco contextual)  
+OK II) Modal/bottom sheet sem refinamentos mobile (safe-area, gesto e foco contextual)  
 O que é: modal funciona, porém falta padrão de handle visual, animação de entrada coerente e espaço dedicado para teclado/safe area em todos os casos.  
 Por que importa: formulários em modal são centrais no produto; qualquer fricção aqui afeta quase todo fluxo.  
 Impacto: preenchimento mais rápido e menos abandono em criação/edição.
 
-III) Conflito potencial de overlays no rodapé (Toast x InstallBanner)  
+OK III) Conflito potencial de overlays no rodapé (Toast x InstallBanner)  
 O que é: ambos são fixos no bottom e podem competir por espaço visual/interação em mobile.  
 Por que importa: mensagens críticas podem ficar encobertas ou perder prioridade.  
 Impacto: feedbacks mais confiáveis e menor perda de informação.
@@ -61,25 +61,29 @@ O que é: drawer abre/fecha funcionalmente, mas sem motion claro e sem cabeçalh
 Por que importa: reduz orientação espacial do usuário no app.  
 Impacto: navegação mais intuitiva, especialmente para novos usuários.
 
-II) Tabelas dos relatórios pouco amigáveis em mobile  
+OK II) Tabelas dos relatórios pouco amigáveis em mobile  
 O que é: tabelas compactas com texto muito pequeno e baixa priorização de colunas.  
 Por que importa: leitura de dados financeiros no celular fica cansativa.  
 Impacto: melhor compreensão dos relatórios no uso diário via smartphone.
+Status: implementado em 28/03/2026 com layout mobile em cards por linha (coluna principal destacada + pares label/valor) e priorização de colunas-chave por aba de relatório.
 
-III) Formulários com validação tardia e pouca ajuda progressiva  
+OK III) Formulários com validação tardia e pouca ajuda progressiva  
 O que é: grande parte do feedback aparece no submit; faltam dicas contextuais e validações preditivas em campos sensíveis.  
 Por que importa: aumenta tentativa/erro e tempo de preenchimento.  
 Impacto: formulários mais rápidos e menos frustração.
+Status: implementado em 28/03/2026 com validação em tempo de digitação (`onChange`) e feedback progressivo em formulários críticos (transações, contas, categorias, divisão, metas, login, cadastro e recuperação de senha).
 
-IV) Empty states com baixa diferenciação visual  
+OK IV) Empty states com baixa diferenciação visual  
 O que é: vários estados vazios usam estrutura similar (emoji + texto + CTA), sem variação por contexto.  
 Por que importa: perde oportunidade de orientar melhor o próximo passo em cada módulo.  
 Impacto: aumento de ativação em funcionalidades pouco usadas.
+Status: implementado em 28/03/2026 com variações visuais por contexto (`finance`, `cards`, `goals`, `couple`, `category`, `warning`) e bloco de próximos passos acionáveis por módulo.
 
-V) Falta de guideline visual para badges, alertas e severidade  
+OK V) Falta de guideline visual para badges, alertas e severidade  
 O que é: estilos de aviso/sucesso/erro variam bastante entre componentes.  
 Por que importa: o usuário pode subestimar ou superestimar mensagens importantes.  
 Impacto: comunicação de risco mais clara.
+Status: implementado em 28/03/2026 com guideline semântico (`badge-status-*` e `alert-box-*`) aplicado em toasts, state panels e formulários/fluxos críticos (auth, perfil, casal, cartões e divisão).
 
 ## Criticidade Baixa
 

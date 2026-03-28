@@ -246,13 +246,13 @@ export default function AtualizarSenhaPage() {
                 </div>
 
                 {error && (
-                  <p className="text-sm px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-600">
+                  <p className="alert-box alert-box-error">
                     {error}
                   </p>
                 )}
 
                 {success && (
-                  <p className="text-sm px-3 py-2 rounded-lg bg-green-50 border border-green-100 text-green-700">
+                  <p className="alert-box alert-box-success">
                     {success}
                   </p>
                 )}
