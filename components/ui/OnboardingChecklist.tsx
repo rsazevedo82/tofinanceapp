@@ -32,7 +32,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
   const router = useRouter()
   const [dismissed, setDismissed] = useState(true) // começa true para evitar flash
 
-  const { data: accounts = [] } = useAccounts()
+  const { data: accounts = [], isLoading: loadingAccounts } = useAccounts()
   const { data: couple }        = useCouple()
 
   const hasAccount     = accounts.length > 0
@@ -77,6 +77,9 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
     const isDismissed = localStorage.getItem(DISMISSED_KEY) === '1'
     setDismissed(isDismissed)
   }, [])
+
+  // Evita "flash" enquanto contas ainda estão carregando.
+  if (loadingAccounts) return null
 
   // Esconde automaticamente quando os passos obrigatórios estão concluídos
   if (requiredDone || dismissed) return null
