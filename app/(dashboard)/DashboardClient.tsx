@@ -4,6 +4,7 @@
 import { useQuery }                              from '@tanstack/react-query'
 import { useRouter }                             from 'next/navigation'
 import dynamic                                   from 'next/dynamic'
+import Image                                     from 'next/image'
 import { formatCurrency }                        from '@/lib/utils/format'
 import { Modal }                                 from '@/components/ui/Modal'
 import { useMemo, useState }                     from 'react'
@@ -303,10 +304,13 @@ export default function DashboardPage() {
                 {data.recent_transactions.length === 0 ? (
                   <div className="card card-compact py-6 text-center">
                     <div className="flex justify-center mb-2">
-                      <img
+                      <Image
                         src="/illustrations/context-onboarding-path.svg"
                         alt=""
                         aria-hidden
+                        width={112}
+                        height={48}
+                        sizes="112px"
                         className="w-28 h-12 object-contain select-none pointer-events-none"
                       />
                     </div>
@@ -365,10 +369,13 @@ export default function DashboardPage() {
               {data.top_categories.length === 0 ? (
                 <div className="card card-compact py-6 text-center">
                   <div className="flex justify-center mb-2">
-                    <img
+                    <Image
                       src="/illustrations/context-insights-mini.svg"
                       alt=""
                       aria-hidden
+                      width={112}
+                      height={48}
+                      sizes="112px"
                       className="w-28 h-12 object-contain select-none pointer-events-none"
                     />
                   </div>

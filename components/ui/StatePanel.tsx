@@ -1,4 +1,5 @@
 import { Inbox } from 'lucide-react'
+import Image from 'next/image'
 import { SeverityIcon } from '@/components/ui/SeverityIcon'
 
 type EmptyStateTone =
@@ -100,10 +101,13 @@ export function EmptyStatePanel({
         </div>
       ) : (
         <div className="mb-3 flex justify-center">
-          <img
+          <Image
             src={illustrationByTone[tone]}
             alt=""
             aria-hidden
+            width={112}
+            height={80}
+            sizes="112px"
             className="w-28 h-20 object-contain select-none pointer-events-none"
           />
         </div>

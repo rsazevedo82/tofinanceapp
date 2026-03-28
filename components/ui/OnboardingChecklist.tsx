@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useMemo, useRef }   from 'react'
 import { useRouter }             from 'next/navigation'
+import Image                     from 'next/image'
 import { useAccounts }           from '@/hooks/useAccounts'
 import { useCouple }             from '@/hooks/useCouple'
 import type { DashboardData }    from '@/app/api/dashboard/route'
@@ -41,7 +42,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
   const hasTransaction = dashboardData.income_month > 0 || dashboardData.expense_month > 0
   const hasCouple      = !!couple
 
-  const steps: Step[] = [
+  const steps: Step[] = useMemo(() => ([
     {
       id:          'account',
       label:       'Adicione uma conta',
@@ -69,7 +70,12 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
       action:      () => router.push('/casal'),
       actionLabel: 'Conectar casal',
     },
-  ]
+  ]), [hasAccount, hasTransaction, hasCouple, onNewTransaction, router])
+
+  const stepsDoneMap = useMemo(
+    () => Object.fromEntries(steps.map(step => [step.id, step.done])),
+    [steps]
+  )
 
   const requiredDone  = steps.filter(s => s.required).every(s => s.done)
   const completedCount = steps.filter(s => s.done).length
@@ -85,10 +91,8 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
   }, [])
 
   useEffect(() => {
-    const currentDoneMap = Object.fromEntries(steps.map(step => [step.id, step.done]))
-
     if (!previousDoneMapRef.current) {
-      previousDoneMapRef.current = currentDoneMap
+      previousDoneMapRef.current = stepsDoneMap
       return
     }
 
@@ -99,12 +103,12 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
     if (newlyCompleted.length > 0) {
       setRecentlyCompleted(newlyCompleted)
       const timer = setTimeout(() => setRecentlyCompleted([]), 950)
-      previousDoneMapRef.current = currentDoneMap
+      previousDoneMapRef.current = stepsDoneMap
       return () => clearTimeout(timer)
     }
 
-    previousDoneMapRef.current = currentDoneMap
-  }, [steps])
+    previousDoneMapRef.current = stepsDoneMap
+  }, [steps, stepsDoneMap])
 
   // Evita "flash" enquanto contas ainda estão carregando.
   if (loadingAccounts) return null
@@ -143,10 +147,13 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
       </div>
 
       <div className="mb-4 rounded-xl border border-[#FED7AA] bg-white/80 px-3 py-2.5 flex items-center gap-3">
-        <img
+        <Image
           src="/illustrations/context-onboarding-path.svg"
           alt=""
           aria-hidden
+          width={96}
+          height={40}
+          sizes="96px"
           className="w-24 h-10 object-contain select-none pointer-events-none shrink-0"
         />
         <p className="text-xs text-[#334155] leading-snug">

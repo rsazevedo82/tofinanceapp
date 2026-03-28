@@ -33,7 +33,7 @@ Como melhorar:
 - Onde fizer sentido, usar `revalidate`/cache privado curto para leitura.
 - Evitar prefetch redundante de dados comuns em múltiplas páginas (ex.: `couple`, `notifications`).
 
-### 4) Overfetch em transações (payload maior que necessário)
+OK ### 4) Overfetch em transações (payload maior que necessário)
 O que é: `GET /api/transactions` usa `select *` + joins de `account/category` e no client a paginação usa `pageSize` alto (`120`).
 Por que importa: payload e custo de parse aumentam, principalmente no mobile com lista extensa.
 Impacto: scroll/listagem mais pesados, consumo de banda e memória maiores.
@@ -53,7 +53,7 @@ Como melhorar:
 
 ## Criticidade Alta
 
-### 6) Uso recorrente de `<img>` em vez de `<Image />`
+OK ### 6) Uso recorrente de `<img>` em vez de `<Image />`
 O que é: há warnings de build em páginas/componentes importantes indicando uso de `<img>`.
 Por que importa: perde otimização automática de imagem (dimensionamento, formatos, lazy, prioridade).
 Impacto: LCP e consumo de banda piores, especialmente no mobile.
@@ -62,7 +62,7 @@ Como melhorar:
 - Definir `sizes` corretos para cada breakpoint.
 - Marcar `priority` apenas para imagem realmente above-the-fold.
 
-### 7) Re-render e efeito desnecessário no onboarding checklist
+OK ### 7) Re-render e efeito desnecessário no onboarding checklist
 O que é: o array `steps` é recriado a cada render, fazendo o `useEffect` depender de referência instável.
 Por que importa: trabalho extra de render e timers em componente de dashboard.
 Impacto: micro-lentidão contínua na home e custo de CPU desnecessário.
@@ -71,7 +71,7 @@ Como melhorar:
 - Dependências explícitas e estáveis no effect.
 - Evitar side-effects em dependências estruturais mutáveis.
 
-### 8) Polling agressivo em estados offline e notificações
+OK ### 8) Polling agressivo em estados offline e notificações
 O que é: página offline faz probe a cada 3s; notificações podem entrar em polling quando dropdown abre.
 Por que importa: gera chamadas frequentes e desperta CPU/rede sem necessidade em alguns contextos.
 Impacto: bateria e fluidez degradam no mobile.
