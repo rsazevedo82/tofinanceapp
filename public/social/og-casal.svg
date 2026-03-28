@@ -1,0 +1,14 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#FDFCF0"/>
+  <rect x="58" y="58" width="1084" height="514" rx="28" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="4"/>
+  <rect x="98" y="102" width="420" height="420" rx="24" fill="#FDF2F8"/>
+  <circle cx="248" cy="244" r="74" fill="#FBCFE8"/>
+  <circle cx="366" cy="244" r="74" fill="#FBCFE8"/>
+  <path d="M190 392C198 334 234 296 284 296C334 296 370 334 378 392" fill="#FCE7F3" stroke="#F9A8D4" stroke-width="6"/>
+  <path d="M308 392C316 334 352 296 402 296C452 296 488 334 496 392" fill="#FCE7F3" stroke="#F9A8D4" stroke-width="6"/>
+  <path d="M292 164C310 146 336 146 354 164C372 182 372 212 323 248C274 212 274 182 292 164Z" fill="#EC4899"/>
+  <text x="560" y="250" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700">Conexão do Casal</text>
+  <text x="560" y="308" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="34">Compartilhem objetivos e decisões financeiras.</text>
+  <text x="560" y="390" fill="#BE185D" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">Mais transparência, menos atrito.</text>
+</svg>
+

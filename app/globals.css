@@ -100,13 +100,16 @@
 
   /* ── Cards ── */
   .card {
-    @apply bg-white border rounded-xl p-6;
-    border-color: #D1D5DB;
-    box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+    @apply bg-white border rounded-2xl p-5 sm:p-6;
+    border-color: rgba(148,163,184,0.24);
+    box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.04);
     position: relative;
     overflow: hidden;
   }
   .card::before { content: none; }
+  .card-compact {
+    @apply p-4 sm:p-5 rounded-xl;
+  }
 
   /* ── Botões ── */
   .btn-primary {
@@ -119,7 +122,11 @@
     border: none;
   }
   .btn-primary:hover  { background: #e86e40; }
-  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,127,80,0.22);
+  }
+  .btn-primary:active { transform: translateY(1px); }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium
@@ -131,6 +138,11 @@
     background: transparent;
   }
   .btn-ghost:hover { background: rgba(15,23,42,0.04); }
+  .btn-ghost:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(148,163,184,0.28);
+  }
+  .btn-ghost:active { transform: translateY(1px); }
 
   .btn-secondary {
     @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
@@ -142,6 +154,22 @@
     background: #ffffff;
   }
   .btn-secondary:hover { background: rgba(15,23,42,0.04); }
+  .btn-secondary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(148,163,184,0.28);
+  }
+  .btn-secondary:active { transform: translateY(1px); }
+
+  .interactive-control {
+    transition: all var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+  .interactive-control:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,127,80,0.22);
+  }
+  .interactive-control:active {
+    transform: translateY(1px);
+  }
 
   .touch-target {
     min-height: 44px;
@@ -226,6 +254,11 @@
     background: rgba(245,158,11,0.12);
     border-color: rgba(245,158,11,0.28);
   }
+  .badge-status-pending {
+    color: #b45309;
+    background: rgba(245,158,11,0.12);
+    border-color: rgba(245,158,11,0.28);
+  }
   .badge-status-error {
     color: #b91c1c;
     background: rgba(239,68,68,0.12);
@@ -235,6 +268,11 @@
     color: #334155;
     background: rgba(148,163,184,0.12);
     border-color: rgba(148,163,184,0.28);
+  }
+  .badge-status-blocked {
+    color: #7f1d1d;
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.24);
   }
 
   .alert-box {
@@ -250,6 +288,11 @@
     background: rgba(245,158,11,0.1);
     border-color: rgba(245,158,11,0.24);
   }
+  .alert-box-pending {
+    color: #b45309;
+    background: rgba(245,158,11,0.1);
+    border-color: rgba(245,158,11,0.24);
+  }
   .alert-box-error {
     color: #dc2626;
     background: rgba(254,242,242,0.9);
@@ -260,17 +303,16 @@
     background: rgba(248,250,252,0.95);
     border-color: rgba(148,163,184,0.24);
   }
-
-  /* ── Divisor ── */
-  .divider {
-    @apply border-t my-5;
-    border-color: rgba(148,163,184,0.2);
+  .alert-box-blocked {
+    color: #7f1d1d;
+    background: rgba(254,242,242,0.95);
+    border-color: rgba(248,113,113,0.28);
   }
 
   /* ── Divisor ── */
   .divider {
     @apply border-t my-6;
-    border-color: #D1D5DB;
+    border-color: rgba(148,163,184,0.26);
   }
 
   /* ── Section heading ── */
@@ -316,11 +358,20 @@
 
   /* ── Database row ── */
   .db-row {
-    @apply flex items-center rounded-lg px-2 py-2 cursor-pointer
+    @apply flex items-center rounded-xl px-2.5 py-2.5 cursor-pointer border border-transparent
            transition-all duration-100;
   }
   .db-row:hover {
     background: rgba(255,127,80,0.06);
+    border-color: rgba(255,127,80,0.16);
+  }
+  .db-row:focus-visible {
+    outline: none;
+    background: rgba(255,127,80,0.08);
+    box-shadow: 0 0 0 3px rgba(255,127,80,0.2);
+  }
+  .db-row:active {
+    transform: translateY(1px);
   }
 
   /* ── Motion system ── */
@@ -339,6 +390,17 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes n2r-checkpoint {
+    0% { opacity: 0; transform: scale(0.72); box-shadow: 0 0 0 0 rgba(45,212,191,0.45); }
+    70% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 0 10px rgba(45,212,191,0); }
+    100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(45,212,191,0); }
+  }
+
+  @keyframes n2r-progress-sheen {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
   .motion-enter {
     animation: n2r-enter var(--motion-duration-md) var(--motion-ease-standard);
   }
@@ -351,21 +413,79 @@
     animation: n2r-sheet var(--motion-duration-md) var(--motion-ease-standard);
   }
 
+  .motion-expand {
+    overflow: hidden;
+    transition:
+      max-height var(--motion-duration-md) var(--motion-ease-standard),
+      opacity var(--motion-duration-fast) var(--motion-ease-standard),
+      transform var(--motion-duration-md) var(--motion-ease-standard);
+  }
+  .motion-expand[data-open="true"] {
+    max-height: 24rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .motion-expand[data-open="false"] {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+  }
+
+  .motion-success {
+    animation: n2r-pop var(--motion-duration-slow) var(--motion-ease-standard);
+  }
+
+  .motion-progress {
+    transition: width var(--motion-duration-slow) var(--motion-ease-standard);
+    background-size: 200% 100%;
+    animation: n2r-progress-sheen 1800ms linear infinite;
+  }
+
+  .motion-checkpoint {
+    animation: n2r-checkpoint var(--motion-duration-slow) var(--motion-ease-standard);
+  }
+
   .motion-tab {
     transition: all var(--motion-duration-fast) var(--motion-ease-standard);
   }
   .motion-tab[data-active="true"] {
     transform: translateY(-1px);
   }
+  .motion-tab:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,127,80,0.2);
+  }
+  .motion-tab:active {
+    transform: translateY(1px);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .motion-enter,
     .motion-feedback,
-    .motion-sheet {
+    .motion-sheet,
+    .motion-success,
+    .motion-checkpoint {
       animation: none !important;
     }
-    .motion-tab {
+    .motion-tab,
+    .motion-expand {
       transition: none !important;
+    }
+    .interactive-control,
+    .db-row {
+      transition: none !important;
+    }
+    .motion-progress {
+      transition: none !important;
+      animation: none !important;
+    }
+    .motion-expand[data-open="true"],
+    .motion-expand[data-open="false"] {
+      max-height: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      pointer-events: auto !important;
     }
   }
 }

@@ -6,6 +6,7 @@ import { zodResolver }                                              from '@hookf
 import { z }                                                        from 'zod'
 import { useState }                                                 from 'react'
 import { useCreateCategory, useUpdateCategory, useDeleteCategory }  from '@/hooks/useCategories'
+import { useSubmitCtaState }                                        from '@/hooks/useSubmitCtaState'
 import { createCategorySchema }                                     from '@/lib/validations/schemas'
 import type { Category }                                            from '@/types'
 
@@ -56,11 +57,20 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
     if (isEditing) {
       updateCategory.mutate(
         { id: category.id, body: payload },
-        { onSuccess: () => onSuccess(), onError: (err) => setApiError(err.message) }
+        {
+          onSuccess: () => {
+            markSaved()
+            setTimeout(() => onSuccess(), 450)
+          },
+          onError: (err) => setApiError(err.message),
+        }
       )
     } else {
       createCategory.mutate(payload, {
-        onSuccess: () => onSuccess(),
+        onSuccess: () => {
+          markSaved()
+          setTimeout(() => onSuccess(), 450)
+        },
         onError:   (err) => setApiError(err.message),
       })
     }
@@ -75,6 +85,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
   }
 
   const isPending    = createCategory.isPending || updateCategory.isPending
+  const { isSaved, markSaved } = useSubmitCtaState(isPending)
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -164,10 +175,16 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
 
       <button
         type="submit"
-        className="btn-primary w-full justify-center py-2.5"
-        disabled={isPending}
+        className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
+        disabled={isPending || isSaved}
       >
-        {isPending ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Criar categoria'}
+        {isPending
+          ? 'Salvando...'
+          : isSaved
+          ? 'Salvo com sucesso'
+          : isEditing
+          ? 'Salvar alteracoes'
+          : 'Criar categoria'}
       </button>
 
       {isEditing && (

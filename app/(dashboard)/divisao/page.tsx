@@ -49,7 +49,7 @@ function SplitCard({
   const isPending = split.status === 'pending'
 
   return (
-    <div className="card p-4 flex flex-col gap-3">
+    <div className="card card-compact flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold text-[#0F172A] truncate">{split.description}</p>
@@ -247,7 +247,7 @@ export default function DivisaoPage() {
             key={t}
             onClick={() => setTab(t)}
             data-active={tab === t}
-            className={`motion-tab px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+            className={`motion-tab interactive-control px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               tab === t
                 ? 'bg-[#FF7F50] text-white shadow-sm'
                 : 'text-[#334155] hover:text-[#0F172A]'

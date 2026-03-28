@@ -11,6 +11,7 @@ import { Modal }             from '@/components/ui/Modal'
 import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
 import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { CardInvoiceMockup } from '@/components/finance/CardInvoiceMockup'
 import { AlertTriangle, CreditCard } from 'lucide-react'
 import type { Account, CardInvoicesSummary } from '@/types'
 
@@ -157,10 +158,13 @@ export default function CartoesPage() {
             'Use categorias para ver gastos de cartão nos relatórios',
           ]}
           action={(
-            <button onClick={() => setShowCreate(true)} className="btn-primary">
-              <span className="text-lg leading-none">+</span>
-              Adicionar cartão
-            </button>
+            <div className="w-full max-w-sm space-y-3">
+              <CardInvoiceMockup cardName="Exemplo de cartao" />
+              <button onClick={() => setShowCreate(true)} className="btn-primary w-full justify-center">
+                <span className="text-lg leading-none">+</span>
+                Adicionar cartão
+              </button>
+            </div>
           )}
         />
       ) : (
@@ -237,7 +241,7 @@ function CardItem({
   return (
     <div
       onClick={onClick}
-      className="card cursor-pointer transition-all duration-150 hover:border-[#D1D5DB]"
+      className="card card-compact cursor-pointer transition-all duration-150 hover:border-[#D1D5DB]"
       style={{ borderColor: card.color ? `${card.color}30` : undefined }}
     >
       {/* Header */}

@@ -6,6 +6,7 @@ import Link               from 'next/link'
 import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
 import { useToast }       from '@/components/providers/ToastProvider'
+import { useSubmitCtaState } from '@/hooks/useSubmitCtaState'
 
 function getPasswordStrength(password: string): { label: string; color: string; width: string } {
   if (!password) return { label: 'Digite sua senha', color: '#D1D5DB', width: '0%' }
@@ -36,12 +37,13 @@ export default function CadastroPage() {
   const [loading,  setLoading]  = useState(false)
   const router = useRouter()
   const { showToast } = useToast()
+  const { isSaved, markSaved } = useSubmitCtaState(loading)
   const strength = getPasswordStrength(password)
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   const hasMinLength = password.length >= 10
   const hasLetters = /[a-zA-Z]/.test(password)
   const hasNumbers = /[0-9]/.test(password)
-  const canSubmit = emailLooksValid && hasMinLength && hasLetters && hasNumbers && !loading
+  const canSubmit = emailLooksValid && hasMinLength && hasLetters && hasNumbers && !loading && !isSaved
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -104,8 +106,12 @@ export default function CadastroPage() {
     }
 
     showToast({ title: 'Conta criada com sucesso', variant: 'success' })
-    router.push('/')
-    router.refresh()
+    setLoading(false)
+    markSaved()
+    setTimeout(() => {
+      router.push('/')
+      router.refresh()
+    }, 450)
   }
 
   return (
@@ -222,7 +228,7 @@ export default function CadastroPage() {
 
             <button
               type="submit"
-              className="btn-primary w-full justify-center py-2.5"
+              className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
               disabled={!canSubmit}
             >
               {loading ? (
@@ -230,7 +236,7 @@ export default function CadastroPage() {
                   <span className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
                   Criando conta...
                 </span>
-              ) : 'Criar conta'}
+              ) : isSaved ? 'Conta criada com sucesso' : 'Criar conta'}
             </button>
           </form>
 

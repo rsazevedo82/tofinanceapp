@@ -11,7 +11,7 @@ async function resolveBaseUrl() {
   return `${proto}://${host}`
 }
 
-export async function fetchServerApi<T>(path: string): Promise<T> {
+export async function fetchServerApi<T>(path: string): Promise<T | null> {
   const baseUrl = await resolveBaseUrl()
   const cookieStore = await cookies()
   const cookieHeader = cookieStore.toString()

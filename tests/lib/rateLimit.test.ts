@@ -7,51 +7,53 @@ vi.mock('@/lib/rateLimit', async () => {
   const MAX_REQUESTS = 60
 
   return {
-    rateLimit: (ip: string) => {
-      const now = Date.now()
-      const record = requests.get(ip)
+    ratelimit: {
+      limit: (ip: string) => {
+        const now = Date.now()
+        const record = requests.get(ip)
 
-      if (!record || now > record.resetAt) {
-        requests.set(ip, { count: 1, resetAt: now + WINDOW_MS })
-        return { allowed: true, remaining: MAX_REQUESTS - 1 }
-      }
+        if (!record || now > record.resetAt) {
+          requests.set(ip, { count: 1, resetAt: now + WINDOW_MS })
+          return { success: true, remaining: MAX_REQUESTS - 1 }
+        }
 
-      if (record.count >= MAX_REQUESTS) {
-        return { allowed: false, remaining: 0 }
-      }
+        if (record.count >= MAX_REQUESTS) {
+          return { success: false, remaining: 0 }
+        }
 
-      record.count++
-      return { allowed: true, remaining: MAX_REQUESTS - record.count }
+        record.count++
+        return { success: true, remaining: MAX_REQUESTS - record.count }
+      },
     },
   }
 })
 
-import { rateLimit } from '@/lib/rateLimit'
+import { ratelimit } from '@/lib/rateLimit'
 
 describe('rateLimit', () => {
-  it('permite primeira requisição', () => {
-    const result = rateLimit('ip-teste-1')
-    expect(result.allowed).toBe(true)
+  it('permite primeira requisição', async () => {
+    const result = await ratelimit.limit('ip-teste-1')
+    expect(result.success).toBe(true)
   })
 
-  it('retorna remaining correto', () => {
-    const result = rateLimit('ip-teste-2')
+  it('retorna remaining correto', async () => {
+    const result = await ratelimit.limit('ip-teste-2')
     expect(result.remaining).toBe(59)
   })
 
-  it('bloqueia após 60 requisições', () => {
+  it('bloqueia após 60 requisições', async () => {
     const ip = 'ip-teste-3'
     for (let i = 0; i < 60; i++) {
-      rateLimit(ip)
+      await ratelimit.limit(ip)
     }
-    const result = rateLimit(ip)
-    expect(result.allowed).toBe(false)
+    const result = await ratelimit.limit(ip)
+    expect(result.success).toBe(false)
     expect(result.remaining).toBe(0)
   })
 
-  it('IPs diferentes têm contadores independentes', () => {
-    for (let i = 0; i < 60; i++) rateLimit('ip-a')
-    const result = rateLimit('ip-b')
-    expect(result.allowed).toBe(true)
+  it('IPs diferentes têm contadores independentes', async () => {
+    for (let i = 0; i < 60; i++) await ratelimit.limit('ip-a')
+    const result = await ratelimit.limit('ip-b')
+    expect(result.success).toBe(true)
   })
 })

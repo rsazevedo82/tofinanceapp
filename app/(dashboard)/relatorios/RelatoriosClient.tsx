@@ -83,7 +83,7 @@ export default function RelatoriosPage() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             data-active={activeTab === tab.key}
-            className="motion-tab px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0"
+            className="motion-tab interactive-control px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0"
             style={{
               background: activeTab === tab.key ? 'rgba(255,127,80,0.1)' : 'transparent',
               color: activeTab === tab.key ? '#FF7F50' : '#334155',

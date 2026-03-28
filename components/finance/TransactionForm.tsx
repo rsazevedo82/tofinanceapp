@@ -10,6 +10,7 @@ import { useCategories }                 from '@/hooks/useCategories'
 import { useQueryClient }                from '@tanstack/react-query'
 import { useToast }                      from '@/components/providers/ToastProvider'
 import { createTransactionSchema }       from '@/lib/validations/schemas'
+import { useSubmitCtaState }             from '@/hooks/useSubmitCtaState'
 import type { Transaction }              from '@/types'
 
 // Omitimos installments do schema do form — é gerenciado como UI state separado
@@ -133,6 +134,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
   const selectedAccount = accounts.find(a => a.id === watchedAccountId)
   const isCreditCard    = selectedAccount?.type === 'credit'
+  const { isSaved, markSaved } = useSubmitCtaState(isSubmitting)
 
   useEffect(() => {
     if (!isCreditCard) {
@@ -217,6 +219,8 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       title: isEditing ? 'Transação atualizada' : 'Transação criada',
       variant: 'success',
     })
+    markSaved()
+    await new Promise(resolve => setTimeout(resolve, 450))
     onSuccess()
   }
 
@@ -404,58 +408,59 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       <button
         type="button"
         onClick={() => setShowExtras(v => !v)}
-        className="w-full text-left text-xs py-1 transition-colors flex items-center gap-1 text-[#334155]"
+        data-active={showExtras}
+        className="motion-tab w-full text-left text-xs py-1 flex items-center gap-1 text-[#334155]"
       >
         <span>{showExtras ? '▲' : '▼'}</span>
         {showExtras ? 'Menos opções' : 'Mais opções (status, observações)'}
       </button>
 
-      {showExtras && (
-        <div className="space-y-3 pt-1">
-          <div>
-            <label className="label" htmlFor={statusId}>Status</label>
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <AccessibleSelect
-                  id={statusId}
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={[
-                    { value: 'confirmed', label: 'Confirmado' },
-                    { value: 'pending',   label: 'Pendente'   },
-                  ]}
-                />
-              )}
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor={notesId}>Observações</label>
-            <textarea
-              id={notesId}
-              {...register('notes')}
-              className="input resize-none"
-              rows={2}
-              placeholder="Informações adicionais..."
-            />
-          </div>
+      <div className="motion-expand space-y-3 pt-1" data-open={showExtras}>
+        <div>
+          <label className="label" htmlFor={statusId}>Status</label>
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <AccessibleSelect
+                id={statusId}
+                value={field.value}
+                onChange={field.onChange}
+                options={[
+                  { value: 'confirmed', label: 'Confirmado' },
+                  { value: 'pending',   label: 'Pendente'   },
+                ]}
+              />
+            )}
+          />
         </div>
-      )}
+        <div>
+          <label className="label" htmlFor={notesId}>Observações</label>
+          <textarea
+            id={notesId}
+            {...register('notes')}
+            className="input resize-none"
+            rows={2}
+            placeholder="Informações adicionais..."
+          />
+        </div>
+      </div>
 
       {apiError && (
-        <p className="alert-box alert-box-error">
+        <p className="motion-feedback alert-box alert-box-error">
           {apiError}
         </p>
       )}
 
       <button
         type="submit"
-        className="btn-primary w-full justify-center py-2.5 mt-1"
-        disabled={isSubmitting}
+        className={`btn-primary w-full justify-center py-2.5 mt-1 ${isSaved ? 'motion-success' : ''}`}
+        disabled={isSubmitting || isSaved}
       >
         {isSubmitting
           ? 'Salvando...'
+          : isSaved
+          ? 'Salvo com sucesso'
           : isEditing
           ? 'Salvar alterações'
           : effectiveInstallments > 1

@@ -7,7 +7,8 @@ import { NotificationBell } from '@/components/ui/NotificationBell'
 import { useEffect, useState }         from 'react'
 import { useCouple }        from '@/hooks/useCouple'
 import { useProfile, useLogout } from '@/hooks/useProfile'
-import { Lock, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import { SeverityIcon } from '@/components/ui/SeverityIcon'
 import {
   FcHome,
   FcMoneyTransfer,
@@ -136,12 +137,12 @@ export function Sidebar() {
                   message: item.lockMessage!,
                   hint:    item.lockHint!,
                 })}
-                className="db-row gap-3 text-sm w-full"
+                className="db-row interactive-control gap-3 text-sm w-full"
                 style={{ color: '#D1D5DB' }}
               >
                 <Icon size={18} className="w-4 shrink-0 opacity-40" />
                 <span className="flex-1 text-left">{item.label}</span>
-                <Lock size={13} className="opacity-40" aria-hidden />
+                <span className="badge-status badge-status-blocked">bloqueado</span>
               </button>
             )
           }
@@ -151,7 +152,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => closeMobileDrawer()}
-              className={`db-row gap-3 text-sm w-full font-medium transition-colors ${
+              className={`db-row interactive-control gap-3 text-sm w-full font-medium transition-colors ${
                 isActive ? 'text-[#0F172A]' : 'text-[#334155] hover:text-[#0F172A]'
               }`}
               style={isActive ? { background: 'rgba(255,127,80,0.1)' } : undefined}
@@ -171,7 +172,7 @@ export function Sidebar() {
         <Link
           href="/perfil"
           onClick={() => closeMobileDrawer()}
-          className={`db-row gap-3 text-sm w-full font-medium transition-colors ${
+          className={`db-row interactive-control gap-3 text-sm w-full font-medium transition-colors ${
             pathname === '/perfil' ? 'text-[#0F172A]' : 'text-[#334155] hover:text-[#0F172A]'
           }`}
           style={pathname === '/perfil' ? { background: 'rgba(255,127,80,0.1)' } : undefined}
@@ -201,7 +202,7 @@ export function Sidebar() {
         <button
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
-          className="db-row gap-3 text-sm w-full transition-colors text-[#334155] hover:text-[#EF4444]"
+          className="db-row interactive-control gap-3 text-sm w-full transition-colors text-[#334155] hover:text-[#EF4444]"
         >
           <span className="w-4 text-center text-[13px] shrink-0">↪</span>
           <span>{logout.isPending ? 'Saindo...' : 'Sair da conta'}</span>
@@ -225,10 +226,12 @@ export function Sidebar() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🔒</span>
+              <span className="h-9 w-9 rounded-lg bg-[#FEE2E2] flex items-center justify-center text-[#991B1B]">
+                <SeverityIcon level="blocked" className="size-4" aria-hidden />
+              </span>
               <h3 className="font-bold text-[#0F172A]">{lockedInfo.label} indisponível</h3>
             </div>
-            <p className="text-sm text-[#334155] leading-relaxed">
+            <p className="text-sm leading-relaxed alert-box alert-box-blocked">
               {lockedInfo.message}
             </p>
             <p className="text-sm text-[#C2410C] font-medium">
@@ -283,7 +286,7 @@ export function Sidebar() {
               aria-expanded={mobileOpen}
               aria-controls={mobileDrawerId}
               aria-haspopup="dialog"
-              className="touch-target text-[#334155] hover:text-[#0F172A] transition-colors p-2"
+              className="touch-target interactive-control text-[#334155] hover:text-[#0F172A] transition-colors p-2 rounded-lg"
             >
               <Menu size={20} aria-hidden />
             </button>
@@ -320,7 +323,7 @@ export function Sidebar() {
             <button
               onClick={closeMobileDrawer}
               aria-label="Fechar menu de navegação"
-              className="touch-target absolute top-4 right-4 text-[#334155] hover:text-[#0F172A] text-sm p-2"
+              className="touch-target interactive-control absolute top-4 right-4 text-[#334155] hover:text-[#0F172A] text-sm p-2 rounded-lg"
             >
               <X size={18} aria-hidden />
             </button>

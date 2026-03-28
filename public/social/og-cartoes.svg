@@ -1,0 +1,17 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#FDFCF0"/>
+  <rect x="58" y="58" width="1084" height="514" rx="28" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="4"/>
+  <rect x="112" y="148" width="406" height="244" rx="24" fill="#0F172A"/>
+  <rect x="142" y="186" width="120" height="18" rx="9" fill="#94A3B8"/>
+  <rect x="142" y="218" width="182" height="12" rx="6" fill="#334155"/>
+  <rect x="142" y="306" width="220" height="14" rx="7" fill="#E2E8F0"/>
+  <rect x="392" y="186" width="88" height="56" rx="10" fill="#FF7F50"/>
+  <rect x="218" y="252" width="406" height="244" rx="24" fill="#FFF7ED" stroke="#FDBA74" stroke-width="4"/>
+  <rect x="248" y="290" width="120" height="18" rx="9" fill="#FDBA74"/>
+  <rect x="248" y="322" width="182" height="12" rx="6" fill="#FED7AA"/>
+  <rect x="248" y="410" width="220" height="14" rx="7" fill="#F59E0B"/>
+  <text x="680" y="250" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700">Cartões e Faturas</text>
+  <text x="680" y="308" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="34">Acompanhe limite, uso e vencimentos.</text>
+  <text x="680" y="390" fill="#C2410C" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">Mais clareza no crédito.</text>
+</svg>
+

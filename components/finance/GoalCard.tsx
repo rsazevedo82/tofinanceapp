@@ -1,7 +1,7 @@
 // components/finance/GoalCard.tsx
 'use client'
 
-import { useState }         from 'react'
+import { useEffect, useRef, useState }         from 'react'
 import dynamic              from 'next/dynamic'
 import { Modal }            from '@/components/ui/Modal'
 import { useAddContribution, useDeleteGoal, useGoalContributions, useDeleteContribution } from '@/hooks/useGoals'
@@ -86,6 +86,7 @@ interface Props {
 export function GoalCard({ goal, ownUserId, onEdit }: Props) {
   const [showContributions, setShowContributions] = useState(false)
   const [showAddForm,       setShowAddForm]       = useState(false)
+  const [showCheckpoint, setShowCheckpoint] = useState(false)
 
   const addContribution = useAddContribution(goal.id)
   const deleteGoal      = useDeleteGoal()
@@ -98,6 +99,17 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
   const isOwner     = goal.user_id === ownUserId
   const isCoupleGoal = !!goal.couple_id
   const days        = goal.deadline ? daysUntil(goal.deadline) : null
+  const previousPercentRef = useRef(percent)
+
+  useEffect(() => {
+    if (percent >= 100 && previousPercentRef.current < 100) {
+      setShowCheckpoint(true)
+      const timer = setTimeout(() => setShowCheckpoint(false), 1100)
+      previousPercentRef.current = percent
+      return () => clearTimeout(timer)
+    }
+    previousPercentRef.current = percent
+  }, [percent])
 
   async function handleAddContribution(data: AddContributionInput) {
     await addContribution.mutateAsync(data)
@@ -107,7 +119,7 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
   return (
     <>
       <div
-        className="card p-5 flex flex-col gap-4 hover:border-[#D1D5DB] transition-colors"
+        className="card card-compact flex flex-col gap-4 hover:border-[#D1D5DB] transition-colors"
         style={{ borderLeftColor: goal.color, borderLeftWidth: 3 }}
       >
         {/* Header */}
@@ -124,7 +136,7 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
                   </span>
                 )}
                 {isCompleted && (
-                  <span className="text-xs px-1.5 py-0.5 rounded shrink-0"
+                  <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${showCheckpoint ? 'motion-checkpoint' : ''}`}
                     style={{ background: 'rgba(45,212,191,0.12)', color: '#0d9488' }}>
                     ✓ concluída
                   </span>
@@ -170,10 +182,13 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
           </div>
           <div className="h-2 rounded-full bg-[#E5E7EB] overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full motion-progress"
               style={{
                 width: `${percent}%`,
-                background: isCompleted ? '#2DD4BF' : (goal.color ?? '#FF7F50'),
+                background: isCompleted
+                  ? 'linear-gradient(90deg, #2DD4BF 0%, #14B8A6 50%, #2DD4BF 100%)'
+                  : 'linear-gradient(90deg, var(--goal-color, #FF7F50) 0%, #FB923C 50%, var(--goal-color, #FF7F50) 100%)',
+                ['--goal-color' as string]: goal.color ?? '#FF7F50',
               }}
             />
           </div>
@@ -193,7 +208,8 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
         <div className="flex gap-2 pt-1 border-t border-[#D1D5DB]">
           <button
             onClick={() => setShowContributions(v => !v)}
-            className="text-xs flex-1 py-1.5 rounded hover:bg-[#F3F4F6] transition-colors text-[#334155]"
+            data-active={showContributions}
+            className="motion-tab text-xs flex-1 py-1.5 rounded hover:bg-[#F3F4F6] text-[#334155]"
           >
             {showContributions ? 'Ocultar aportes' : 'Ver aportes'}
           </button>
@@ -208,11 +224,11 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
         </div>
 
         {/* Contributions inline */}
-        {showContributions && (
-          <div className="pt-2 border-t border-[#D1D5DB]">
+        <div className="motion-expand pt-2 border-t border-[#D1D5DB]" data-open={showContributions}>
+          {showContributions ? (
             <ContributionList goalId={goal.id} ownUserId={ownUserId} />
-          </div>
-        )}
+          ) : null}
+        </div>
       </div>
 
       {/* Modal: adicionar aporte */}

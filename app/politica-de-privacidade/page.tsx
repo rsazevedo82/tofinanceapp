@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { buildSocialMetadata } from '@/lib/socialMeta'
 
 const EFFECTIVE_DATE = '28/03/2026'
 const DEFAULT_SLA_DAYS = 15
@@ -19,6 +20,12 @@ function resolveDpoContactEmail(privacyEmail: string | null) {
 export const metadata: Metadata = {
   title: 'Política de Privacidade | Nós 2 Reais',
   description: 'Transparência sobre tratamento de dados pessoais, direitos do titular e canais LGPD.',
+  ...buildSocialMetadata({
+    title: 'Política de Privacidade | Nós 2 Reais',
+    description: 'Transparência sobre tratamento de dados pessoais, direitos do titular e canais LGPD.',
+    imagePath: '/social/og-default.svg',
+    imageAlt: 'Política de Privacidade do Nós 2 Reais',
+  }),
 }
 
 export default function PoliticaDePrivacidadePage() {

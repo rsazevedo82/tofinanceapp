@@ -1,8 +1,9 @@
 'use client'
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { SeverityIcon } from '@/components/ui/SeverityIcon'
 
-type ToastVariant = 'success' | 'error' | 'info'
+type ToastVariant = 'success' | 'error' | 'info' | 'warning'
 
 type ToastInput = {
   title: string
@@ -21,6 +22,7 @@ const ToastContext = createContext<ToastContextValue | null>(null)
 
 const VARIANT_CLASSES: Record<ToastVariant, { box: string; title: string }> = {
   success: { box: 'alert-box alert-box-success', title: 'text-[#0f766e]' },
+  warning: { box: 'alert-box alert-box-warning', title: 'text-[#b45309]' },
   error: { box: 'alert-box alert-box-error', title: 'text-[#991B1B]' },
   info: { box: 'alert-box alert-box-info', title: 'text-[#0F172A]' },
 }
@@ -61,13 +63,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               role={toast.variant === 'error' ? 'alert' : 'status'}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className={`text-sm font-semibold truncate ${style.title}`}>
-                    {toast.title}
-                  </p>
+                <div className="min-w-0 flex items-start gap-2">
+                  <SeverityIcon
+                    level={toast.variant === 'warning' ? 'warning' : toast.variant}
+                    className={`size-4 mt-0.5 ${style.title}`}
+                  />
+                  <div className="min-w-0">
+                    <p className={`text-sm font-semibold truncate ${style.title}`}>
+                      {toast.title}
+                    </p>
                   {toast.description ? (
                     <p className="text-xs mt-0.5 text-[#334155] line-clamp-2">{toast.description}</p>
                   ) : null}
+                  </div>
                 </div>
                 <button
                   type="button"

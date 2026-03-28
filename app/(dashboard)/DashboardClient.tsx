@@ -159,7 +159,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 mb-5 md:mb-6">
 
             {/* Saldo */}
-            <div className="card sm:col-span-1">
+            <div className="card card-compact sm:col-span-1">
               <p className="label">Saldo em contas</p>
               <p className={`kpi-value mt-1 ${
                 data.total_balance >= 0 ? 'text-[#0F172A]' : 'text-[#EF4444]'
@@ -172,7 +172,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Receitas */}
-            <div className="card">
+            <div className="card card-compact">
               <p className="label">Receitas</p>
               <p className="kpi-value mt-1 text-[#2DD4BF]">
                 {formatCurrency(data.income_month)}
@@ -181,7 +181,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Despesas */}
-            <div className="card">
+            <div className="card card-compact">
               <p className="label">Despesas</p>
               <p className="kpi-value mt-1 text-[#EF4444]">
                 {formatCurrency(data.expense_month)}
@@ -191,7 +191,7 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Saldo do mês ── */}
-          <div className="card mb-6 flex items-center justify-between gap-4">
+          <div className="card card-compact mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="label">{c(isCouple, 'Seu saldo no mês', 'Saldo de vocês no mês')}</p>
               <p className={`kpi-value mt-1 ${
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                   <div
                     key={card.id}
                     onClick={() => router.push(`/fatura/${card.id}`)}
-                    className="card cursor-pointer transition-all hover:shadow-md"
+                    className="card card-compact cursor-pointer transition-all hover:shadow-md"
                     style={{ borderColor: card.color ? `${card.color}50` : '#D1D5DB' }}
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -301,7 +301,15 @@ export default function DashboardPage() {
 
               <div className="space-y-1">
                 {data.recent_transactions.length === 0 ? (
-                  <div className="py-10 text-center">
+                  <div className="card card-compact py-6 text-center">
+                    <div className="flex justify-center mb-2">
+                      <img
+                        src="/illustrations/context-onboarding-path.svg"
+                        alt=""
+                        aria-hidden
+                        className="w-28 h-12 object-contain select-none pointer-events-none"
+                      />
+                    </div>
                     <p className="text-sm text-[#334155]">
                       {c(isCouple, 'Você ainda não registrou gastos este mês', 'Vocês ainda não registraram gastos este mês')}
                     </p>
@@ -355,7 +363,15 @@ export default function DashboardPage() {
               </div>
 
               {data.top_categories.length === 0 ? (
-                <div className="py-10 text-center">
+                <div className="card card-compact py-6 text-center">
+                  <div className="flex justify-center mb-2">
+                    <img
+                      src="/illustrations/context-insights-mini.svg"
+                      alt=""
+                      aria-hidden
+                      className="w-28 h-12 object-contain select-none pointer-events-none"
+                    />
+                  </div>
                   <p className="text-sm text-[#334155]">
                     {c(isCouple, 'Nenhum gasto categorizado este mês', 'Vocês ainda não categorizaram gastos este mês')}
                   </p>

@@ -90,7 +90,7 @@ export default function ObjetivosPage() {
             key={s}
             onClick={() => setScope(s)}
             data-active={scope === s}
-            className={`motion-tab px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+            className={`motion-tab interactive-control px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               scope === s
                 ? 'bg-[#FF7F50] text-white shadow-sm'
                 : 'text-[#334155] hover:text-[#0F172A]'

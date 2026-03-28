@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useSubmitCtaState } from '@/hooks/useSubmitCtaState'
 
 function getPasswordStrength(password: string): { label: string; color: string; width: string } {
   if (!password) return { label: 'Digite sua senha', color: '#D1D5DB', width: '0%' }
@@ -32,6 +33,7 @@ export default function AtualizarSenhaPage() {
   const [invalidRecoveryLink, setInvalidRecoveryLink] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const { isSaved, markSaved } = useSubmitCtaState(loading)
   const strength = getPasswordStrength(password)
 
   useEffect(() => {
@@ -134,6 +136,7 @@ export default function AtualizarSenhaPage() {
     await supabase.auth.signOut()
     setSuccess('Senha atualizada com sucesso. Redirecionando para o login...')
     setLoading(false)
+    markSaved()
 
     setTimeout(() => {
       router.push('/login')
@@ -259,10 +262,10 @@ export default function AtualizarSenhaPage() {
 
                 <button
                   type="submit"
-                  className="btn-primary w-full justify-center py-2.5"
-                  disabled={loading || invalidRecoveryLink}
+                  className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
+                  disabled={loading || isSaved || invalidRecoveryLink}
                 >
-                  {loading ? 'Atualizando...' : 'Atualizar senha'}
+                  {loading ? 'Atualizando...' : isSaved ? 'Senha atualizada' : 'Atualizar senha'}
                 </button>
               </form>
             )}

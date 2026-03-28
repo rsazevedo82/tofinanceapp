@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="px-4 sm:px-6 pb-2">
           <PartnerViewBanner />
         </div>
-        <div className="motion-enter">
+        <div>
           {children}
         </div>
         <footer className="px-4 sm:px-6 py-8 mt-6 border-t border-[#D1D5DB]">

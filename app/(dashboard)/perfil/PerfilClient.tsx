@@ -3,6 +3,7 @@
 
 import { useState, useEffect }    from 'react'
 import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/useProfile'
+import { useSubmitCtaState } from '@/hooks/useSubmitCtaState'
 
 function getPasswordStrength(password: string): { label: string; color: string; width: string } {
   if (!password) return { label: 'Digite sua senha', color: '#D1D5DB', width: '0%' }
@@ -82,6 +83,7 @@ function DadosPessoaisForm({ profile }: { profile: { name: string | null; email:
   const [error,   setError]   = useState('')
 
   const update = useUpdateProfile()
+  const { isSaved, markSaved } = useSubmitCtaState(update.isPending)
 
   // Sincroniza se o perfil for recarregado
   useEffect(() => {
@@ -105,6 +107,7 @@ function DadosPessoaisForm({ profile }: { profile: { name: string | null; email:
 
     update.mutate(payload, {
       onSuccess: () => {
+        markSaved()
         if (payload.email) {
           setSuccess('Dados salvos. Um link de confirmação foi enviado para o novo e-mail — ele só será atualizado após a confirmação.')
         } else {
@@ -156,10 +159,10 @@ function DadosPessoaisForm({ profile }: { profile: { name: string | null; email:
 
         <button
           type="submit"
-          disabled={update.isPending}
-          className="btn-primary w-full justify-center py-2.5"
+          disabled={update.isPending || isSaved}
+          className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
         >
-          {update.isPending ? 'Salvando...' : 'Salvar alterações'}
+          {update.isPending ? 'Salvando...' : isSaved ? 'Salvo com sucesso' : 'Salvar alteracoes'}
         </button>
       </form>
     </div>
@@ -176,6 +179,7 @@ function SenhaForm() {
   const [error,    setError]    = useState('')
 
   const changePassword = useChangePassword()
+  const { isSaved, markSaved } = useSubmitCtaState(changePassword.isPending)
   const strength = getPasswordStrength(next)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -192,6 +196,7 @@ function SenhaForm() {
       { currentPassword: current, newPassword: next },
       {
         onSuccess: () => {
+          markSaved()
           setSuccess('Senha alterada com sucesso.')
           setCurrent('')
           setNext('')
@@ -268,10 +273,10 @@ function SenhaForm() {
 
         <button
           type="submit"
-          disabled={changePassword.isPending || !current || !next || !confirm}
-          className="btn-primary w-full justify-center py-2.5"
+          disabled={changePassword.isPending || isSaved || !current || !next || !confirm}
+          className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
         >
-          {changePassword.isPending ? 'Alterando...' : 'Alterar senha'}
+          {changePassword.isPending ? 'Alterando...' : isSaved ? 'Salvo com sucesso' : 'Alterar senha'}
         </button>
       </form>
     </div>

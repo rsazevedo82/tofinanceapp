@@ -36,7 +36,14 @@ export default function OfflinePage() {
   return (
     <div className="min-h-screen bg-[#FDFCF0] flex items-center justify-center p-6">
       <div className="text-center max-w-xs">
-        <p className="text-4xl mb-4">📡</p>
+        <div className="mb-4 flex justify-center">
+          <img
+            src="/illustrations/empty-offline.svg"
+            alt=""
+            aria-hidden
+            className="w-40 h-24 object-contain select-none pointer-events-none"
+          />
+        </div>
         <h1 className="text-lg font-semibold text-[#0F172A] mb-2">
           Você está offline
         </h1>

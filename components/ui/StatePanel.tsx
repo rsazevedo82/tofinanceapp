@@ -1,4 +1,5 @@
-import { AlertTriangle, Inbox } from 'lucide-react'
+import { Inbox } from 'lucide-react'
+import { SeverityIcon } from '@/components/ui/SeverityIcon'
 
 type EmptyStateTone =
   | 'neutral'
@@ -19,7 +20,7 @@ interface StatePanelProps {
 }
 
 export function EmptyStatePanel({
-  icon = <Inbox size={26} className="text-[#64748B]" aria-hidden />,
+  icon,
   title,
   description,
   action,
@@ -71,20 +72,42 @@ export function EmptyStatePanel({
     },
   }
   const style = toneStyles[tone]
+  const hasCustomIcon = icon !== undefined
+  const illustrationByTone: Record<EmptyStateTone, string> = {
+    neutral: '/illustrations/empty-neutral.svg',
+    finance: '/illustrations/empty-finance.svg',
+    cards: '/illustrations/empty-cards.svg',
+    goals: '/illustrations/empty-goals.svg',
+    couple: '/illustrations/empty-couple.svg',
+    category: '/illustrations/empty-category.svg',
+    warning: '/illustrations/empty-division.svg',
+  }
+  const fallbackIcon = <Inbox size={26} className="text-[#64748B]" aria-hidden />
 
   return (
     <div
       className="motion-feedback card py-10 px-6 text-center"
       style={{ borderColor: style.border, background: style.background }}
     >
-      <div className="mb-3 flex justify-center">
-        <div
-          className="h-12 w-12 rounded-xl flex items-center justify-center"
-          style={{ background: style.iconBg, color: style.iconColor }}
-        >
-          {icon}
+      {hasCustomIcon ? (
+        <div className="mb-3 flex justify-center">
+          <div
+            className="h-12 w-12 rounded-xl flex items-center justify-center"
+            style={{ background: style.iconBg, color: style.iconColor }}
+          >
+            {icon ?? fallbackIcon}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="mb-3 flex justify-center">
+          <img
+            src={illustrationByTone[tone]}
+            alt=""
+            aria-hidden
+            className="w-28 h-20 object-contain select-none pointer-events-none"
+          />
+        </div>
+      )}
       <p className="text-sm font-semibold text-[#0F172A]">{title}</p>
       {description ? (
         <p className="text-sm text-[#334155] mt-1 max-w-xl mx-auto">{description}</p>
@@ -124,7 +147,7 @@ export function ErrorStatePanel({
   return (
     <div className="motion-feedback card py-8 px-6 text-center alert-box alert-box-error">
       <div className="mb-2 flex justify-center">
-        <AlertTriangle size={20} className="text-[#B91C1C]" aria-hidden />
+        <SeverityIcon level="error" className="size-5 text-[#B91C1C]" aria-hidden />
       </div>
       <p className="text-sm font-semibold text-[#7F1D1D]">{title}</p>
       <p className="text-sm text-[#7F1D1D] mt-1">{description}</p>

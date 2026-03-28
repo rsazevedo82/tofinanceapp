@@ -5,7 +5,7 @@
 // Status derivado dos dados reais — sem migration de banco.
 // Dismissable via localStorage.
 
-import { useState, useEffect }   from 'react'
+import { useState, useEffect, useMemo, useRef }   from 'react'
 import { useRouter }             from 'next/navigation'
 import { useAccounts }           from '@/hooks/useAccounts'
 import { useCouple }             from '@/hooks/useCouple'
@@ -31,6 +31,8 @@ interface Step {
 export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) {
   const router = useRouter()
   const [dismissed, setDismissed] = useState(true) // começa true para evitar flash
+  const [recentlyCompleted, setRecentlyCompleted] = useState<string[]>([])
+  const previousDoneMapRef = useRef<Record<string, boolean> | null>(null)
 
   const { data: accounts = [], isLoading: loadingAccounts } = useAccounts()
   const { data: couple }        = useCouple()
@@ -71,12 +73,38 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
 
   const requiredDone  = steps.filter(s => s.required).every(s => s.done)
   const completedCount = steps.filter(s => s.done).length
+  const progressPercent = useMemo(
+    () => (completedCount / steps.length) * 100,
+    [completedCount, steps.length]
+  )
 
   useEffect(() => {
     // Lê o localStorage apenas no client
     const isDismissed = localStorage.getItem(DISMISSED_KEY) === '1'
     setDismissed(isDismissed)
   }, [])
+
+  useEffect(() => {
+    const currentDoneMap = Object.fromEntries(steps.map(step => [step.id, step.done]))
+
+    if (!previousDoneMapRef.current) {
+      previousDoneMapRef.current = currentDoneMap
+      return
+    }
+
+    const newlyCompleted = steps
+      .filter(step => step.done && !previousDoneMapRef.current?.[step.id])
+      .map(step => step.id)
+
+    if (newlyCompleted.length > 0) {
+      setRecentlyCompleted(newlyCompleted)
+      const timer = setTimeout(() => setRecentlyCompleted([]), 950)
+      previousDoneMapRef.current = currentDoneMap
+      return () => clearTimeout(timer)
+    }
+
+    previousDoneMapRef.current = currentDoneMap
+  }, [steps])
 
   // Evita "flash" enquanto contas ainda estão carregando.
   if (loadingAccounts) return null
@@ -114,18 +142,40 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
         </button>
       </div>
 
+      <div className="mb-4 rounded-xl border border-[#FED7AA] bg-white/80 px-3 py-2.5 flex items-center gap-3">
+        <img
+          src="/illustrations/context-onboarding-path.svg"
+          alt=""
+          aria-hidden
+          className="w-24 h-10 object-contain select-none pointer-events-none shrink-0"
+        />
+        <p className="text-xs text-[#334155] leading-snug">
+          Cada etapa concluída melhora os relatórios e reduz retrabalho no dia a dia.
+        </p>
+      </div>
+
       {/* Barra de progresso */}
       <div
-        className="h-1 rounded-full mb-4 overflow-hidden"
+        className="h-1 rounded-full mb-4 overflow-visible relative"
         style={{ background: '#E5E7EB' }}
       >
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full motion-progress"
           style={{
-            width:      `${(completedCount / steps.length) * 100}%`,
-            background: '#FF7F50',
+            width:      `${progressPercent}%`,
+            background: 'linear-gradient(90deg, #FF7F50 0%, #F97316 50%, #FF7F50 100%)',
           }}
         />
+        {progressPercent > 0 && (
+          <span
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border border-white ${recentlyCompleted.length > 0 ? 'motion-checkpoint' : ''}`}
+            style={{
+              left: `${progressPercent}%`,
+              background: '#FF7F50',
+              boxShadow: '0 0 0 2px rgba(255,127,80,0.2)',
+            }}
+          />
+        )}
       </div>
 
       {/* Steps */}
@@ -146,7 +196,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
           >
             {/* Ícone status */}
             <div
-              className="w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0"
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${recentlyCompleted.includes(step.id) ? 'motion-checkpoint' : ''}`}
               style={{
                 background: step.done
                   ? 'rgba(45,212,191,0.15)'

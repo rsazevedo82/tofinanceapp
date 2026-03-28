@@ -7,6 +7,7 @@ import { z }                                                          from 'zod'
 import { useState }                                                   from 'react'
 import { useRouter }                                                  from 'next/navigation'
 import { useCreateAccount, useUpdateAccount, useDeleteAccount }       from '@/hooks/useAccounts'
+import { useSubmitCtaState }                                          from '@/hooks/useSubmitCtaState'
 import { createAccountSchema }                                        from '@/lib/validations/schemas'
 import type { Account }                                               from '@/types'
 
@@ -93,14 +94,20 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
       updateAccount.mutate(
         { id: account.id, body },
         {
-          onSuccess: () => { onSuccess(); router.refresh() },
+          onSuccess: () => {
+            markSaved()
+            setTimeout(() => { onSuccess(); router.refresh() }, 450)
+          },
           onError:   (err) => setApiError(err.message),
         }
       )
     } else {
       if (data.initial_balance) body.initial_balance = data.initial_balance
       createAccount.mutate(body, {
-        onSuccess: () => { onSuccess(); router.refresh() },
+        onSuccess: () => {
+          markSaved()
+          setTimeout(() => { onSuccess(); router.refresh() }, 450)
+        },
         onError:   (err) => setApiError(err.message),
       })
     }
@@ -115,6 +122,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
   }
 
   const isPending    = createAccount.isPending || updateAccount.isPending
+  const { isSaved, markSaved } = useSubmitCtaState(isPending)
 
   return (
     <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-4">
@@ -255,10 +263,16 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
 
       <button
         type="submit"
-        className="btn-primary w-full justify-center py-2.5"
-        disabled={isPending}
+        className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
+        disabled={isPending || isSaved}
       >
-        {isPending ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Criar conta'}
+        {isPending
+          ? 'Salvando...'
+          : isSaved
+          ? 'Salvo com sucesso'
+          : isEditing
+          ? 'Salvar alteracoes'
+          : 'Criar conta'}
       </button>
 
       {isEditing && (

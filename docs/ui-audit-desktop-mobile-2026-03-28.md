@@ -31,6 +31,7 @@ OK I) Ausência de sistema de animação/microinteração unificado
 O que é: existem transições pontuais, mas sem padrão para entrada de tela, troca de aba, expansão de blocos, confirmação e feedback de sucesso.  
 Por que importa: sem microinterações consistentes, o app parece “duro” e menos confiável em ações críticas.  
 Impacto: percepção de qualidade superior e menor sensação de latência.
+Status: implementado em 28/03/2026 com tokens e classes de motion unificadas (`motion-enter`, `motion-tab`, `motion-sheet`, `motion-feedback`, `motion-expand`, `motion-success`) aplicadas em layout, navegação por abas, modais, toasts e blocos expansíveis de formulários/cards.
 
 OK II) Modal/bottom sheet sem refinamentos mobile (safe-area, gesto e foco contextual)  
 O que é: modal funciona, porém falta padrão de handle visual, animação de entrada coerente e espaço dedicado para teclado/safe area em todos os casos.  
@@ -87,59 +88,69 @@ Status: implementado em 28/03/2026 com guideline semântico (`badge-status-*` e 
 
 ## Criticidade Baixa
 
-I) Refino de detalhes visuais de “acabamento”  
+OK I) Refino de detalhes visuais de “acabamento”  
 O que é: inconsistências pequenas de espaçamento, radius, espessura de borda e densidade de cards.  
 Por que importa: não bloqueia uso, mas afeta percepção de qualidade.  
 Impacto: interface mais polida e confiável.
+Status: implementado em 28/03/2026 com harmonização de `card` global (radius, sombra e borda), remoção de duplicidade de `divider`, variante `card-compact` para áreas densas e adoção em dashboard, cartões, divisão e objetivos.
 
-II) Melhorias de conteúdo visual contextual  
+OK II) Melhorias de conteúdo visual contextual  
 O que é: há poucos assets além da marca; faltam ilustrações leves e gráficos de apoio em onboarding/empty/offline.  
 Por que importa: reduz apelo emocional e orientação visual inicial.  
 Impacto: onboarding mais claro e app mais memorável.
+Status: implementado em 28/03/2026 com assets contextuais leves (onboarding path e mini insights) aplicados no checklist de onboarding e em empty blocks do dashboard, além do kit já aplicado em empty/offline.
 
 ## Animações e Microinterações (recomendado implementar)
 
-I) Transições de entrada de página (fade + slight translate, 180–240ms)  
+OK I) Transições de entrada de página (fade + slight translate, 180–240ms)  
 O que é: animação curta e consistente ao trocar de rota/tela principal.  
 Por que importa: reduz sensação de “salto brusco”.  
 Impacto: fluxo mais fluido em desktop e mobile.
+Status: implementado em 28/03/2026 via `template.tsx` nos grupos `(dashboard)` e `(auth)`, reaplicando `motion-enter` em cada troca de rota principal.
 
-II) Feedback de ação concluída em CTA principal  
+OK II) Feedback de ação concluída em CTA principal  
 O que é: estado “saving/saved” com ícone/label temporário após sucesso.  
 Por que importa: confirma conclusão sem depender só de toast.  
 Impacto: mais confiança no envio de formulários.
+Status: implementado em 28/03/2026 com estado transitório `saving/saved` nos CTAs principais de transações, contas, categorias, perfil e fluxos de auth (cadastro, recuperação e atualização de senha), usando feedback visual no próprio botão.
 
-III) Microinteração de progresso em onboarding e objetivos  
+OK III) Microinteração de progresso em onboarding e objetivos  
 O que é: animação de barra/progresso e “checkpoint” ao completar etapa.  
 Por que importa: reforça avanço e aumenta engajamento.  
 Impacto: maior taxa de conclusão de setup inicial.
+Status: implementado em 28/03/2026 com barra de progresso animada (`motion-progress`) e checkpoint visual (`motion-checkpoint`) no checklist de onboarding e nos cards de objetivos quando há conclusão de etapa/meta.
 
-IV) Estados de hover/focus/press padronizados  
+OK IV) Estados de hover/focus/press padronizados  
 O que é: padronizar feedback visual e foco acessível em botões, tabs e itens clicáveis.  
 Por que importa: melhora usabilidade para mouse, touch e teclado.  
 Impacto: menor erro de interação e acessibilidade superior.
+Status: implementado em 28/03/2026 com estados unificados de `hover/focus-visible/active` no design system (`btn-*`, `db-row`, `motion-tab`, `interactive-control`) e aplicação nas tabs de relatórios/transações/divisão/objetivos e controles de navegação da sidebar/mobile.
 
 ## Imagens, Mockups e Materiais Gráficos (necessidade)
 
-I) Ilustrações leves para empty states por domínio (transações, cartões, casal, divisão, offline)  
+OK I) Ilustrações leves para empty states por domínio (transações, cartões, casal, divisão, offline)  
 O que é: conjunto curto de ilustrações proprietárias e coerentes com marca.  
 Por que importa: melhora orientação e evita repetição visual de emoji.  
 Impacto: experiência mais profissional.
+Status: implementado em 28/03/2026 com kit de SVGs proprietários em `public/illustrations` aplicado automaticamente por domínio no `EmptyStatePanel` (finance, cards, couple, warning/divisão e demais tons) e na tela `offline`.
 
-II) Mockups de cartão/fatura no onboarding de cartões  
+OK II) Mockups de cartão/fatura no onboarding de cartões  
 O que é: representação visual do cartão com limite/uso para explicar conceitos rapidamente.  
 Por que importa: reduz carga cognitiva em telas financeiras densas.  
 Impacto: onboarding e compreensão mais rápidos.
+Status: implementado em 28/03/2026 com componente reutilizável `CardInvoiceMockup` exibido no empty/onboarding da tela de cartões, apresentando limite, fatura, disponível e barra de uso antes do CTA de cadastro.
 
-III) Kit gráfico de status (sucesso, alerta, erro, pendente, bloqueado)  
+OK III) Kit gráfico de status (sucesso, alerta, erro, pendente, bloqueado)  
 O que é: ícones e tokens visuais padronizados para severidade.  
 Por que importa: acelera leitura de contexto sem depender de texto longo.  
 Impacto: comunicação operacional mais clara.
+Status: implementado em 28/03/2026 com `SeverityIcon` reutilizável + tokens semânticos para `success/warning/error/info/pending/blocked` (`badge-status-*` e `alert-box-*`) aplicados em toasts, state panels e estados bloqueados da navegação.
 
-IV) Imagem social e assets de compartilhamento consistentes  
+OK IV) Imagem social e assets de compartilhamento consistentes  
 O que é: padronizar OG/social preview por área crítica do produto.  
 Por que importa: reforça marca em compartilhamentos e convites (casal).  
 Impacto: maior confiança em links recebidos.
+Status: implementado em 28/03/2026 com padrão Open Graph/Twitter unificado via `buildSocialMetadata` e assets dedicados em `public/social` (default, casal, cartões e divisão), aplicados no metadata global e nas áreas críticas (`/casal`, `/cartoes`, `/divisao` e política).
 
 ## Práticas adicionais recomendadas
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ApiResponse } from '@/types'
+import { useSubmitCtaState } from '@/hooks/useSubmitCtaState'
 
 declare global {
   interface Window {
@@ -33,8 +34,9 @@ export default function RecuperarSenhaPage() {
   const [captchaToken, setCaptchaToken] = useState('')
   const widgetContainerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
+  const { isSaved, markSaved } = useSubmitCtaState(loading)
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  const canSubmit = emailLooksValid && (!requiresCaptcha || !!captchaToken) && !loading
+  const canSubmit = emailLooksValid && (!requiresCaptcha || !!captchaToken) && !loading && !isSaved
 
   useEffect(() => {
     if (!requiresCaptcha || !turnstileSiteKey || !widgetContainerRef.current) return
@@ -128,6 +130,7 @@ export default function RecuperarSenhaPage() {
     resetCaptchaState()
     setSuccess(json.data?.message ?? 'Se o email existir, voce recebera um link para redefinir a senha.')
     setLoading(false)
+    markSaved()
   }
 
   return (
@@ -216,10 +219,10 @@ export default function RecuperarSenhaPage() {
 
               <button
                 type="submit"
-                className="btn-primary w-full justify-center py-2.5"
+                className={`btn-primary w-full justify-center py-2.5 ${isSaved ? 'motion-success' : ''}`}
                 disabled={!canSubmit}
               >
-                {loading ? 'Enviando...' : 'Enviar link'}
+                {loading ? 'Enviando...' : isSaved ? 'Link enviado com sucesso' : 'Enviar link'}
               </button>
             </form>
 

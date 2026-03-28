@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { PWA_THEME } from '@/lib/pwaTheme'
+import { buildSocialMetadata } from '@/lib/socialMeta'
 import './globals.css'
 
 const headingFont = localFont({
@@ -20,6 +21,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.nos2reais.com.br'),
   title: 'Nós 2 Reais',
   description: 'Finanças do casal, juntos e de verdade.',
+  ...buildSocialMetadata({
+    title: 'Nós 2 Reais',
+    description: 'Finanças do casal, juntos e de verdade.',
+    imagePath: '/social/og-default.svg',
+    imageAlt: 'Nós 2 Reais - Finanças do casal',
+  }),
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
