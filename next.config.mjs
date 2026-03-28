@@ -19,6 +19,7 @@ const withPWA = withPWAInit({
     clientsClaim: true,
     skipWaiting: true,
     cleanupOutdatedCaches: true,
+    navigationPreload: true,
     navigateFallback: '/offline',
     runtimeCaching: [
       {

@@ -4,17 +4,17 @@ Este documento descreve as recomendações levantadas para fortalecer a seguran�
 
 ## Alta prioridade
 
-### 1) TypeScript e lint obrigatórios no build
+OK ### 1) TypeScript e lint obrigatórios no build
 O que é: impedir deploy quando há erro de tipagem ou regra de lint quebrada.
 Por que importa: reduz risco de bug em produção, inclusive falhas de autorização e validação.
 Impacto: build mais confiável; eventuais PRs vão falhar mais cedo no CI.
 
-### 2) Rate limit por rota e por usuário
+OK ### 2) Rate limit por rota e por usuário
 O que é: limitar volume de requisições por endpoint, IP e também por `user_id`.
 Por que importa: só limitar por IP não cobre bem cenários com proxies/NAT ou abuso de conta autenticada.
 Impacto: menor risco de abuso, scraping e degradação de serviço.
 
-### 3) Proteção anti-bruteforce em login/cadastro
+OK ### 3) Proteção anti-bruteforce em login/cadastro
 O que é: após várias tentativas inválidas, aplicar bloqueio temporário e aumento progressivo de espera (backoff).
 Por que importa: reduz chance de adivinhação de senha.
 Impacto: melhora segurança de conta; exige UX clara para mensagens de bloqueio.
@@ -24,22 +24,22 @@ O que é: segundo fator de autenticação (ex.: app autenticador com código tem
 Por que importa: mesmo com senha vazada, atacante não acessa sem segundo fator.
 Impacto: forte ganho de proteção de conta; adiciona fluxo de setup e recuperação.
 
-### 5) Gestão de sessão
+OK ### 5) Gestão de sessão
 O que é: expiração curta, rotação de refresh token e revogação de sessão no logout.
 Por que importa: limita janela de uso de sessão roubada.
 Impacto: segurança operacional maior; exige ajuste nas políticas do provedor de auth.
 
-### 6) Auditoria de eventos sensíveis
+OK ### 6) Auditoria de eventos sensíveis
 O que é: registrar ações críticas (login, troca de senha, alterações financeiras, convites de casal, etc.).
 Por que importa: facilita investigação, detecção de fraude e suporte ao usuário.
 Impacto: aumenta rastreabilidade; precisa política de retenção e acesso aos logs.
 
-### 7) Rotação de segredos e política de logs
+OK ### 7) Rotação de segredos e política de logs
 O que é: processo formal para girar chaves/tokens e regra para nunca registrar dados sensíveis.
 Por que importa: reduz impacto de vazamento e evita exposição acidental.
 Impacto: disciplina operacional contínua; precisa checklist em incidentes e deploy.
 
-### 8) Idempotência em rotas financeiras de escrita
+OK ### 8) Idempotência em rotas financeiras de escrita
 O que é: aceitar `idempotency-key` para evitar criação duplicada em retry/reenvio.
 Por que importa: previne lançamentos/pagamentos duplicados por falha de rede ou duplo clique.
 Impacto: consistência financeira maior; exige armazenamento e validação da chave.
@@ -51,12 +51,12 @@ O que é: além de `Origin`, validar `Referer` e/ou token CSRF explícito em mut
 Por que importa: aumenta proteção contra requisições forjadas em navegador.
 Impacto: reforço de segurança com pouca mudança de UX quando bem implementado.
 
-### 2) Erros padronizados sem detalhes internos
+OK ### 2) Erros padronizados sem detalhes internos
 O que é: mensagens públicas genéricas e detalhes técnicos apenas em log interno.
 Por que importa: evita vazamento de estrutura interna para atacante.
 Impacto: superfície de ataque menor e suporte mais previsível.
 
-### 3) Alertas de segurança para usuário
+OK ### 3) Alertas de segurança para usuário
 O que é: notificar eventos sensíveis (novo dispositivo/local, troca de senha/email).
 Por que importa: usuário detecta atividade suspeita cedo.
 Impacto: melhora confiança e reação rápida a comprometimentos.
@@ -83,7 +83,7 @@ O que é: procedimento claro para resposta a conta comprometida, vazamento e ind
 Por que importa: reduz tempo de reação e erros em situação crítica.
 Impacto: resposta mais rápida, coordenada e auditável.
 
-### 3) SAST e scanner de dependências no CI
+OK ### 3) SAST e scanner de dependências no CI
 O que é: análise estática e monitoramento de vulnerabilidades de bibliotecas em pipeline.
 Por que importa: detecta problemas antes do deploy.
 Impacto: prevenção contínua com custo operacional baixo.

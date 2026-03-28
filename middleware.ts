@@ -34,6 +34,15 @@ function csrfProtection(request: NextRequest): NextResponse | null {
 }
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host')?.toLowerCase()
+  const isProdBareDomain = host === 'nos2reais.com.br'
+  if (isProdBareDomain) {
+    const url = request.nextUrl.clone()
+    url.host = 'www.nos2reais.com.br'
+    url.protocol = 'https'
+    return NextResponse.redirect(url, 308)
+  }
+
   // CSRF check antes de qualquer outra coisa
   const csrfError = csrfProtection(request)
   if (csrfError) return csrfError

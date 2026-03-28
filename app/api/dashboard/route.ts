@@ -4,6 +4,20 @@ import { getCurrentMonthRange }  from '@/lib/utils/format'
 import type { ApiResponse }      from '@/types'
 import { NextResponse }          from 'next/server'
 
+type DashboardMonthlyRow = {
+  month: string
+  income: number | string
+  expense: number | string
+}
+
+type DashboardCategoryRow = {
+  category_id: string | null
+  category_name: string
+  category_color: string | null
+  total: number | string
+  tx_count: number | string
+}
+
 export interface DashboardData {
   // Saldo real (apenas contas, sem cartoes)
   total_balance:     number
@@ -54,7 +68,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
     const { start, end } = getCurrentMonthRange()
 
     // Busca tudo em paralelo
-    const [accountsRes, txRes, invoicesRes, catsRes] = await Promise.all([
+    const [accountsRes, recentTxRes, invoicesRes, monthlyRes, categoryRes] = await Promise.all([
       supabase
         .from('accounts')
         .select('id, name, type, balance, color, credit_limit, closing_day, due_day')
@@ -65,14 +79,23 @@ export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
 
       supabase
         .from('transactions')
-        .select('id, type, amount, date, description, account_id, category_id')
+        .select(`
+          id,
+          type,
+          amount,
+          date,
+          description,
+          account_id,
+          category:categories(id, name, color)
+        `)
         .eq('user_id', user.id)
         .gte('date', start)
         .lte('date', end)
         .eq('status', 'confirmed')
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(200),
+        .order('created_at', { ascending: false })
+        .limit(8),
 
       supabase
         .from('credit_invoices')
@@ -80,28 +103,36 @@ export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
         .eq('user_id', user.id)
         .neq('status', 'paid'),
 
-      supabase
-        .from('categories')
-        .select('id, name, color')
-        .or(`user_id.is.null,user_id.eq.${user.id}`),
+      supabase.rpc('report_monthly_totals', {
+        p_user_id: user.id,
+        p_start: start,
+        p_end: end,
+      }),
+
+      supabase.rpc('report_expense_by_category', {
+        p_user_id: user.id,
+        p_start: start,
+        p_end: end,
+      }),
     ])
 
     const accounts = accountsRes.data ?? []
-    const txs      = txRes.data      ?? []
+    const recentTxs = recentTxRes.data ?? []
     const invoices = invoicesRes.data ?? []
-    const cats     = catsRes.data    ?? []
+    const monthlyRows = (monthlyRes.data ?? []) as DashboardMonthlyRow[]
+    const categoryRows = (categoryRes.data ?? []) as DashboardCategoryRow[]
 
-    const catMap = Object.fromEntries(cats.map(c => [c.id, c]))
-    const accMap = Object.fromEntries(accounts.map(a => [a.id, a]))
+    const accMap = Object.fromEntries(accounts.map(a => [a.id, a.name]))
 
     // Saldo real: apenas contas nao-cartao
     const total_balance = accounts
       .filter(a => a.type !== 'credit')
       .reduce((s, a) => s + Number(a.balance), 0)
 
-    // Totais do mes
-    const income_month  = txs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
-    const expense_month = txs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+    // Totais do mês via agregação SQL
+    const monthAgg = monthlyRows[0]
+    const income_month = monthAgg ? Number(monthAgg.income) : 0
+    const expense_month = monthAgg ? Number(monthAgg.expense) : 0
 
     // Fatura aberta por cartao
     const openByCard = new Map<string, number>()
@@ -128,42 +159,34 @@ export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
         }
       })
 
-    // Transacoes recentes (8 mais recentes)
-    const recent_transactions = txs.slice(0, 8).map(t => ({
-      id:             t.id,
-      description:    t.description,
-      amount:         Number(t.amount),
-      type:           t.type,
-      date:           t.date,
-      category_name:  t.category_id ? catMap[t.category_id]?.name  ?? null : null,
-      category_color: t.category_id ? catMap[t.category_id]?.color ?? null : null,
-      account_name:   accMap[t.account_id]?.name ?? null,
-    }))
+    // Transações recentes (limitadas no SELECT)
+    const recent_transactions = recentTxs.map(t => {
+      const category = Array.isArray(t.category) ? t.category[0] : t.category
 
-    // Top categorias (despesas do mes)
-    const catTotals = new Map<string, { name: string; color: string | null; total: number }>()
-    for (const t of txs.filter(t => t.type === 'expense')) {
-      const key  = t.category_id ?? '__none__'
-      const cat  = t.category_id ? catMap[t.category_id] : null
-      const prev = catTotals.get(key)
-      if (prev) {
-        prev.total += Number(t.amount)
-      } else {
-        catTotals.set(key, {
-          name:  cat?.name  ?? 'Sem categoria',
-          color: cat?.color ?? '#94a3b8',
-          total: Number(t.amount),
-        })
+      return {
+        id:             t.id,
+        description:    t.description,
+        amount:         Number(t.amount),
+        type:           t.type,
+        date:           t.date,
+        category_name:  category?.name ?? null,
+        category_color: category?.color ?? null,
+        account_name:   accMap[t.account_id] ?? null,
       }
-    }
+    })
 
-    const top_categories = Array.from(catTotals.values())
-      .sort((a, b) => b.total - a.total)
+    // Top categorias (despesas do mês) via agregação SQL
+    const top_categories = categoryRows
       .slice(0, 5)
-      .map(c => ({
-        ...c,
-        percent: expense_month > 0 ? Math.round((c.total / expense_month) * 100) : 0,
-      }))
+      .map((row) => {
+        const total = Number(row.total)
+        return {
+          name: row.category_name,
+          color: row.category_color,
+          total,
+          percent: expense_month > 0 ? Math.round((total / expense_month) * 100) : 0,
+        }
+      })
 
     return NextResponse.json({
       data: {
