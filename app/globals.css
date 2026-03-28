@@ -37,6 +37,12 @@
     --text-body:   #0F172A;
     --border:      #D1D5DB;
     --surface:     #ffffff;
+    --semantic-income:    #2DD4BF;
+    --semantic-income-bg: rgba(45,212,191,0.14);
+    --semantic-expense:   #FF7F50;
+    --semantic-expense-bg: rgba(255,127,80,0.14);
+    --semantic-neutral:   #64748B;
+    --semantic-neutral-bg: rgba(148,163,184,0.14);
 
     /* Safe areas do iOS (notch, Dynamic Island, home indicator) */
     --sat: env(safe-area-inset-top,    0px);
@@ -173,16 +179,16 @@
     @apply inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium;
   }
   .tag-income {
-    background: rgba(255,127,80,0.1);
-    color: #FF7F50;
+    background: var(--semantic-income-bg);
+    color: var(--semantic-income);
   }
   .tag-expense {
-    background: rgba(229,115,115,0.1);
-    color: #E57373;
+    background: var(--semantic-expense-bg);
+    color: var(--semantic-expense);
   }
   .tag-neutral {
-    background: rgba(148,163,184,0.1);
-    color: #94A3B8;
+    background: var(--semantic-neutral-bg);
+    color: var(--semantic-neutral);
   }
 
   /* ── Divisor ── */

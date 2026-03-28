@@ -145,7 +145,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
         <span className="text-sm text-[#0F172A]">
           {currentName || 'Nome da categoria'}
         </span>
-        <span className="ml-auto tag tag-neutral text-[10px]">
+        <span className={`ml-auto tag text-[10px] ${currentType === 'income' ? 'tag-income' : 'tag-expense'}`}>
           {currentType === 'income' ? 'Receita' : 'Despesa'}
         </span>
       </div>

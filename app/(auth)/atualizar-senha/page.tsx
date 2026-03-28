@@ -37,15 +37,18 @@ export default function AtualizarSenhaPage() {
       const supabase = createClient()
       const url = new URL(window.location.href)
       const code = url.searchParams.get('code')
+      const queryType = url.searchParams.get('type')
+      const queryTokenHash = url.searchParams.get('token_hash') ?? url.searchParams.get('token')
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
       const hashType = hashParams.get('type')
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
 
       const hasRecoveryCode = !!code
+      const hasRecoveryTokenQuery = queryType === 'recovery' && !!queryTokenHash
       const hasRecoveryHash = hashType === 'recovery' && !!accessToken && !!refreshToken
 
-      if (!hasRecoveryCode && !hasRecoveryHash) {
+      if (!hasRecoveryCode && !hasRecoveryTokenQuery && !hasRecoveryHash) {
         setInvalidRecoveryLink(true)
         setError('Link invalido ou incompleto. Abra novamente o link enviado por email.')
         setCheckingSession(false)
@@ -60,6 +63,18 @@ export default function AtualizarSenhaPage() {
           setCheckingSession(false)
           return
         }
+      } else if (hasRecoveryTokenQuery && queryTokenHash) {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          type: 'recovery',
+          token_hash: queryTokenHash,
+        })
+        if (verifyError) {
+          setInvalidRecoveryLink(true)
+          setError('Link invalido ou expirado. Solicite um novo email de recuperacao.')
+          setCheckingSession(false)
+          return
+        }
+        window.history.replaceState({}, document.title, window.location.pathname)
       } else if (hasRecoveryHash && accessToken && refreshToken) {
         const { error: setSessionError } = await supabase.auth.setSession({
           access_token: accessToken,
@@ -71,7 +86,7 @@ export default function AtualizarSenhaPage() {
           setCheckingSession(false)
           return
         }
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
+        window.history.replaceState({}, document.title, window.location.pathname)
       }
 
       const { data } = await supabase.auth.getSession()
