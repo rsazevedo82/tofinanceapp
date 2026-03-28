@@ -1,7 +1,7 @@
 'use client'
 
 import { ChartCard, DataTable } from '@/components/reports/ChartCard'
-import { chartColors, CustomTooltip, fmtCur } from '@/components/reports/reportShared'
+import { chartColors, CustomTooltip, fmtCur, SeriesLegend } from '@/components/reports/reportShared'
 import type { ReportsPayload } from '@/types'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
@@ -16,21 +16,28 @@ export default function ProjectionTab({ data }: ProjectionTabProps) {
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data.projection}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
-          <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fill: '#334155', fontSize: 11 }} axisLine={false} tickLine={false} />
           <YAxis
-            tick={{ fill: '#6B7280', fontSize: 11 }}
+            tick={{ fill: '#334155', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={v => `R$${(v / 1000).toFixed(1)}k`}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Line dataKey="projected_income" name="Receita proj." stroke={chartColors.income} strokeWidth={2} dot={false} />
-          <Line dataKey="projected_expense" name="Despesa proj." stroke={chartColors.expense} strokeWidth={2} dot={false} />
-          <Line dataKey="projected_balance" name="Saldo proj." stroke={chartColors.balance} strokeWidth={2} dot={false} strokeDasharray="4 2" />
+          <Line dataKey="projected_income" name="↑ Receita projetada" stroke={chartColors.income} strokeWidth={2} dot={false} />
+          <Line dataKey="projected_expense" name="↓ Despesa projetada" stroke={chartColors.expense} strokeWidth={2} dot={false} />
+          <Line dataKey="projected_balance" name="◆ Saldo projetado" stroke={chartColors.balance} strokeWidth={2} dot={false} strokeDasharray="4 2" />
         </LineChart>
       </ResponsiveContainer>
+      <SeriesLegend
+        items={[
+          { symbol: '↑', label: 'Receita projetada' },
+          { symbol: '↓', label: 'Despesa projetada' },
+          { symbol: '◆', label: 'Saldo projetado (linha tracejada)' },
+        ]}
+      />
 
-      <p className="text-[10px] mb-3 text-[#6B7280]">
+      <p className="text-xs mb-3 text-[#334155]">
         Baseado na média dos últimos 3 meses
       </p>
 
@@ -52,3 +59,4 @@ export default function ProjectionTab({ data }: ProjectionTabProps) {
     </ChartCard>
   )
 }
+

@@ -2,12 +2,15 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import type { ComponentType } from 'react'
 import dynamic            from 'next/dynamic'
 import { useAccounts }    from '@/hooks/useAccounts'
 import { formatCurrency } from '@/lib/utils/format'
 import { Modal }          from '@/components/ui/Modal'
 import { useCouple }      from '@/hooks/useCouple'
 import { c }              from '@/lib/utils/copy'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { Banknote, Building2, CreditCard, LineChart, PiggyBank } from 'lucide-react'
 import type { Account }   from '@/types'
 
 const AccountForm = dynamic(
@@ -39,17 +42,17 @@ export default function ContasPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8 md:mb-10">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Contas</h1>
-          <p className="text-sm mt-1 text-[#6B7280]">
+          <h1 className="page-title">Contas</h1>
+          <p className="page-subtitle mt-1">
             {accounts.length} conta{accounts.length !== 1 ? 's' : ''} ativa{accounts.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
+        <button onClick={() => setShowCreate(true)} className="btn-primary w-full sm:w-auto justify-center">
           <span className="text-lg leading-none">+</span>
           Nova conta
         </button>
@@ -59,41 +62,29 @@ export default function ContasPage() {
       {otherAccounts.length > 0 && (
         <div className="card mb-6">
           <p className="label">Saldo total em contas</p>
-          <p className="text-2xl font-black tracking-tight text-[#0F172A]">
+          <p className="kpi-value text-[#0F172A]">
             {formatCurrency(totalBalance)}
           </p>
-          <p className="text-xs mt-1 text-[#6B7280]">
+          <p className="meta-text mt-1">
             Poupança, corrente e carteiras (cartões não incluídos)
           </p>
         </div>
       )}
 
       {isLoading ? (
-        <div className="space-y-0.5">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="db-row px-2 py-3 animate-pulse">
-              <div className="w-7 h-7 rounded-md bg-[#E5E7EB]" />
-              <div className="ml-3 flex-1 space-y-1.5">
-                <div className="h-3 bg-[#E5E7EB] rounded w-32" />
-                <div className="h-2 bg-[#E5E7EB] rounded w-20" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingStatePanel rows={3} />
       ) : otherAccounts.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-4xl mb-4">🏦</p>
-          <p className="text-sm font-semibold text-[#0F172A] mb-1">
-            {c(isCouple, 'Você ainda não adicionou nenhuma conta', 'Vocês ainda não adicionaram nenhuma conta')}
-          </p>
-          <p className="text-xs mb-6 text-[#6B7280]">
-            {c(isCouple, 'Adicione sua primeira conta para começar', 'Adicionem a primeira conta de vocês')}
-          </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary mx-auto">
-            <span className="text-lg leading-none">+</span>
-            Criar primeira conta
-          </button>
-        </div>
+        <EmptyStatePanel
+          icon={<Building2 size={26} className="text-[#475569]" aria-hidden />}
+          title={c(isCouple, 'Você ainda não adicionou nenhuma conta', 'Vocês ainda não adicionaram nenhuma conta')}
+          description={c(isCouple, 'Adicione sua primeira conta para começar', 'Adicionem a primeira conta de vocês')}
+          action={(
+            <button onClick={() => setShowCreate(true)} className="btn-primary">
+              <span className="text-lg leading-none">+</span>
+              Criar primeira conta
+            </button>
+          )}
+        />
       ) : (
         <div>
           <p className="section-heading">{c(isCouple, 'Suas contas', 'Contas de vocês')}</p>
@@ -142,12 +133,17 @@ function AccountRow({
   onClick: () => void
   badge?: string
 }) {
-  const TYPE_ICONS: Record<string, string> = {
-    checking: '🏦', savings: '🐷', credit: '💳', investment: '📈', wallet: '👛',
+  const TYPE_ICONS: Record<string, ComponentType<{ className?: string }>> = {
+    checking: Building2,
+    savings: PiggyBank,
+    credit: CreditCard,
+    investment: LineChart,
+    wallet: Banknote,
   }
 
   const isCredit   = account.type === 'credit'
   const balanceVal = Number(account.balance)
+  const Icon = TYPE_ICONS[account.type]
 
   return (
     <div
@@ -159,12 +155,18 @@ function AccountRow({
           className="w-7 h-7 rounded-md flex items-center justify-center text-sm flex-shrink-0"
           style={{ background: account.color ? `${account.color}20` : 'rgba(15,23,42,0.05)' }}
         >
-          {account.icon ?? TYPE_ICONS[account.type] ?? '◫'}
+          {account.icon ? (
+            <span>{account.icon}</span>
+          ) : Icon ? (
+            <Icon className="h-4 w-4 text-[#475569]" aria-hidden />
+          ) : (
+            <Building2 className="h-4 w-4 text-[#475569]" aria-hidden />
+          )}
         </div>
         <div>
-          <p className="text-sm font-medium text-[#0F172A]">{account.name}</p>
+          <p className="entity-title">{account.name}</p>
           <div className="flex items-center gap-2">
-            <p className="text-xs text-[#6B7280]">
+            <p className="entity-meta">
               {account.type === 'checking' ? 'Conta corrente'
                 : account.type === 'savings' ? 'Poupança'
                 : account.type === 'credit'  ? 'Cartão de crédito'
@@ -172,7 +174,7 @@ function AccountRow({
                 : 'Carteira'}
             </p>
             {isCredit && account.credit_limit && (
-              <p className="text-[10px] text-[#6B7280]">
+              <p className="entity-meta">
                 Limite: {formatCurrency(account.credit_limit)}
               </p>
             )}
@@ -182,13 +184,13 @@ function AccountRow({
 
       <div className="flex items-center gap-3">
         {badge ? (
-          <span className="text-[10px] px-2 py-0.5 rounded"
+          <span className="text-xs px-2 py-0.5 rounded"
             style={{ color: '#FF7F50', background: 'rgba(255,127,80,0.1)' }}>
             {badge}
           </span>
         ) : (
           <span className={`text-sm font-semibold ${
-            balanceVal >= 0 ? 'text-[#0F172A]' : 'text-[#FF7F50]'
+            balanceVal >= 0 ? 'text-[#0F172A]' : 'text-[#C2410C]'
           }`}>
             {formatCurrency(balanceVal)}
           </span>
@@ -201,3 +203,4 @@ function AccountRow({
     </div>
   )
 }
+

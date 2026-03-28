@@ -171,7 +171,7 @@ export async function POST(
       {
         user_id:    invitation.inviter_id,
         type:       'couple_accepted',
-        title:      'Perfil de casal ativado! 💑',
+        title:      'Perfil de casal ativado!',
         body:       `${inviteeName} aceitou seu convite. Vocês agora têm um perfil de casal.`,
         payload:    { partner_id: user.id },
         created_at: now,
@@ -179,7 +179,7 @@ export async function POST(
       {
         user_id:    user.id,
         type:       'couple_accepted',
-        title:      'Perfil de casal ativado! 💑',
+        title:      'Perfil de casal ativado!',
         body:       `Você aceitou o convite de ${inviterName}. Vocês agora têm um perfil de casal.`,
         payload:    { partner_id: invitation.inviter_id },
         created_at: now,

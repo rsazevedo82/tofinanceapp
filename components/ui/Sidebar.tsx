@@ -7,6 +7,7 @@ import { NotificationBell } from '@/components/ui/NotificationBell'
 import { useEffect, useState }         from 'react'
 import { useCouple }        from '@/hooks/useCouple'
 import { useProfile, useLogout } from '@/hooks/useProfile'
+import { Lock, Menu, X } from 'lucide-react'
 import {
   FcHome,
   FcMoneyTransfer,
@@ -24,6 +25,7 @@ import type { IconType } from 'react-icons'
 interface NavItem {
   href:         string
   label:        string
+  context:      string
   icon:         IconType
   locked?:      boolean
   lockMessage?: string
@@ -34,6 +36,7 @@ export function Sidebar() {
   const mobileDrawerId = 'mobile-navigation-drawer'
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileMounted, setMobileMounted] = useState(false)
   const [lockedInfo, setLockedInfo] = useState<{ label: string; message: string; hint: string } | null>(null)
 
   const { data: couple }  = useCouple()
@@ -41,39 +44,56 @@ export function Sidebar() {
   const logout            = useLogout()
   const hasCouple = !!couple
 
+  function openMobileDrawer() {
+    setMobileMounted(true)
+    requestAnimationFrame(() => setMobileOpen(true))
+  }
+
+  function closeMobileDrawer() {
+    setMobileOpen(false)
+    window.setTimeout(() => setMobileMounted(false), 220)
+  }
+
   useEffect(() => {
-    if (!mobileOpen) return
+    if (!mobileMounted) return
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setMobileOpen(false)
+        closeMobileDrawer()
       }
     }
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [mobileOpen])
+  }, [mobileMounted])
 
   const navItems: NavItem[] = [
-    { href: '/',           label: 'Visão geral',         icon: FcHome },
-    { href: '/transacoes', label: 'Gastos',               icon: FcMoneyTransfer },
-    { href: '/contas',     label: 'Contas',               icon: FcSafe },
-    { href: '/cartoes',    label: 'Cartões',              icon: FcSimCard },
-    { href: '/categorias', label: 'Categorias',           icon: FcList },
-    { href: '/relatorios', label: 'Relatórios',           icon: FcBarChart },
-    { href: '/objetivos',  label: 'Objetivos',            icon: FcPositiveDynamic },
+    { href: '/',           label: 'Visão geral',         context: 'Resumo financeiro principal', icon: FcHome },
+    { href: '/transacoes', label: 'Gastos',              context: 'Entradas e saídas do período', icon: FcMoneyTransfer },
+    { href: '/contas',     label: 'Contas',              context: 'Saldos e contas disponíveis', icon: FcSafe },
+    { href: '/cartoes',    label: 'Cartões',             context: 'Limites, faturas e uso atual', icon: FcSimCard },
+    { href: '/categorias', label: 'Categorias',          context: 'Organização das movimentações', icon: FcList },
+    { href: '/relatorios', label: 'Relatórios',          context: 'Análises e comparativos', icon: FcBarChart },
+    { href: '/objetivos',  label: 'Objetivos',           context: 'Metas e progresso acumulado', icon: FcPositiveDynamic },
     {
       href:        '/divisao',
       label:       'Divisão de despesas',
+      context:     'Pendências e histórico do casal',
       icon:        FcCollaboration,
       locked:      !hasCouple,
       lockMessage: 'A divisão de despesas só está disponível para casais vinculados.',
       lockHint:    'Acesse Conexão do casal e convide seu parceiro(a) para desbloquear.',
     },
-    { href: '/casal',      label: 'Conexão do casal',    icon: FcConferenceCall },
+    { href: '/casal',      label: 'Conexão do casal',    context: 'Convites e vínculo com parceiro(a)', icon: FcConferenceCall },
   ]
 
-  const NavContent = () => (
+  const activeNavItem =
+    navItems.find(item => pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))) ??
+    (pathname === '/perfil'
+      ? { href: '/perfil', label: 'Perfil', context: 'Dados da sua conta', icon: FcManager }
+      : null)
+
+  const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
     <>
       {/* Marca principal */}
       <div className="flex items-center justify-between px-5 py-5 mb-2">
@@ -88,6 +108,14 @@ export function Sidebar() {
         </Link>
         <NotificationBell />
       </div>
+
+      {mobile && activeNavItem ? (
+        <div className="mx-3 mb-3 rounded-xl px-3 py-2.5 bg-white border border-[#D1D5DB]">
+          <p className="data-label mb-0.5">Seção atual</p>
+          <p className="text-sm font-semibold text-[#0F172A]">{activeNavItem.label}</p>
+          <p className="text-xs text-[#334155]">{activeNavItem.context}</p>
+        </div>
+      ) : null}
 
       {/* Nav */}
       <nav className="flex-1 px-3 space-y-1">
@@ -113,7 +141,7 @@ export function Sidebar() {
               >
                 <Icon size={18} className="w-4 shrink-0 opacity-40" />
                 <span className="flex-1 text-left">{item.label}</span>
-                <span className="text-[10px] opacity-40">🔒</span>
+                <Lock size={13} className="opacity-40" aria-hidden />
               </button>
             )
           }
@@ -122,9 +150,9 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setMobileOpen(false)}
+              onClick={() => closeMobileDrawer()}
               className={`db-row gap-3 text-sm w-full font-medium transition-colors ${
-                isActive ? 'text-[#0F172A]' : 'text-[#6B7280] hover:text-[#0F172A]'
+                isActive ? 'text-[#0F172A]' : 'text-[#334155] hover:text-[#0F172A]'
               }`}
               style={isActive ? { background: 'rgba(255,127,80,0.1)' } : undefined}
             >
@@ -142,15 +170,15 @@ export function Sidebar() {
       >
         <Link
           href="/perfil"
-          onClick={() => setMobileOpen(false)}
+          onClick={() => closeMobileDrawer()}
           className={`db-row gap-3 text-sm w-full font-medium transition-colors ${
-            pathname === '/perfil' ? 'text-[#0F172A]' : 'text-[#6B7280] hover:text-[#0F172A]'
+            pathname === '/perfil' ? 'text-[#0F172A]' : 'text-[#334155] hover:text-[#0F172A]'
           }`}
           style={pathname === '/perfil' ? { background: 'rgba(255,127,80,0.1)' } : undefined}
         >
           {profile?.name || profile?.email ? (
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
               style={{ background: 'rgba(255,127,80,0.15)', color: '#FF7F50' }}
             >
               {(profile?.name ?? profile?.email ?? '?').charAt(0).toUpperCase()}
@@ -163,7 +191,7 @@ export function Sidebar() {
               {profile?.name ?? 'Meu perfil'}
             </p>
             {profile?.email && (
-              <p className="truncate text-[11px] leading-tight text-[#6B7280]">
+              <p className="truncate text-xs leading-tight text-[#334155]">
                 {profile.email}
               </p>
             )}
@@ -173,7 +201,7 @@ export function Sidebar() {
         <button
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
-          className="db-row gap-3 text-sm w-full transition-colors text-[#6B7280] hover:text-[#EF4444]"
+          className="db-row gap-3 text-sm w-full transition-colors text-[#334155] hover:text-[#EF4444]"
         >
           <span className="w-4 text-center text-[13px] shrink-0">↪</span>
           <span>{logout.isPending ? 'Saindo...' : 'Sair da conta'}</span>
@@ -200,10 +228,10 @@ export function Sidebar() {
               <span className="text-2xl">🔒</span>
               <h3 className="font-bold text-[#0F172A]">{lockedInfo.label} indisponível</h3>
             </div>
-            <p className="text-sm text-[#6B7280] leading-relaxed">
+            <p className="text-sm text-[#334155] leading-relaxed">
               {lockedInfo.message}
             </p>
-            <p className="text-sm text-[#FF7F50] font-medium">
+            <p className="text-sm text-[#C2410C] font-medium">
               {lockedInfo.hint}
             </p>
             <button
@@ -234,7 +262,7 @@ export function Sidebar() {
         style={{
           borderBottom: '1px solid #D1D5DB',
           paddingTop:   'env(safe-area-inset-top, 0px)',
-          minHeight:    'calc(3.5rem + env(safe-area-inset-top, 0px))',
+          minHeight:    'calc(5rem + env(safe-area-inset-top, 0px))',
         }}
       >
         <div className="flex items-center justify-between h-14">
@@ -250,25 +278,33 @@ export function Sidebar() {
           <div className="flex items-center gap-3">
             <NotificationBell />
             <button
-              onClick={() => setMobileOpen(true)}
+              onClick={openMobileDrawer}
               aria-label="Abrir menu de navegação"
               aria-expanded={mobileOpen}
               aria-controls={mobileDrawerId}
               aria-haspopup="dialog"
-              className="touch-target text-[#6B7280] hover:text-[#0F172A] transition-colors p-2 text-xl"
+              className="touch-target text-[#334155] hover:text-[#0F172A] transition-colors p-2"
             >
-              ☰
+              <Menu size={20} aria-hidden />
             </button>
           </div>
         </div>
+        {activeNavItem ? (
+          <div className="pb-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-[#64748B] font-semibold">Seção atual</p>
+            <p className="text-sm font-semibold text-[#0F172A] leading-tight">{activeNavItem.label}</p>
+          </div>
+        ) : null}
       </header>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
+      {mobileMounted && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div
-            className="absolute inset-0 bg-[#0F172A]/30 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
+            className={`absolute inset-0 backdrop-blur-sm transition-opacity duration-200 ${
+              mobileOpen ? 'opacity-100 bg-[#0F172A]/30' : 'opacity-0 bg-[#0F172A]/0'
+            }`}
+            onClick={closeMobileDrawer}
             aria-hidden="true"
           />
           <div
@@ -276,15 +312,19 @@ export function Sidebar() {
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navegação"
-            className="relative w-60 flex flex-col h-full bg-[#FDFCF0]"
+            className={`relative w-60 flex flex-col h-full bg-[#FDFCF0] transition-transform duration-200 ease-out ${
+              mobileOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
             style={{ borderRight: '1px solid #D1D5DB' }}
           >
             <button
-              onClick={() => setMobileOpen(false)}
+              onClick={closeMobileDrawer}
               aria-label="Fechar menu de navegação"
-              className="touch-target absolute top-4 right-4 text-[#6B7280] hover:text-[#0F172A] text-sm p-2"
-            >✕</button>
-            <NavContent />
+              className="touch-target absolute top-4 right-4 text-[#334155] hover:text-[#0F172A] text-sm p-2"
+            >
+              <X size={18} aria-hidden />
+            </button>
+            <NavContent mobile />
           </div>
         </div>
       )}
@@ -292,8 +332,9 @@ export function Sidebar() {
       {/* Espaçador mobile */}
       <div
         className="md:hidden"
-        style={{ height: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}
+        style={{ height: 'calc(5rem + env(safe-area-inset-top, 0px))' }}
       />
     </>
   )
 }
+

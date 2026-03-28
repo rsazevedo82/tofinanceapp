@@ -91,7 +91,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
                   ? type === 'income'
                     ? 'border'
                     : 'border'
-                  : 'bg-[#F3F4F6] text-[#6B7280] border border-transparent'
+                  : 'bg-[#F3F4F6] text-[#334155] border border-transparent'
               }`}
               style={currentType === type ? {
                 background: type === 'income' ? 'rgba(45,212,191,0.1)' : 'rgba(255,127,80,0.1)',
@@ -145,7 +145,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
         <span className="text-sm text-[#0F172A]">
           {currentName || 'Nome da categoria'}
         </span>
-        <span className={`ml-auto tag text-[10px] ${currentType === 'income' ? 'tag-income' : 'tag-expense'}`}>
+        <span className={`ml-auto tag text-xs ${currentType === 'income' ? 'tag-income' : 'tag-expense'}`}>
           {currentType === 'income' ? 'Receita' : 'Despesa'}
         </span>
       </div>
@@ -187,7 +187,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="touch-target w-full text-xs text-[#6B7280] hover:text-[#0F172A] transition-colors"
+              className="touch-target w-full text-xs text-[#334155] hover:text-[#0F172A] transition-colors"
             >
               Cancelar exclusão
             </button>
@@ -197,3 +197,4 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
     </form>
   )
 }
+

@@ -1,4 +1,4 @@
-﻿// components/finance/TransactionList.tsx
+// components/finance/TransactionList.tsx
 'use client'
 
 import { useState }           from 'react'
@@ -47,7 +47,7 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
 
   if (transactions.length === 0) {
     return (
-      <p className="text-center py-12 text-sm text-[#6B7280]">
+      <p className="text-center py-12 text-sm text-[#334155]">
         Nenhuma transacao neste periodo
       </p>
     )
@@ -84,12 +84,12 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
                   </span>
                 </div>
 
-                <div className="text-xs text-[#6B7280]">
+                <div className="text-xs text-[#334155]">
                   {formatDate(t.date)}
                 </div>
 
                 <div className={`text-sm font-semibold md:text-right ${
-                  t.type === 'income' ? 'text-[#2DD4BF]' : 'text-[#FF7F50]'
+                  t.type === 'income' ? 'text-[#2DD4BF]' : 'text-[#C2410C]'
                 }`}>
                   {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                 </div>
@@ -126,13 +126,13 @@ export function TransactionList({ transactions, layout = 'default' }: Props) {
               </span>
               <div>
                 <p className="text-sm font-medium text-[#0F172A]">{t.description}</p>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-[#334155]">
                   {t.category?.name ?? '—'} · {formatDate(t.date)}
                 </p>
               </div>
             </div>
             <span className={`text-sm font-semibold ${
-              t.type === 'income' ? 'text-[#2DD4BF]' : 'text-[#FF7F50]'
+              t.type === 'income' ? 'text-[#2DD4BF]' : 'text-[#C2410C]'
             }`}>
               {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
             </span>
@@ -198,7 +198,7 @@ function EditModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="touch-target w-full text-xs mt-1 text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                className="touch-target w-full text-xs mt-1 text-[#334155] hover:text-[#0F172A] transition-colors"
               >
                 Cancelar
               </button>
@@ -209,3 +209,4 @@ function EditModal({
     </Modal>
   )
 }
+

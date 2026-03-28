@@ -31,7 +31,7 @@ export function PartnerViewBanner() {
       </div>
       <button
         onClick={exitPartnerView}
-        className="text-[10px] px-2.5 py-1 rounded-lg transition-colors"
+        className="text-xs px-2.5 py-1 rounded-lg transition-colors"
         style={{ color: '#FF7F50', background: 'rgba(255,127,80,0.1)' }}
       >
         Voltar para meus dados

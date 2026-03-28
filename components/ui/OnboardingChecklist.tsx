@@ -146,7 +146,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
           >
             {/* Ícone status */}
             <div
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0"
               style={{
                 background: step.done
                   ? 'rgba(45,212,191,0.15)'
@@ -170,7 +170,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
                 {step.label}
                 {!step.required && (
                   <span
-                    className="ml-1.5 text-[10px] font-normal"
+                    className="ml-1.5 text-xs font-normal"
                     style={{ color: 'var(--text-muted)' }}
                   >
                     opcional
@@ -178,7 +178,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
                 )}
               </p>
               {!step.done && (
-                <p className="text-[11px] mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>
                   {step.description}
                 </p>
               )}
@@ -188,7 +188,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
             {!step.done && (
               <button
                 onClick={step.action}
-                className="text-[11px] px-2.5 py-1 rounded-lg shrink-0 transition-colors"
+                className="text-xs px-2.5 py-1 rounded-lg shrink-0 transition-colors"
                 style={{
                   background:  'rgba(255,127,80,0.1)',
                   border:      '1px solid rgba(255,127,80,0.25)',

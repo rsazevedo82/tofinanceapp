@@ -3,6 +3,7 @@
 
 import { usePartnerView } from '@/components/providers/PartnerViewProvider'
 import { useCouple }      from '@/hooks/useCouple'
+import { User }           from 'lucide-react'
 
 export function PartnerViewToggle() {
   const { data: couple } = useCouple()
@@ -22,11 +23,11 @@ export function PartnerViewToggle() {
         className="touch-target flex items-center gap-1.5 px-3 rounded-lg text-sm font-medium transition-all"
         style={{
           background: !isViewingPartner ? '#ffffff' : 'transparent',
-          color:      !isViewingPartner ? '#0F172A' : '#6B7280',
+          color:      !isViewingPartner ? '#0F172A' : '#334155',
           border:     !isViewingPartner ? '1px solid #D1D5DB' : '1px solid transparent',
         }}
       >
-        <span className="text-[11px]">👤</span>
+        <User size={12} aria-hidden />
         Eu
       </button>
 
@@ -36,7 +37,7 @@ export function PartnerViewToggle() {
         className="touch-target flex items-center gap-1.5 px-3 rounded-lg text-sm font-medium transition-all"
         style={{
           background: isViewingPartner ? 'rgba(255,127,80,0.1)' : 'transparent',
-          color:      isViewingPartner ? '#FF7F50' : '#6B7280',
+          color:      isViewingPartner ? '#FF7F50' : '#334155',
           border:     isViewingPartner ? '1px solid rgba(255,127,80,0.3)' : '1px solid transparent',
         }}
       >
@@ -49,3 +50,4 @@ export function PartnerViewToggle() {
     </div>
   )
 }
+

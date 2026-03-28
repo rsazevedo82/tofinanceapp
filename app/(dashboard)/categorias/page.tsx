@@ -7,6 +7,8 @@ import { useCategories }    from '@/hooks/useCategories'
 import { Modal }            from '@/components/ui/Modal'
 import { useCouple }        from '@/hooks/useCouple'
 import { c }                from '@/lib/utils/copy'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { Tag } from 'lucide-react'
 import type { Category }    from '@/types'
 
 const CategoryForm = dynamic(
@@ -60,30 +62,23 @@ export default function CategoriasPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8 md:mb-10">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Categorias</h1>
-          <p className="text-sm mt-1 text-[#6B7280]">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">Categorias</h1>
+          <p className="text-sm mt-1 text-[#334155]">
             {systemCategories.length} do sistema · {userCategories.length} suas
           </p>
         </div>
-        <button onClick={() => openCreate('expense')} className="btn-primary">
+        <button onClick={() => openCreate('expense')} className="btn-primary w-full sm:w-auto justify-center">
           <span className="text-lg leading-none">+</span>
           Nova categoria
         </button>
       </div>
 
       {isLoading ? (
-        <div className="space-y-1">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="db-row px-2 py-2 animate-pulse">
-              <div className="w-2 h-2 rounded-sm bg-[#E5E7EB]" />
-              <div className="ml-3 h-3 bg-[#E5E7EB] rounded w-28" />
-            </div>
-          ))}
-        </div>
+        <LoadingStatePanel rows={4} />
       ) : (
         <>
           {/* Suas categorias */}
@@ -94,14 +89,14 @@ export default function CategoriasPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openCreate('income')}
-                    className="text-[10px] px-2 py-1 rounded transition-colors font-semibold"
+                    className="text-xs px-2 py-1 rounded transition-colors font-semibold"
                     style={{ color: '#0d9488', background: 'rgba(45,212,191,0.1)' }}
                   >
                     + Receita
                   </button>
                   <button
                     onClick={() => openCreate('expense')}
-                    className="text-[10px] px-2 py-1 rounded transition-colors font-semibold"
+                    className="text-xs px-2 py-1 rounded transition-colors font-semibold"
                     style={{ color: '#e86e40', background: 'rgba(255,127,80,0.1)' }}
                   >
                     + Despesa
@@ -111,7 +106,7 @@ export default function CategoriasPage() {
 
               {incomeUser.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                  <p className="text-xs uppercase tracking-widest font-semibold mb-1.5 px-2"
                     style={{ color: '#2DD4BF' }}>Receitas</p>
                   <div className="space-y-0.5">
                     {incomeUser.map(cat => (
@@ -123,7 +118,7 @@ export default function CategoriasPage() {
 
               {expenseUser.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                  <p className="text-xs uppercase tracking-widest font-semibold mb-1.5 px-2"
                     style={{ color: '#FF7F50' }}>Despesas</p>
                   <div className="space-y-0.5">
                     {expenseUser.map(cat => (
@@ -139,14 +134,14 @@ export default function CategoriasPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <p className="section-heading mb-0">Categorias padrão</p>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-[#F3F4F6] text-[#6B7280]">
+              <span className="text-xs px-2 py-0.5 rounded bg-[#F3F4F6] text-[#334155]">
                 somente leitura
               </span>
             </div>
 
             {incomeSystem.length > 0 && (
               <div className="mb-3">
-                <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                <p className="text-xs uppercase tracking-widest font-semibold mb-1.5 px-2"
                   style={{ color: '#2DD4BF' }}>Receitas</p>
                 <div className="space-y-0.5">
                   {incomeSystem.map(cat => (
@@ -158,7 +153,7 @@ export default function CategoriasPage() {
 
             {expenseSystem.length > 0 && (
               <div>
-                <p className="text-[10px] uppercase tracking-widest font-semibold mb-1.5 px-2"
+                <p className="text-xs uppercase tracking-widest font-semibold mb-1.5 px-2"
                   style={{ color: '#FF7F50' }}>Despesas</p>
                 <div className="space-y-0.5">
                   {expenseSystem.map(cat => (
@@ -170,19 +165,17 @@ export default function CategoriasPage() {
           </div>
 
           {userCategories.length === 0 && (
-            <div className="py-8 text-center border rounded-xl border-[#D1D5DB] bg-white">
-              <p className="text-2xl mb-2">🏷️</p>
-              <p className="text-sm font-semibold text-[#0F172A] mb-1">
-                {c(isCouple, 'Crie suas próprias categorias', 'Criem categorias que façam sentido para vocês')}
-              </p>
-              <p className="text-xs mb-4 text-[#6B7280]">
-                {c(isCouple, 'Personalize além das categorias padrão', 'Personalizem além das categorias padrão')}
-              </p>
-              <button onClick={() => openCreate('expense')} className="btn-primary mx-auto">
-                <span className="text-lg leading-none">+</span>
-                Nova categoria
-              </button>
-            </div>
+            <EmptyStatePanel
+              icon={<Tag size={26} className="text-[#475569]" aria-hidden />}
+              title={c(isCouple, 'Crie suas próprias categorias', 'Criem categorias que façam sentido para vocês')}
+              description={c(isCouple, 'Personalize além das categorias padrão', 'Personalizem além das categorias padrão')}
+              action={(
+                <button onClick={() => openCreate('expense')} className="btn-primary">
+                  <span className="text-lg leading-none">+</span>
+                  Nova categoria
+                </button>
+              )}
+            />
           )}
         </>
       )}
@@ -225,10 +218,11 @@ function CategoryRow({
       />
       <span className="text-sm text-[#0F172A] flex-1">{category.name}</span>
       {editable && (
-        <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-[#6B7280]">
+        <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity text-[#334155]">
           editar →
         </span>
       )}
     </div>
   )
 }
+

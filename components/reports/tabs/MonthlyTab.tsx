@@ -1,7 +1,7 @@
 'use client'
 
 import { ChartCard, DataTable } from '@/components/reports/ChartCard'
-import { chartColors, CustomTooltip, fmtCur } from '@/components/reports/reportShared'
+import { chartColors, CustomTooltip, fmtCur, SeriesLegend } from '@/components/reports/reportShared'
 import type { ReportsPayload } from '@/types'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
@@ -16,18 +16,24 @@ export default function MonthlyTab({ data }: MonthlyTabProps) {
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data.monthly} barGap={4}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
-          <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fill: '#334155', fontSize: 11 }} axisLine={false} tickLine={false} />
           <YAxis
-            tick={{ fill: '#6B7280', fontSize: 11 }}
+            tick={{ fill: '#334155', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="income" name="Receitas" fill={chartColors.income} radius={[4, 4, 0, 0]} />
-          <Bar dataKey="expense" name="Despesas" fill={chartColors.expense} radius={[4, 4, 0, 0]} />
+          <Bar dataKey="income" name="↑ Receitas" fill={chartColors.income} radius={[4, 4, 0, 0]} />
+          <Bar dataKey="expense" name="↓ Despesas" fill={chartColors.expense} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
+      <SeriesLegend
+        items={[
+          { symbol: '↑', label: 'Receitas' },
+          { symbol: '↓', label: 'Despesas' },
+        ]}
+      />
       <DataTable
         columns={[
           { key: 'label', label: 'Mês' },
@@ -41,3 +47,4 @@ export default function MonthlyTab({ data }: MonthlyTabProps) {
     </ChartCard>
   )
 }
+

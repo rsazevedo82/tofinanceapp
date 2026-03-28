@@ -5,6 +5,7 @@ import { useState }         from 'react'
 import dynamic              from 'next/dynamic'
 import { Modal }            from '@/components/ui/Modal'
 import { useAddContribution, useDeleteGoal, useGoalContributions, useDeleteContribution } from '@/hooks/useGoals'
+import { Pencil, Trash2, X } from 'lucide-react'
 import type { Goal, GoalContribution } from '@/types'
 import type { AddContributionInput } from '@/lib/validations/schemas'
 
@@ -34,9 +35,9 @@ function ContributionList({ goalId, ownUserId }: { goalId: string; ownUserId?: s
   const { data: contributions = [], isLoading } = useGoalContributions(goalId)
   const deleteContribution = useDeleteContribution(goalId)
 
-  if (isLoading) return <p className="text-xs text-center py-4 text-[#6B7280]">Carregando…</p>
+  if (isLoading) return <p className="text-xs text-center py-4 text-[#334155]">Carregando…</p>
   if (contributions.length === 0) return (
-    <p className="text-xs text-center py-4 text-[#6B7280]">
+    <p className="text-xs text-center py-4 text-[#334155]">
       Nenhum aporte ainda. Seja o primeiro!
     </p>
   )
@@ -52,8 +53,8 @@ function ContributionList({ goalId, ownUserId }: { goalId: string; ownUserId?: s
             </span>
             <div className="min-w-0">
               <p className="text-[#0F172A] truncate">{c.user_profile?.name ?? 'Você'}</p>
-              <p className="text-xs text-[#6B7280]">{formatDate(c.date)}</p>
-              {c.notes && <p className="text-xs truncate text-[#6B7280]">{c.notes}</p>}
+              <p className="text-xs text-[#334155]">{formatDate(c.date)}</p>
+              {c.notes && <p className="text-xs truncate text-[#334155]">{c.notes}</p>}
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -64,7 +65,7 @@ function ContributionList({ goalId, ownUserId }: { goalId: string; ownUserId?: s
                 className="text-[#D1D5DB] hover:text-red-500 transition-colors text-xs"
                 title="Remover aporte"
               >
-                ✕
+                <X size={12} aria-hidden />
               </button>
             )}
           </div>
@@ -130,7 +131,7 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
                 )}
               </div>
               {goal.description && (
-                <p className="text-xs truncate mt-0.5 text-[#6B7280]">{goal.description}</p>
+                <p className="text-xs truncate mt-0.5 text-[#334155]">{goal.description}</p>
               )}
             </div>
           </div>
@@ -140,18 +141,18 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
               {onEdit && (
                 <button
                   onClick={() => onEdit(goal)}
-                  className="p-1.5 rounded hover:bg-[#F3F4F6] text-[#6B7280] hover:text-[#0F172A] transition-colors text-xs"
+                  className="p-1.5 rounded hover:bg-[#F3F4F6] text-[#334155] hover:text-[#0F172A] transition-colors text-xs"
                   title="Editar meta"
                 >
-                  ✏️
+                  <Pencil size={13} aria-hidden />
                 </button>
               )}
               <button
                 onClick={() => deleteGoal.mutate(goal.id)}
-                className="p-1.5 rounded hover:bg-[#F3F4F6] text-[#6B7280] hover:text-red-500 transition-colors text-xs"
+                className="p-1.5 rounded hover:bg-[#F3F4F6] text-[#334155] hover:text-red-500 transition-colors text-xs"
                 title="Arquivar meta"
               >
-                🗑
+                <Trash2 size={13} aria-hidden />
               </button>
             </div>
           )}
@@ -160,7 +161,7 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
         {/* Progress */}
         <div>
           <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-[#6B7280]">
+            <span className="text-[#334155]">
               {formatCurrency(current)} de {formatCurrency(target)}
             </span>
             <span style={{ color: isCompleted ? '#2DD4BF' : '#FF7F50' }}>
@@ -177,11 +178,11 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
             />
           </div>
           <div className="flex justify-between text-xs mt-1.5">
-            <span className="text-[#6B7280]">
+            <span className="text-[#334155]">
               {isCompleted ? 'Meta atingida!' : `Faltam ${formatCurrency(remaining)}`}
             </span>
             {days !== null && (
-              <span style={{ color: days < 0 ? '#ef4444' : days <= 30 ? '#F59E0B' : '#6B7280' }}>
+              <span style={{ color: days < 0 ? '#ef4444' : days <= 30 ? '#F59E0B' : '#334155' }}>
                 {days < 0 ? `${Math.abs(days)}d atrasada` : days === 0 ? 'Vence hoje' : `${days}d restantes`}
               </span>
             )}
@@ -192,7 +193,7 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
         <div className="flex gap-2 pt-1 border-t border-[#D1D5DB]">
           <button
             onClick={() => setShowContributions(v => !v)}
-            className="text-xs flex-1 py-1.5 rounded hover:bg-[#F3F4F6] transition-colors text-[#6B7280]"
+            className="text-xs flex-1 py-1.5 rounded hover:bg-[#F3F4F6] transition-colors text-[#334155]"
           >
             {showContributions ? 'Ocultar aportes' : 'Ver aportes'}
           </button>
@@ -230,3 +231,4 @@ export function GoalCard({ goal, ownUserId, onEdit }: Props) {
     </>
   )
 }
+

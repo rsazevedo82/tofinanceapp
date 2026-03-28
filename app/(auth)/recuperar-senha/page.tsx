@@ -142,8 +142,8 @@ export default function RecuperarSenhaPage() {
             />
           </Link>
           <div className="text-center space-y-1.5">
-            <p className="text-sm text-[#6B7280]">Recupere o acesso com seguranca.</p>
-            <p className="text-sm text-[#6B7280]">Vamos enviar um link para seu email.</p>
+            <p className="text-sm text-[#334155]">Recupere o acesso com seguranca.</p>
+            <p className="text-sm text-[#334155]">Vamos enviar um link para seu email.</p>
           </div>
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-px bg-[#D1D5DB]" />
@@ -169,7 +169,7 @@ export default function RecuperarSenhaPage() {
             style={{ border: '1px solid #E5E7EB', boxShadow: '0 8px 28px rgba(15,23,42,0.06)' }}
           >
             <h1 className="text-2xl font-black text-[#0F172A] tracking-tight mb-1">Recuperar senha</h1>
-            <p className="text-sm mb-8 text-[#6B7280]">Informe seu email para receber o link</p>
+            <p className="text-sm mb-8 text-[#334155]">Informe seu email para receber o link</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -218,9 +218,9 @@ export default function RecuperarSenhaPage() {
               </button>
             </form>
 
-            <p className="text-center text-sm mt-6 text-[#6B7280]">
+            <p className="text-center text-sm mt-6 text-[#334155]">
               Lembrou sua senha?{' '}
-              <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+              <Link href="/login" className="text-[#C2410C] font-medium hover:text-[#9A3412] transition-colors">
                 Voltar para login
               </Link>
             </p>
@@ -230,3 +230,4 @@ export default function RecuperarSenhaPage() {
     </div>
   )
 }
+

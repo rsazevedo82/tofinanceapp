@@ -4,18 +4,8 @@
 import { useState, useRef, useEffect }      from 'react'
 import { Bell }                             from 'lucide-react'
 import { useNotificationsLive, useMarkAsRead, useMarkAllAsRead } from '@/hooks/useNotifications'
+import { NotificationTypeIcon }             from '@/components/ui/NotificationTypeIcon'
 import type { Notification }                from '@/types'
-
-const TYPE_ICONS: Record<string, string> = {
-  couple_invite:   '💌',
-  couple_accepted: '💑',
-  couple_unlinked: '💔',
-  goal_reached:    '🎯',
-  invoice_closed:  '💳',
-  security_new_device: '🛡️',
-  security_password_changed: '🔐',
-  security_email_change_requested: '📧',
-}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -62,7 +52,7 @@ export function NotificationBell() {
         onClick={() => setOpen(prev => !prev)}
         className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
         style={{
-          color:      unreadCount > 0 ? '#0F172A' : '#475569',
+          color:      unreadCount > 0 ? '#0F172A' : '#334155',
           background: open ? '#F3F4F6' : 'transparent',
         }}
         aria-label={`Notificações${unreadCount > 0 ? ` (${unreadCount} não lidas)` : ''}`}
@@ -95,7 +85,7 @@ export function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead.mutate()}
-                className="text-xs text-[#475569] hover:text-[#0F172A] transition-colors"
+                className="text-xs text-[#334155] hover:text-[#0F172A] transition-colors"
                 disabled={markAllAsRead.isPending}
               >
                 Marcar todas como lidas
@@ -106,8 +96,10 @@ export function NotificationBell() {
           {/* Lista */}
           {preview.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-2xl mb-2">🔔</p>
-              <p className="text-xs text-[#475569]">
+              <div className="mb-2 flex justify-center">
+                <Bell size={18} className="text-[#64748B]" aria-hidden />
+              </div>
+              <p className="text-xs text-[#334155]">
                 Nenhuma notificação
               </p>
             </div>
@@ -123,12 +115,12 @@ export function NotificationBell() {
                     borderBottom: '1px solid rgba(209,213,219,0.5)',
                   }}
                 >
-                  <span className="text-base flex-shrink-0 mt-0.5">
-                    {TYPE_ICONS[n.type] ?? '🔔'}
+                  <span className="flex-shrink-0 mt-0.5">
+                    <NotificationTypeIcon type={n.type} className="h-4 w-4 text-[#475569]" />
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={`text-xs font-medium truncate ${n.read_at ? 'text-[#475569]' : 'text-[#0F172A]'}`}>
+                      <p className={`text-xs font-medium truncate ${n.read_at ? 'text-[#334155]' : 'text-[#0F172A]'}`}>
                         {n.title}
                       </p>
                       {!n.read_at && (
@@ -136,7 +128,7 @@ export function NotificationBell() {
                           style={{ background: '#FF7F50' }} />
                       )}
                     </div>
-                    <p className="text-xs mt-0.5 line-clamp-2 text-[#475569]">
+                    <p className="text-xs mt-0.5 line-clamp-2 text-[#334155]">
                       {n.body}
                     </p>
                     <p className="text-xs mt-1 text-[#64748B]">
@@ -150,7 +142,7 @@ export function NotificationBell() {
 
           {data.length > 5 && (
             <div className="px-4 py-2.5 text-center border-t border-[#D1D5DB]">
-              <span className="text-xs text-[#475569]">
+              <span className="text-xs text-[#334155]">
                 +{data.length - 5} notificações anteriores
               </span>
             </div>
@@ -160,3 +152,4 @@ export function NotificationBell() {
     </div>
   )
 }
+

@@ -15,7 +15,7 @@ export default function CategoriesTab({ data, isCouple }: CategoriesTabProps) {
   return (
     <ChartCard title="Gastos por categoria" subtitle={`Despesas de ${data.period.month}`}>
       {data.categories.length === 0 ? (
-        <p className="text-xs text-center py-8 text-[#6B7280]">
+        <p className="text-xs text-center py-8 text-[#334155]">
           {c(isCouple, 'Nenhuma despesa categorizada neste mês', 'Vocês ainda não categorizaram despesas este mês')}
         </p>
       ) : (
@@ -37,7 +37,7 @@ export default function CategoriesTab({ data, isCouple }: CategoriesTabProps) {
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend formatter={(v) => <span style={{ color: '#6B7280', fontSize: 11 }}>{v}</span>} />
+              <Legend formatter={(v) => <span style={{ color: '#334155', fontSize: 11 }}>{v}</span>} />
             </PieChart>
           </ResponsiveContainer>
           <DataTable
@@ -59,3 +59,4 @@ export default function CategoriesTab({ data, isCouple }: CategoriesTabProps) {
     </ChartCard>
   )
 }
+

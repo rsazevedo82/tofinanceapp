@@ -165,7 +165,7 @@ export async function POST(request: Request, { params }: Params): Promise<NextRe
       const notifications = notifyUsers.map(uid => ({
         user_id: uid,
         type:    'goal_reached' as const,
-        title:   '🎯 Meta atingida!',
+        title:   'Meta atingida!',
         body:    `Parabéns! A meta "${goal.title}" foi concluída.`,
         payload: { goal_id: id, total },
       }))

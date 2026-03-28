@@ -1,4 +1,4 @@
-﻿// components/reports/ChartCard.tsx
+// components/reports/ChartCard.tsx
 // Wrapper padrao para todos os graficos de relatorio
 'use client'
 
@@ -18,7 +18,7 @@ export function ChartCard({ title, subtitle, children, action }: ChartCardProps)
         <div>
           <p className="text-sm font-semibold text-[#0F172A]">{title}</p>
           {subtitle && (
-            <p className="text-xs mt-0.5 text-[#6B7280]">{subtitle}</p>
+            <p className="text-xs mt-0.5 text-[#334155]">{subtitle}</p>
           )}
         </div>
         {action}
@@ -41,7 +41,7 @@ interface DataTableProps {
 export function DataTable({ columns, rows, formatValue }: DataTableProps) {
   if (rows.length === 0) {
     return (
-      <p className="text-xs text-center py-4 text-[#6B7280]">
+      <p className="text-xs text-center py-4 text-[#334155]">
         Sem dados para exibir
       </p>
     )
@@ -55,7 +55,7 @@ export function DataTable({ columns, rows, formatValue }: DataTableProps) {
             {columns.map(col => (
               <th
                 key={col.key}
-                className={`pb-2 font-medium ${col.align === 'right' ? 'text-right' : 'text-left'} text-[#6B7280]`}
+                className={`pb-2 font-medium ${col.align === 'right' ? 'text-right' : 'text-left'} text-[#334155]`}
               >
                 {col.label}
               </th>
@@ -85,3 +85,4 @@ export function DataTable({ columns, rows, formatValue }: DataTableProps) {
     </div>
   )
 }
+

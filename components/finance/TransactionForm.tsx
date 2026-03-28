@@ -72,7 +72,7 @@ const INSTALLMENT_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const TYPE_CONFIG = {
   expense:  { label: '↓ Despesa',       bg: 'rgba(255,127,80,0.12)',  color: '#FF7F50', border: 'rgba(255,127,80,0.3)'  },
   income:   { label: '↑ Receita',       bg: 'rgba(45,212,191,0.12)',  color: '#2DD4BF', border: 'rgba(45,212,191,0.3)'  },
-  transfer: { label: '⇄ Transferência', bg: 'rgba(107,114,128,0.1)',  color: '#475569', border: 'rgba(107,114,128,0.25)' },
+  transfer: { label: '⇄ Transferência', bg: 'rgba(107,114,128,0.1)',  color: '#334155', border: 'rgba(107,114,128,0.25)' },
 }
 
 export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
@@ -235,7 +235,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
               className="py-2 rounded-xl text-xs font-medium transition-all"
               style={{
                 background: sel ? c.bg    : '#F3F4F6',
-                color:      sel ? c.color : '#475569',
+                color:      sel ? c.color : '#334155',
                 border:     sel ? `1px solid ${c.border}` : '1px solid transparent',
               }}
             >
@@ -323,7 +323,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             />
           )}
           {effectiveInstallments > 1 && watchedAmount > 0 && (
-            <p className="mt-1 text-xs text-[#475569]">
+            <p className="mt-1 text-xs text-[#334155]">
               {effectiveInstallments}x de R$ {(watchedAmount / effectiveInstallments).toFixed(2)} · Total R$ {watchedAmount.toFixed(2)}
             </p>
           )}
@@ -365,7 +365,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       <button
         type="button"
         onClick={() => setShowExtras(v => !v)}
-        className="w-full text-left text-xs py-1 transition-colors flex items-center gap-1 text-[#475569]"
+        className="w-full text-left text-xs py-1 transition-colors flex items-center gap-1 text-[#334155]"
       >
         <span>{showExtras ? '▲' : '▼'}</span>
         {showExtras ? 'Menos opções' : 'Mais opções (status, observações)'}
@@ -430,3 +430,4 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
     </form>
   )
 }
+

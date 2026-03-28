@@ -10,6 +10,8 @@ import { formatCurrency }    from '@/lib/utils/format'
 import { Modal }             from '@/components/ui/Modal'
 import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { AlertTriangle, CreditCard } from 'lucide-react'
 import type { Account, CardInvoicesSummary } from '@/types'
 
 const AccountForm = dynamic(
@@ -47,12 +49,15 @@ function DeleteCardModal({
       {/* Aviso */}
       <div className="rounded-lg px-4 py-3 space-y-1 bg-red-50"
         style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
-        <p className="text-sm font-semibold text-red-600">⚠️ Ação irreversível</p>
-        <p className="text-sm text-[#6B7280]">
+        <p className="text-sm font-semibold text-red-600 flex items-center gap-1.5">
+          <AlertTriangle size={14} aria-hidden />
+          Ação irreversível
+        </p>
+        <p className="text-sm text-[#334155]">
           Ao excluir o cartão <strong className="text-[#0F172A]">{card.name}</strong>,
           os seguintes dados serão removidos permanentemente:
         </p>
-        <ul className="text-sm space-y-0.5 mt-2 text-[#6B7280]">
+        <ul className="text-sm space-y-0.5 mt-2 text-[#334155]">
           <li>• Todas as transações vinculadas ao cartão</li>
           <li>• Todas as faturas e parcelamentos</li>
           <li>• O cadastro do cartão</li>
@@ -126,42 +131,36 @@ export default function CartoesPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8 md:mb-10">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Cartões</h1>
-          <p className="text-sm mt-1 text-[#6B7280]">
+          <h1 className="page-title">Cartões</h1>
+          <p className="page-subtitle mt-1">
             {creditCards.length} cartão{creditCards.length !== 1 ? 'ões' : ''} ativo{creditCards.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
+        <button onClick={() => setShowCreate(true)} className="btn-primary w-full sm:w-auto justify-center">
           <span className="text-lg leading-none">+</span>
           Novo cartão
         </button>
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2].map(i => (
-            <div key={i} className="card animate-pulse h-32" />
-          ))}
-        </div>
+        <LoadingStatePanel rows={2} />
       ) : creditCards.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-4xl mb-4">💳</p>
-          <p className="text-sm font-semibold text-[#0F172A] mb-1">
-            {c(isCouple, 'Você ainda não cadastrou nenhum cartão', 'Vocês ainda não cadastraram nenhum cartão')}
-          </p>
-          <p className="text-xs mb-6 text-[#6B7280]">
-            {c(isCouple, 'Adicione seu primeiro cartão', 'Adicionem o primeiro cartão de vocês')}
-          </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary mx-auto">
-            <span className="text-lg leading-none">+</span>
-            Adicionar cartão
-          </button>
-        </div>
+        <EmptyStatePanel
+          icon={<CreditCard size={26} className="text-[#475569]" aria-hidden />}
+          title={c(isCouple, 'Você ainda não cadastrou nenhum cartão', 'Vocês ainda não cadastraram nenhum cartão')}
+          description={c(isCouple, 'Adicione seu primeiro cartão', 'Adicionem o primeiro cartão de vocês')}
+          action={(
+            <button onClick={() => setShowCreate(true)} className="btn-primary">
+              <span className="text-lg leading-none">+</span>
+              Adicionar cartão
+            </button>
+          )}
+        />
       ) : (
         <div className="space-y-3">
           {cardsOverview.map(({ card, summary }) => (
@@ -243,10 +242,10 @@ function CardItem({
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-lg">💳</span>
-            <p className="text-base font-bold text-[#0F172A]">{card.name}</p>
+            <CreditCard size={17} className="text-[#475569]" aria-hidden />
+            <p className="entity-title font-bold">{card.name}</p>
           </div>
-          <p className="text-xs text-[#6B7280]">
+          <p className="entity-meta">
             Fecha dia {card.closing_day} · Vence dia {card.due_day}
           </p>
         </div>
@@ -265,14 +264,14 @@ function CardItem({
             onClick={onEdit}
             className="touch-target text-xs px-3 rounded-lg transition-colors"
             style={{
-              color:      '#6B7280',
+              color:      '#334155',
               background: 'rgba(107,114,128,0.08)',
             }}
           >
             Editar
           </button>
           <span
-            className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ color: '#FF7F50', background: 'rgba(255,127,80,0.1)' }}
           >
             Ver fatura →
@@ -283,19 +282,19 @@ function CardItem({
       {/* Valores */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-semibold mb-1 text-[#6B7280]">Limite</p>
+          <p className="data-label mb-1">Limite</p>
           <p className="text-sm font-bold text-[#0F172A]">
             {formatCurrency(card.credit_limit ?? 0)}
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-semibold mb-1 text-[#6B7280]">Fatura aberta</p>
+          <p className="data-label mb-1">Fatura aberta</p>
           <p className="text-sm font-bold" style={{ color: '#F59E0B' }}>
             {formatCurrency(Number(openInvoice?.total_amount ?? 0))}
           </p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-semibold mb-1 text-[#6B7280]">Disponível</p>
+          <p className="data-label mb-1">Disponível</p>
           <p className="text-sm font-bold" style={{ color: '#2DD4BF' }}>
             {formatCurrency(available)}
           </p>
@@ -316,7 +315,7 @@ function CardItem({
           }}
         />
       </div>
-      <p className="text-[10px] mt-1.5 text-[#6B7280]">
+      <p className="meta-text mt-1.5">
         {usedPercent.toFixed(0)}% do limite utilizado
       </p>
 
@@ -337,3 +336,4 @@ function CardItem({
     </div>
   )
 }
+

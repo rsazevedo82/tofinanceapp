@@ -47,13 +47,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
 
-      <div className="fixed right-3 left-3 sm:left-auto bottom-3 z-[100] space-y-2 sm:w-[360px]" aria-live="polite">
+      <div
+        className="fixed right-3 left-3 sm:left-auto z-[100] space-y-2 sm:w-[360px]"
+        style={{ bottom: 'calc(0.75rem + var(--n2r-overlay-bottom-offset, 0px))' }}
+        aria-live="polite"
+      >
         {toasts.map(toast => {
           const style = VARIANT_STYLES[toast.variant]
           return (
             <div
               key={toast.id}
-              className="rounded-xl border px-3 py-2.5 shadow-lg"
+              className="motion-feedback rounded-xl border px-3 py-2.5 shadow-lg"
               style={{ borderColor: style.border, background: style.bg }}
               role={toast.variant === 'error' ? 'alert' : 'status'}
             >
@@ -63,13 +67,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     {toast.title}
                   </p>
                   {toast.description ? (
-                    <p className="text-xs mt-0.5 text-[#475569] line-clamp-2">{toast.description}</p>
+                    <p className="text-xs mt-0.5 text-[#334155] line-clamp-2">{toast.description}</p>
                   ) : null}
                 </div>
                 <button
                   type="button"
                   onClick={() => dismiss(toast.id)}
-                  className="text-xs text-[#475569] hover:text-[#0F172A] transition-colors"
+                  className="text-xs text-[#334155] hover:text-[#0F172A] transition-colors"
                   aria-label="Fechar notificação"
                 >
                   Fechar
@@ -90,3 +94,4 @@ export function useToast() {
   }
   return context
 }
+

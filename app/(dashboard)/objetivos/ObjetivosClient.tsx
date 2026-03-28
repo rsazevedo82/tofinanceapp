@@ -9,6 +9,8 @@ import { useCouple }         from '@/hooks/useCouple'
 import { c }                 from '@/lib/utils/copy'
 import { GoalCard }          from '@/components/finance/GoalCard'
 import { Modal }             from '@/components/ui/Modal'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { Target, Users } from 'lucide-react'
 import type { Goal }         from '@/types'
 import type { CreateGoalInput, UpdateGoalInput } from '@/lib/validations/schemas'
 
@@ -63,20 +65,20 @@ export default function ObjetivosPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
             {c(isCouple, 'Seus objetivos', 'Objetivos de vocês')}
           </h1>
-          <p className="text-sm mt-1 text-[#6B7280]">
+          <p className="text-sm mt-1 text-[#334155]">
             {goals.length} {goals.length === 1 ? 'meta' : 'metas'} ·{' '}
             {formatCurrency(totalCurrent)} de {formatCurrency(totalTarget)} acumulados
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
+        <button onClick={() => setShowCreate(true)} className="btn-primary w-full sm:w-auto justify-center">
           <span className="text-lg leading-none">+</span> Nova meta
         </button>
       </div>
@@ -87,41 +89,41 @@ export default function ObjetivosPage() {
           <button
             key={s}
             onClick={() => setScope(s)}
-            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+            data-active={scope === s}
+            className={`motion-tab px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               scope === s
                 ? 'bg-[#FF7F50] text-white shadow-sm'
-                : 'text-[#6B7280] hover:text-[#0F172A]'
+                : 'text-[#334155] hover:text-[#0F172A]'
             }`}
           >
-            {s === 'individual' ? '👤 Meus objetivos' : '💑 Do casal'}
+            {s === 'individual' ? 'Meus objetivos' : 'Do casal'}
           </button>
         ))}
       </div>
 
       {/* Aviso sem perfil de casal */}
       {scope === 'couple' && !couple && (
-        <div className="card p-6 text-center">
-          <p className="text-2xl mb-2">💑</p>
-          <p className="text-[#0F172A] font-semibold mb-1">Nenhum perfil de casal vinculado</p>
-          <p className="text-sm text-[#6B7280]">
-            Vincule-se ao seu parceiro em{' '}
-            <Link href="/casal" className="text-[#FF7F50] hover:underline font-medium">Perfil Casal</Link>{' '}
-            para criar objetivos compartilhados.
-          </p>
-        </div>
+        <EmptyStatePanel
+          icon={<Users size={26} className="text-[#475569]" aria-hidden />}
+          title="Nenhum perfil de casal vinculado"
+          description="Vincule-se ao seu parceiro para criar objetivos compartilhados."
+          action={(
+            <Link href="/casal" className="btn-secondary">
+              Ir para Perfil Casal
+            </Link>
+          )}
+        />
       )}
 
       {/* Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3].map(i => <div key={i} className="card animate-pulse h-40" />)}
-        </div>
+        <LoadingStatePanel rows={3} />
       )}
 
       {/* Metas ativas */}
       {!isLoading && activeGoals.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider mb-3 text-[#6B7280]">
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-3 text-[#334155]">
             Em andamento
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -139,8 +141,8 @@ export default function ObjetivosPage() {
       {/* Metas concluídas */}
       {!isLoading && completedGoals.length > 0 && (
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider mb-3 text-[#6B7280]">
-            Concluídas 🎉
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-3 text-[#334155]">
+            Concluídas
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {completedGoals.map(goal => (
@@ -156,18 +158,16 @@ export default function ObjetivosPage() {
 
       {/* Empty state */}
       {!isLoading && goals.length === 0 && !(scope === 'couple' && !couple) && (
-        <div className="card p-10 text-center">
-          <p className="text-4xl mb-3">🎯</p>
-          <p className="text-[#0F172A] font-semibold mb-1">
-            {scope === 'individual' ? 'Você ainda não criou nenhum objetivo' : 'Vocês ainda não definiram um objetivo em conjunto'}
-          </p>
-          <p className="text-sm mb-4 text-[#6B7280]">
-            {c(isCouple, 'Defina um objetivo e acompanhe seu progresso', 'Definam um objetivo e acompanhem juntos')}
-          </p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">
-            Criar primeiro objetivo
-          </button>
-        </div>
+        <EmptyStatePanel
+          icon={<Target size={26} className="text-[#475569]" aria-hidden />}
+          title={scope === 'individual' ? 'Você ainda não criou nenhum objetivo' : 'Vocês ainda não definiram um objetivo em conjunto'}
+          description={c(isCouple, 'Defina um objetivo e acompanhe seu progresso', 'Definam um objetivo e acompanhem juntos')}
+          action={(
+            <button onClick={() => setShowCreate(true)} className="btn-primary">
+              Criar primeiro objetivo
+            </button>
+          )}
+        />
       )}
 
       {/* Modal criar */}
@@ -195,3 +195,4 @@ export default function ObjetivosPage() {
     </div>
   )
 }
+

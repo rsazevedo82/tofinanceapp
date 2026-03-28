@@ -94,8 +94,8 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
               onClick={() => onCategorySelect(cat)}
               className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-xs transition-colors ${
                 selectedCategory === cat.value
-                  ? 'border-[rgba(255,127,80,0.4)] bg-[rgba(255,127,80,0.08)] text-[#FF7F50]'
-                  : 'border-[#D1D5DB] bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]'
+                  ? 'border-[rgba(255,127,80,0.4)] bg-[rgba(255,127,80,0.08)] text-[#C2410C]'
+                  : 'border-[#D1D5DB] bg-[#F3F4F6] text-[#334155] hover:bg-[#E5E7EB]'
               }`}
             >
               <span className="text-lg">{cat.icon}</span>
@@ -167,7 +167,7 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
               className="rounded"
               onChange={e => setValue('couple_id', e.target.checked ? couple.id : undefined)}
             />
-            <span>Tornar objetivo compartilhado 💑</span>
+            <span>Tornar objetivo compartilhado</span>
           </label>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
             Ambos podem contribuir e acompanhar juntos
@@ -196,3 +196,4 @@ export function GoalForm({ goal, couple, onSave, onCancel, loading }: Props) {
     </form>
   )
 }
+

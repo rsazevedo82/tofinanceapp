@@ -80,8 +80,8 @@ export default function LoginPage() {
             />
           </Link>
           <div className="text-center space-y-1.5">
-            <p className="text-sm text-[#6B7280]">Sem brigas por dinheiro.</p>
-            <p className="text-sm text-[#6B7280]">Organizem a vida financeira juntos.</p>
+            <p className="text-sm text-[#334155]">Sem brigas por dinheiro.</p>
+            <p className="text-sm text-[#334155]">Organizem a vida financeira juntos.</p>
           </div>
         </div>
         {/* Divisor vertical */}
@@ -108,7 +108,7 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-2xl font-black text-[#0F172A] tracking-tight mb-1">Entrar</h1>
-          <p className="text-sm mb-8 text-[#6B7280]">Acesse sua conta</p>
+          <p className="text-sm mb-8 text-[#334155]">Acesse sua conta</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -140,7 +140,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(prev => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#334155] hover:text-[#0F172A] transition-colors"
                 >
                   {showPassword ? 'Ocultar' : 'Mostrar'}
                 </button>
@@ -167,21 +167,21 @@ export default function LoginPage() {
             </button>
 
             <p className="text-right">
-              <Link href="/recuperar-senha" className="text-xs text-[#6B7280] hover:text-[#FF7F50] transition-colors">
+              <Link href="/recuperar-senha" className="text-xs text-[#334155] hover:text-[#C2410C] transition-colors">
                 Esqueci minha senha
               </Link>
             </p>
           </form>
 
-          <p className="text-center text-sm mt-6 text-[#6B7280]">
+          <p className="text-center text-sm mt-6 text-[#334155]">
             Não tem conta?{' '}
-            <Link href="/cadastro" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+            <Link href="/cadastro" className="text-[#C2410C] font-medium hover:text-[#9A3412] transition-colors">
               Criar conta
             </Link>
           </p>
-          <p className="text-center text-xs mt-3 text-[#6B7280]">
+          <p className="text-center text-xs mt-3 text-[#334155]">
             Ao usar a plataforma, você concorda com a{' '}
-            <Link href="/politica-de-privacidade" className="text-[#FF7F50] hover:text-[#e86e40] transition-colors">
+            <Link href="/politica-de-privacidade" className="text-[#C2410C] hover:text-[#9A3412] transition-colors">
               Política de Privacidade
             </Link>
             .
@@ -191,3 +191,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

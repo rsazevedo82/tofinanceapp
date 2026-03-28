@@ -11,6 +11,9 @@ import { useNotifications, useMarkAllAsRead }    from '@/hooks/useNotifications'
 import { useCouple }                             from '@/hooks/useCouple'
 import { c }                                     from '@/lib/utils/copy'
 import { OnboardingChecklist }                   from '@/components/ui/OnboardingChecklist'
+import { ErrorStatePanel, LoadingStatePanel }    from '@/components/ui/StatePanel'
+import { NotificationTypeIcon }                  from '@/components/ui/NotificationTypeIcon'
+import { CreditCard }                            from 'lucide-react'
 import type { ApiResponse }                      from '@/types'
 import type { Notification }                     from '@/types'
 import type { DashboardData }                    from '@/app/api/dashboard/route'
@@ -24,14 +27,6 @@ function formatDate(date: string) {
   return new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
     day: '2-digit', month: '2-digit',
   })
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  couple_invite:   '💌',
-  couple_accepted: '💑',
-  couple_unlinked: '💔',
-  goal_reached:    '🎯',
-  invoice_closed:  '💳',
 }
 
 export default function DashboardPage() {
@@ -48,7 +43,7 @@ export default function DashboardPage() {
     [notifications]
   )
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn:  async (): Promise<DashboardData> => {
       const res  = await fetch('/api/dashboard')
@@ -73,10 +68,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 md:mb-10">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="page-title">
             {c(isCouple, 'Visão geral', 'Como vocês estão hoje')}
           </h1>
-          <p className="text-sm md:text-base font-bold capitalize mt-1 text-[#6B7280]">
+          <p className="page-subtitle capitalize mt-1">
             {month}
           </p>
         </div>
@@ -102,7 +97,7 @@ export default function DashboardPage() {
             <button
               onClick={() => markAllAsRead.mutate()}
               disabled={markAllAsRead.isPending}
-              className="text-xs font-medium text-[#FF7F50] hover:text-[#e86e40] transition-colors"
+              className="text-xs font-medium text-[#C2410C] hover:text-[#9A3412] transition-colors"
             >
               Marcar todas como lidas
             </button>
@@ -115,10 +110,12 @@ export default function DashboardPage() {
                 className="flex items-start gap-3 px-4 py-3.5"
                 style={{ borderBottom: '1px solid #D1D5DB' }}
               >
-                <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '🔔'}</span>
+                <span className="flex-shrink-0 mt-0.5">
+                  <NotificationTypeIcon type={n.type} className="h-4 w-4 text-[#475569]" />
+                </span>
                 <div>
                   <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
-                  <p className="text-sm mt-0.5 text-[#6B7280] line-clamp-2">{n.body}</p>
+                  <p className="text-sm mt-0.5 text-[#334155] line-clamp-2">{n.body}</p>
                 </div>
               </div>
             ))}
@@ -131,16 +128,18 @@ export default function DashboardPage() {
                 className="flex items-start gap-3 px-5 py-4"
                 style={{ borderBottom: '1px solid #D1D5DB' }}
               >
-                <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '🔔'}</span>
+                <span className="flex-shrink-0 mt-0.5">
+                  <NotificationTypeIcon type={n.type} className="h-4 w-4 text-[#475569]" />
+                </span>
                 <div>
                   <p className="text-sm font-semibold text-[#0F172A]">{n.title}</p>
-                  <p className="text-sm mt-0.5 text-[#6B7280]">{n.body}</p>
+                  <p className="text-sm mt-0.5 text-[#334155]">{n.body}</p>
                 </div>
               </div>
             ))}
           </div>
           {unread.length > 3 && (
-            <p className="px-5 py-3 text-xs text-[#6B7280]">
+            <p className="px-5 py-3 text-xs text-[#334155]">
               +{unread.length - 3} notificações no sino acima
             </p>
           )}
@@ -148,9 +147,12 @@ export default function DashboardPage() {
       )}
 
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => <div key={i} className="card animate-pulse h-28" />)}
-        </div>
+        <LoadingStatePanel rows={4} />
+      ) : error ? (
+        <ErrorStatePanel
+          description={error instanceof Error ? error.message : 'Tente novamente em instantes.'}
+          onRetry={() => window.location.reload()}
+        />
       ) : data ? (
         <>
           {/* ── KPIs principais ── */}
@@ -159,12 +161,12 @@ export default function DashboardPage() {
             {/* Saldo */}
             <div className="card sm:col-span-1">
               <p className="label">Saldo em contas</p>
-              <p className={`text-2xl md:text-3xl font-black tracking-tight mt-1 ${
+              <p className={`kpi-value mt-1 ${
                 data.total_balance >= 0 ? 'text-[#0F172A]' : 'text-[#EF4444]'
               }`}>
                 {formatCurrency(data.total_balance)}
               </p>
-              <p className="text-xs mt-2 text-[#6B7280]">
+              <p className="meta-text mt-2">
                 Exclui limite de cartões de crédito
               </p>
             </div>
@@ -172,19 +174,19 @@ export default function DashboardPage() {
             {/* Receitas */}
             <div className="card">
               <p className="label">Receitas</p>
-              <p className="text-2xl md:text-3xl font-black tracking-tight mt-1 text-[#2DD4BF]">
+              <p className="kpi-value mt-1 text-[#2DD4BF]">
                 {formatCurrency(data.income_month)}
               </p>
-              <p className="text-xs mt-2 text-[#6B7280]">Entradas no mês</p>
+              <p className="meta-text mt-2">Entradas no mês</p>
             </div>
 
             {/* Despesas */}
             <div className="card">
               <p className="label">Despesas</p>
-              <p className="text-2xl md:text-3xl font-black tracking-tight mt-1 text-[#EF4444]">
+              <p className="kpi-value mt-1 text-[#EF4444]">
                 {formatCurrency(data.expense_month)}
               </p>
-              <p className="text-xs mt-2 text-[#6B7280]">Saídas no mês</p>
+              <p className="meta-text mt-2">Saídas no mês</p>
             </div>
           </div>
 
@@ -192,7 +194,7 @@ export default function DashboardPage() {
           <div className="card mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="label">{c(isCouple, 'Seu saldo no mês', 'Saldo de vocês no mês')}</p>
-              <p className={`text-2xl font-black tracking-tight mt-1 ${
+              <p className={`kpi-value mt-1 ${
                 data.net_month >= 0 ? 'text-[#2DD4BF]' : 'text-[#EF4444]'
               }`}>
                 {data.net_month >= 0 ? '+' : ''}{formatCurrency(data.net_month)}
@@ -200,8 +202,8 @@ export default function DashboardPage() {
             </div>
             {data.income_month > 0 && (
               <div className="text-right shrink-0">
-                <p className="text-xs text-[#6B7280] mb-1 font-bold uppercase tracking-wider">Taxa de poupança</p>
-                <p className={`text-2xl font-black tracking-tight ${
+                <p className="data-label mb-1">Taxa de poupança</p>
+                <p className={`kpi-value ${
                   data.net_month >= 0 ? 'text-[#2DD4BF]' : 'text-[#EF4444]'
                 }`}>
                   {`${Math.round((data.net_month / data.income_month) * 100)}%`}
@@ -232,29 +234,29 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-xl">💳</span>
+                        <CreditCard size={18} className="text-[#475569]" aria-hidden />
                         <p className="text-base font-bold text-[#0F172A]">{card.name}</p>
                       </div>
-                      <span className="text-xs text-[#6B7280] font-medium">
-                        Fecha dia {card.closing_day} · <span className="text-[#FF7F50]">Ver fatura →</span>
+                      <span className="meta-text font-medium">
+                        Fecha dia {card.closing_day} · <span className="text-[#C2410C]">Ver fatura →</span>
                       </span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 mb-4">
                       <div>
-                        <p className="text-[11px] font-bold uppercase tracking-wider mb-1 text-[#6B7280]">Fatura aberta</p>
+                        <p className="data-label mb-1">Fatura aberta</p>
                         <p className="text-lg font-black text-[#EF4444]">
                           {formatCurrency(card.open_invoice)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[11px] font-bold uppercase tracking-wider mb-1 text-[#6B7280]">Disponível</p>
+                        <p className="data-label mb-1">Disponível</p>
                         <p className="text-lg font-black text-[#2DD4BF]">
                           {formatCurrency(card.available)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[11px] font-bold uppercase tracking-wider mb-1 text-[#6B7280]">Limite</p>
+                        <p className="data-label mb-1">Limite</p>
                         <p className="text-lg font-black text-[#0F172A]">
                           {formatCurrency(card.credit_limit)}
                         </p>
@@ -291,7 +293,7 @@ export default function DashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push('/transacoes')}
-                  className="text-xs font-semibold text-[#FF7F50] hover:text-[#e86e40] transition-colors"
+                  className="text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
                 >
                   Ver todas →
                 </button>
@@ -300,7 +302,7 @@ export default function DashboardPage() {
               <div className="space-y-1">
                 {data.recent_transactions.length === 0 ? (
                   <div className="py-10 text-center">
-                    <p className="text-sm text-[#6B7280]">
+                    <p className="text-sm text-[#334155]">
                       {c(isCouple, 'Você ainda não registrou gastos este mês', 'Vocês ainda não registraram gastos este mês')}
                     </p>
                   </div>
@@ -320,8 +322,8 @@ export default function DashboardPage() {
                           {tx.type === 'income' ? '↑' : '↓'}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-[#0F172A] truncate">{tx.description}</p>
-                          <p className="text-xs mt-0.5 text-[#6B7280]">
+                          <p className="entity-title truncate">{tx.description}</p>
+                          <p className="entity-meta mt-0.5">
                             {tx.category_name ?? '—'} · {formatDate(tx.date)}
                           </p>
                         </div>
@@ -346,7 +348,7 @@ export default function DashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push('/relatorios')}
-                  className="text-xs font-semibold text-[#FF7F50] hover:text-[#e86e40] transition-colors"
+                  className="text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
                 >
                   Ver relatórios →
                 </button>
@@ -354,7 +356,7 @@ export default function DashboardPage() {
 
               {data.top_categories.length === 0 ? (
                 <div className="py-10 text-center">
-                  <p className="text-sm text-[#6B7280]">
+                  <p className="text-sm text-[#334155]">
                     {c(isCouple, 'Nenhum gasto categorizado este mês', 'Vocês ainda não categorizaram gastos este mês')}
                   </p>
                 </div>
@@ -368,13 +370,13 @@ export default function DashboardPage() {
                             className="w-3 h-3 rounded-sm shrink-0"
                             style={{ background: cat.color ?? '#FF7F50' }}
                           />
-                          <p className="text-sm font-semibold text-[#0F172A]">{cat.name}</p>
+                          <p className="entity-title">{cat.name}</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <p className="text-sm font-bold text-[#0F172A]">
                             {formatCurrency(cat.total)}
                           </p>
-                          <p className="text-xs font-bold w-8 text-right text-[#6B7280]">
+                          <p className="data-label w-8 text-right">
                             {cat.percent}%
                           </p>
                         </div>
@@ -403,3 +405,4 @@ export default function DashboardPage() {
     </div>
   )
 }
+

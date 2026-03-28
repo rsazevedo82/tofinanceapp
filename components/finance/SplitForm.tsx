@@ -115,7 +115,7 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
             const el = document.querySelector('input[type=range]') as HTMLInputElement
             if (el) { el.value = '50'; el.dispatchEvent(new Event('input', { bubbles: true })) }
           }}
-          className="text-xs text-[#FF7F50] hover:underline mt-1"
+          className="text-xs text-[#C2410C] hover:underline mt-1"
         >
           Dividir igualmente (50/50)
         </button>
@@ -125,7 +125,7 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
       {/* Preview */}
       {totalAmount > 0 && (
         <div className="rounded-lg bg-[#F3F4F6] border border-[#D1D5DB] p-3 text-sm space-y-1">
-          <p className="text-[#6B7280]">Resumo</p>
+          <p className="text-[#334155]">Resumo</p>
           <p className="text-[#0F172A]">
             {partnerName} tem um valor pendente com você de{' '}
             <span className="text-[#F59E0B] font-semibold">{formatCurrency(partnerAmount)}</span>
@@ -145,3 +145,4 @@ export function SplitForm({ couple, onSave, onCancel, loading }: Props) {
     </form>
   )
 }
+

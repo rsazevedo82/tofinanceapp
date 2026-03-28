@@ -20,7 +20,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="px-4 sm:px-6 pb-2">
           <PartnerViewBanner />
         </div>
-        {children}
+        <div className="motion-enter">
+          {children}
+        </div>
         <footer className="px-4 sm:px-6 py-8 mt-6 border-t border-[#D1D5DB]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link href="/" aria-label="Ir para Visão geral">
@@ -33,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <Link
               href="/politica-de-privacidade"
-              className="text-sm text-[#6B7280] hover:text-[#FF7F50] transition-colors"
+              className="text-sm text-[#334155] hover:text-[#C2410C] transition-colors"
             >
               Política de Privacidade
             </Link>
@@ -45,3 +47,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   )
 }
+

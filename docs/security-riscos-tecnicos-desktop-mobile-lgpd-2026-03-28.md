@@ -1,4 +1,4 @@
-### 1) Recuperação de senha sem camada server-side com antiabuso dedicado [Criticidade: Crítica]
+OK ### 1) Recuperação de senha sem camada server-side com antiabuso dedicado [Criticidade: Crítica]
 O que é: a tela de recuperação chama `supabase.auth.resetPasswordForEmail` direto no client, sem endpoint próprio com rate limit por IP/usuário/dispositivo e sem desafio anti-bot.
 Por que importa: fluxo de recuperação é alvo comum de abuso (spam, enumeração indireta e negação de serviço de caixa de entrada).
 Impacto: maior risco de abuso em desktop e mobile, custo operacional e pior experiência para usuários legítimos.

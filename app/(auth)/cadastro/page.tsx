@@ -119,8 +119,8 @@ export default function CadastroPage() {
             />
           </Link>
           <div className="text-center space-y-1.5">
-            <p className="text-sm text-[#6B7280]">Sem brigas por dinheiro.</p>
-            <p className="text-sm text-[#6B7280]">Organizem a vida financeira juntos.</p>
+            <p className="text-sm text-[#334155]">Sem brigas por dinheiro.</p>
+            <p className="text-sm text-[#334155]">Organizem a vida financeira juntos.</p>
           </div>
         </div>
         {/* Divisor vertical */}
@@ -147,7 +147,7 @@ export default function CadastroPage() {
           </div>
 
           <h1 className="text-2xl font-black text-[#0F172A] tracking-tight mb-1">Criar conta</h1>
-          <p className="text-sm mb-8 text-[#6B7280]">Comece a organizar sua vida financeira</p>
+          <p className="text-sm mb-8 text-[#334155]">Comece a organizar sua vida financeira</p>
 
           <form onSubmit={handleCadastro} className="space-y-4">
             <div>
@@ -179,7 +179,7 @@ export default function CadastroPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(prev => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#334155] hover:text-[#0F172A] transition-colors"
                 >
                   {showPassword ? 'Ocultar' : 'Mostrar'}
                 </button>
@@ -223,15 +223,15 @@ export default function CadastroPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm mt-6 text-[#6B7280]">
+          <p className="text-center text-sm mt-6 text-[#334155]">
             Já tem conta?{' '}
-            <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+            <Link href="/login" className="text-[#C2410C] font-medium hover:text-[#9A3412] transition-colors">
               Entrar
             </Link>
           </p>
-          <p className="text-center text-xs mt-3 text-[#6B7280]">
+          <p className="text-center text-xs mt-3 text-[#334155]">
             Ao criar a conta, você concorda com a{' '}
-            <Link href="/politica-de-privacidade" className="text-[#FF7F50] hover:text-[#e86e40] transition-colors">
+            <Link href="/politica-de-privacidade" className="text-[#C2410C] hover:text-[#9A3412] transition-colors">
               Política de Privacidade
             </Link>
             .
@@ -241,3 +241,4 @@ export default function CadastroPage() {
     </div>
   )
 }
+

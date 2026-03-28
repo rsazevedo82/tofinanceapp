@@ -32,9 +32,28 @@ export function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   )
 }
 
+interface SeriesLegendItem {
+  label: string
+  symbol: string
+}
+
+export function SeriesLegend({ items }: { items: SeriesLegendItem[] }) {
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
+      {items.map((item) => (
+        <p key={item.label} className="text-xs text-[#334155]">
+          <span className="font-semibold text-[#0F172A] mr-1">{item.symbol}</span>
+          {item.label}
+        </p>
+      ))}
+    </div>
+  )
+}
+
 export const chartColors = {
   income: '#2DD4BF',
   expense: '#FF7F50',
-  balance: '#6B7280',
+  balance: '#334155',
   projection: '#F59E0B',
 } as const
+

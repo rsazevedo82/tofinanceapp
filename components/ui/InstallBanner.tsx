@@ -4,13 +4,14 @@
 // Exibe instrução para instalar o PWA no iOS (Safari não tem install prompt automático).
 // Detecta: iOS + Safari + não está em modo standalone.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X, Share, Download } from 'lucide-react'
 
 const INSTALL_BANNER_CAMPAIGN = 'v2'
 const DISMISSED_KEY = `pwa-install-dismissed:${INSTALL_BANNER_CAMPAIGN}`
 const LEGACY_DISMISSED_KEY = 'pwa-install-dismissed'
 const DISMISS_TTL_MS = 30 * 24 * 60 * 60 * 1000
+const OVERLAY_OFFSET_VAR = '--n2r-overlay-bottom-offset'
 type BannerMode = 'ios' | 'android'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -65,6 +66,7 @@ export function InstallBanner() {
   const [visible, setVisible] = useState(false)
   const [mode, setMode] = useState<BannerMode>('ios')
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const rootRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (isStandalone()) return
@@ -102,6 +104,31 @@ export function InstallBanner() {
     }
   }, [])
 
+  useEffect(() => {
+    const root = document.documentElement
+    const setOffset = (value: string) => root.style.setProperty(OVERLAY_OFFSET_VAR, value)
+
+    if (!visible || !rootRef.current) {
+      setOffset('0px')
+      return
+    }
+
+    const update = () => {
+      if (!rootRef.current) return
+      const height = rootRef.current.offsetHeight
+      setOffset(`${height + 8}px`)
+    }
+
+    update()
+    const observer = new ResizeObserver(() => update())
+    observer.observe(rootRef.current)
+
+    return () => {
+      observer.disconnect()
+      setOffset('0px')
+    }
+  }, [visible, mode])
+
   function dismiss() {
     persistDismiss()
     setVisible(false)
@@ -119,6 +146,7 @@ export function InstallBanner() {
 
   return (
     <div
+      ref={rootRef}
       className="fixed bottom-0 left-0 right-0 z-50 px-4"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
     >
@@ -144,12 +172,12 @@ export function InstallBanner() {
             Instale o Nós 2 Reais
           </p>
           {mode === 'ios' ? (
-            <p className="text-xs mt-0.5 leading-snug text-[#475569]">
+            <p className="text-xs mt-0.5 leading-snug text-[#334155]">
               Toque em <Share size={10} className="inline-block mx-0.5 align-middle" /> e depois{' '}
               <strong className="text-[#0F172A]">Adicionar à Tela de Início</strong>
             </p>
           ) : (
-            <p className="text-xs mt-0.5 leading-snug text-[#475569]">
+            <p className="text-xs mt-0.5 leading-snug text-[#334155]">
               Instale o app para abrir mais rápido e usar em tela cheia.
             </p>
           )}
@@ -178,3 +206,4 @@ export function InstallBanner() {
     </div>
   )
 }
+

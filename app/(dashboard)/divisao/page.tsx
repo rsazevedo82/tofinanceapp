@@ -7,6 +7,8 @@ import Link                  from 'next/link'
 import { useCouple }         from '@/hooks/useCouple'
 import { useSplits, useCreateSplit, useSettleSplit, useDeleteSplit, computeBalance } from '@/hooks/useSplits'
 import { Modal }             from '@/components/ui/Modal'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { ArrowDownCircle, ArrowUpCircle, ClipboardList, Clock3, Handshake, Trash2 } from 'lucide-react'
 import type { ExpenseSplit } from '@/types'
 
 const SplitForm = dynamic(
@@ -51,7 +53,7 @@ function SplitCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold text-[#0F172A] truncate">{split.description}</p>
-          <p className="text-xs mt-0.5 text-[#6B7280]">
+          <p className="text-xs mt-0.5 text-[#334155]">
             {formatDate(split.date)} · Pago por {isPayer ? 'você' : partnerName}
           </p>
         </div>
@@ -72,17 +74,17 @@ function SplitCard({
       {/* Divisão */}
       <div className="flex gap-3 text-xs">
         <div className="flex-1 rounded bg-[#F3F4F6] px-3 py-2">
-          <p className="text-[#6B7280]">Você ({split.payer_share_percent}%)</p>
+          <p className="text-[#334155]">Você ({split.payer_share_percent}%)</p>
           <p className="text-[#0F172A] font-semibold mt-0.5">{formatCurrency(split.payer_amount)}</p>
         </div>
         <div className="flex-1 rounded bg-[#F3F4F6] px-3 py-2">
-          <p className="text-[#6B7280]">{partnerName} ({100 - split.payer_share_percent}%)</p>
+          <p className="text-[#334155]">{partnerName} ({100 - split.payer_share_percent}%)</p>
           <p className="text-[#0F172A] font-semibold mt-0.5">{formatCurrency(split.partner_amount)}</p>
         </div>
       </div>
 
       {!isPending && split.settled_at && (
-        <p className="text-xs text-[#6B7280]">
+        <p className="text-xs text-[#334155]">
           Quitado em {new Date(split.settled_at).toLocaleDateString('pt-BR')}
         </p>
       )}
@@ -95,7 +97,7 @@ function SplitCard({
             disabled={settling}
             className="btn-primary text-xs flex-1 py-1.5"
           >
-            {settling ? 'Quitando…' : '✓ Quitar'}
+            {settling ? 'Quitando…' : 'Quitar'}
           </button>
           {isPayer && (
             <button
@@ -104,7 +106,7 @@ function SplitCard({
               className="btn-ghost text-xs px-3 py-1.5 hover:text-red-500"
               title="Remover divisão"
             >
-              🗑
+              <Trash2 size={14} aria-hidden />
             </button>
           )}
         </div>
@@ -121,10 +123,10 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
   if (abs < 0.01) {
     return (
       <div className="card p-5 flex items-center gap-4 mb-6">
-        <span className="text-3xl">🤝</span>
+        <Handshake size={28} className="text-[#475569]" aria-hidden />
         <div>
-          <p className="font-semibold text-[#0F172A]">Tudo certo entre vocês 👍</p>
-          <p className="text-sm text-[#6B7280]">Nenhum valor pendente entre vocês</p>
+          <p className="font-semibold text-[#0F172A]">Tudo certo entre vocês</p>
+          <p className="text-sm text-[#334155]">Nenhum valor pendente entre vocês</p>
         </div>
       </div>
     )
@@ -137,9 +139,13 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
   return (
     <div className="card p-5 flex items-center gap-4 mb-6 border-l-4"
       style={{ borderLeftColor: youOwe ? '#ef4444' : '#2DD4BF' }}>
-      <span className="text-3xl">{youOwe ? '💸' : '💰'}</span>
+      {youOwe ? (
+        <ArrowDownCircle size={28} className="text-red-500" aria-hidden />
+      ) : (
+        <ArrowUpCircle size={28} className="text-[#2DD4BF]" aria-hidden />
+      )}
       <div>
-        <p className="text-sm text-[#6B7280]">{label}</p>
+        <p className="text-sm text-[#334155]">{label}</p>
         <p className={`text-2xl font-black ${colorClass}`}>{formatCurrency(abs)}</p>
       </div>
     </div>
@@ -187,42 +193,41 @@ export default function DivisaoPage() {
 
   if (coupleLoading) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <div className="space-y-4">
-          {[1, 2].map(i => <div key={i} className="card animate-pulse h-24" />)}
-        </div>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+        <LoadingStatePanel rows={2} />
       </div>
     )
   }
 
   if (!couple) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-10 md:py-12">
-        <div className="card p-10 text-center">
-          <p className="text-4xl mb-3">🤝</p>
-          <p className="text-[#0F172A] font-semibold mb-1">Perfil de casal não vinculado</p>
-          <p className="text-sm mb-4 text-[#6B7280]">
-            Vincule-se ao seu parceiro em{' '}
-            <Link href="/casal" className="text-[#FF7F50] hover:underline font-medium">Conexão do casal</Link>{' '}
-            para dividir despesas.
-          </p>
-        </div>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <EmptyStatePanel
+          icon={<Handshake size={26} className="text-[#475569]" aria-hidden />}
+          title="Perfil de casal não vinculado"
+          description="Vincule-se ao seu parceiro para dividir despesas."
+          action={(
+            <Link href="/casal" className="btn-secondary">
+              Ir para Conexão do casal
+            </Link>
+          )}
+        />
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Divisão</h1>
-          <p className="text-sm mt-1 text-[#6B7280]">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">Divisão</h1>
+          <p className="text-sm mt-1 text-[#334155]">
             Despesas compartilhadas com {partnerName}
           </p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
+        <button onClick={() => setShowCreate(true)} className="btn-primary w-full sm:w-auto justify-center">
           <span className="text-lg leading-none">+</span> Nova divisão
         </button>
       </div>
@@ -236,36 +241,38 @@ export default function DivisaoPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+            data-active={tab === t}
+            className={`motion-tab px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               tab === t
                 ? 'bg-[#FF7F50] text-white shadow-sm'
-                : 'text-[#6B7280] hover:text-[#0F172A]'
+                : 'text-[#334155] hover:text-[#0F172A]'
             }`}
           >
-            {t === 'pending' ? '⏳ Pendentes' : '✓ Histórico'}
+            {t === 'pending' ? 'Pendentes' : 'Histórico'}
           </button>
         ))}
       </div>
 
       {/* Lista */}
       {isLoading && (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="card animate-pulse h-28" />)}
-        </div>
+        <LoadingStatePanel rows={3} />
       )}
 
       {!isLoading && splits.length === 0 && (
-        <div className="card p-8 text-center">
-          <p className="text-3xl mb-2">{tab === 'pending' ? '⏳' : '📋'}</p>
-          <p className="text-[#0F172A] font-semibold mb-1">
-            {tab === 'pending' ? 'Nenhuma divisão pendente' : 'Nenhuma divisão quitada ainda'}
-          </p>
-          {tab === 'pending' && (
-            <button onClick={() => setShowCreate(true)} className="btn-primary mt-3">
+        <EmptyStatePanel
+          icon={
+            tab === 'pending'
+              ? <Clock3 size={26} className="text-[#475569]" aria-hidden />
+              : <ClipboardList size={26} className="text-[#475569]" aria-hidden />
+          }
+          title={tab === 'pending' ? 'Nenhuma divisão pendente' : 'Nenhuma divisão quitada ainda'}
+          description={tab === 'pending' ? 'Registre a primeira divisão para começar o acompanhamento.' : 'Quando uma divisão for quitada, ela aparecerá aqui.'}
+          action={tab === 'pending' ? (
+            <button onClick={() => setShowCreate(true)} className="btn-primary">
               Registrar primeira divisão
             </button>
-          )}
-        </div>
+          ) : undefined}
+        />
       )}
 
       {!isLoading && splits.length > 0 && (
@@ -300,3 +307,4 @@ export default function DivisaoPage() {
     </div>
   )
 }
+

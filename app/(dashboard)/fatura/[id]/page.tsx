@@ -11,6 +11,7 @@ import { formatCurrency }             from '@/lib/utils/format'
 import { Modal }                      from '@/components/ui/Modal'
 import { useCouple }                  from '@/hooks/useCouple'
 import { c }                          from '@/lib/utils/copy'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
 import type { Transaction, ApiResponse } from '@/types'
 
 const TransactionForm = dynamic(
@@ -91,29 +92,29 @@ export default function FaturaPage() {
   if (!account) return null
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8 md:mb-10">
+        <div className="flex items-start gap-3">
           <button
             onClick={() => router.back()}
-            className="text-xs px-2 py-1 rounded-lg transition-colors text-[#6B7280] bg-[#F3F4F6] hover:bg-[#E5E7EB]"
+            className="text-xs px-2 py-1 rounded-lg transition-colors text-[#334155] bg-[#F3F4F6] hover:bg-[#E5E7EB]"
           >
             ← voltar
           </button>
           <div>
-            <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
               {account.name}
             </h1>
-            <p className="text-sm mt-0.5 text-[#6B7280]">
+            <p className="text-sm mt-0.5 text-[#334155]">
               Fecha dia {account.closing_day} · Vence dia {account.due_day}
             </p>
           </div>
         </div>
 
         {/* Botao Nova Transacao */}
-        <button onClick={() => setShowNewTx(true)} className="btn-primary">
+        <button onClick={() => setShowNewTx(true)} className="btn-primary w-full md:w-auto justify-center">
           <span className="text-lg leading-none">+</span>
           Nova transação
         </button>
@@ -154,17 +155,13 @@ export default function FaturaPage() {
         <div>
           <p className="section-heading">Faturas</p>
           {isLoading ? (
-            <div className="space-y-1">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="db-row px-2 py-3 animate-pulse">
-                  <div className="h-3 bg-[#E5E7EB] rounded w-full" />
-                </div>
-              ))}
-            </div>
+            <LoadingStatePanel rows={3} />
           ) : invoices.length === 0 ? (
-            <p className="text-xs py-8 text-center text-[#6B7280]">
-              {c(isCouple, 'Nenhuma fatura ainda. Registre um gasto para começar.', 'Nenhuma fatura ainda. Registrem um gasto para começar.')}
-            </p>
+            <EmptyStatePanel
+              icon="🧾"
+              title="Nenhuma fatura disponível"
+              description={c(isCouple, 'Registre um gasto no cartão para gerar a primeira fatura.', 'Registrem um gasto no cartão para gerar a primeira fatura.')}
+            />
           ) : (
             <div className="space-y-0.5">
               {invoices.map(invoice => {
@@ -179,7 +176,7 @@ export default function FaturaPage() {
                   >
                     <div>
                       <p className="text-sm text-[#0F172A]">{invoice.reference_month}</p>
-                      <p className="text-[10px] font-semibold" style={{ color: STATUS_COLOR[invoice.status] }}>
+                      <p className="text-xs font-semibold" style={{ color: STATUS_COLOR[invoice.status] }}>
                         {STATUS_LABEL[invoice.status]}
                       </p>
                     </div>
@@ -202,7 +199,7 @@ export default function FaturaPage() {
                   Lançamentos · {selectedInvoice.reference_month}
                 </p>
                 <span
-                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                  className="text-xs px-2 py-0.5 rounded-full font-semibold"
                   style={{
                     color:      STATUS_COLOR[selectedInvoice.status],
                     background: `${STATUS_COLOR[selectedInvoice.status]}18`,
@@ -215,15 +212,17 @@ export default function FaturaPage() {
               {/* Lista de transacoes */}
               <div className="space-y-0.5 mb-4">
                 {transactions.length === 0 ? (
-                  <p className="text-xs py-6 text-center text-[#6B7280]">
-                    Nenhum lançamento nesta fatura
-                  </p>
+                  <EmptyStatePanel
+                    icon="📭"
+                    title="Nenhum lançamento nesta fatura"
+                    description="Adicione uma transação para começar."
+                  />
                 ) : (
                   transactions.map(tx => (
                     <div key={tx.id} className="db-row flex items-center justify-between px-2 py-2.5">
                       <div>
                         <p className="text-sm text-[#0F172A]">{tx.description}</p>
-                        <p className="text-[10px] text-[#6B7280]">
+                        <p className="text-xs text-[#334155]">
                           {new Date(tx.date + 'T12:00:00').toLocaleDateString('pt-BR')}
                           {tx.installment_number ? ` · Parcela ${tx.installment_number}` : ''}
                         </p>
@@ -298,12 +297,11 @@ export default function FaturaPage() {
               )}
             </>
           ) : (
-            <div className="py-16 text-center">
-              <p className="text-3xl mb-3">🧾</p>
-              <p className="text-sm text-[#6B7280]">
-                Selecione uma fatura ou adicione uma transação
-              </p>
-            </div>
+            <EmptyStatePanel
+              icon="🧾"
+              title="Selecione uma fatura"
+              description="Escolha uma fatura na lista para ver os lançamentos."
+            />
           )}
         </div>
       </div>

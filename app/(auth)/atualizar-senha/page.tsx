@@ -155,8 +155,8 @@ export default function AtualizarSenhaPage() {
             />
           </Link>
           <div className="text-center space-y-1.5">
-            <p className="text-sm text-[#6B7280]">Defina sua nova senha com seguranca.</p>
-            <p className="text-sm text-[#6B7280]">Use minimo de 10 caracteres, letras e numeros.</p>
+            <p className="text-sm text-[#334155]">Defina sua nova senha com seguranca.</p>
+            <p className="text-sm text-[#334155]">Use minimo de 10 caracteres, letras e numeros.</p>
           </div>
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-px bg-[#D1D5DB]" />
@@ -182,10 +182,10 @@ export default function AtualizarSenhaPage() {
             style={{ border: '1px solid #E5E7EB', boxShadow: '0 8px 28px rgba(15,23,42,0.06)' }}
           >
             <h1 className="text-2xl font-black text-[#0F172A] tracking-tight mb-1">Atualizar senha</h1>
-            <p className="text-sm mb-8 text-[#6B7280]">Escolha uma nova senha para sua conta</p>
+            <p className="text-sm mb-8 text-[#334155]">Escolha uma nova senha para sua conta</p>
 
             {checkingSession ? (
-              <p className="text-sm text-[#6B7280]">Validando link de recuperacao...</p>
+              <p className="text-sm text-[#334155]">Validando link de recuperacao...</p>
             ) : (
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div>
@@ -204,7 +204,7 @@ export default function AtualizarSenhaPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(prev => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#334155] hover:text-[#0F172A] transition-colors"
                     >
                       {showPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
@@ -238,7 +238,7 @@ export default function AtualizarSenhaPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(prev => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#334155] hover:text-[#0F172A] transition-colors"
                     >
                       {showConfirmPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
@@ -267,9 +267,9 @@ export default function AtualizarSenhaPage() {
               </form>
             )}
 
-            <p className="text-center text-sm mt-6 text-[#6B7280]">
+            <p className="text-center text-sm mt-6 text-[#334155]">
               Voltar para{' '}
-              <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
+              <Link href="/login" className="text-[#C2410C] font-medium hover:text-[#9A3412] transition-colors">
                 login
               </Link>
             </p>
@@ -279,3 +279,4 @@ export default function AtualizarSenhaPage() {
     </div>
   )
 }
+

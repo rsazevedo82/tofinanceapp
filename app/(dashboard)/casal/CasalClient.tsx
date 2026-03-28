@@ -7,6 +7,8 @@ import {
   useRespondInvite, usePendingInvite, useReceivedInvite,
   useResendInvite, useCancelInvite,
 } from '@/hooks/useCouple'
+import { LoadingStatePanel } from '@/components/ui/StatePanel'
+import { AlertTriangle, Clock3, MailPlus, PartyPopper, Users } from 'lucide-react'
 import type { ReceivedCoupleInvite } from '@/hooks/useCouple'
 import type { CoupleInvitation } from '@/types'
 
@@ -19,19 +21,17 @@ export default function CasalPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <div className="space-y-4">
-          {[1, 2].map(i => <div key={i} className="card animate-pulse h-24" />)}
-        </div>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+        <LoadingStatePanel rows={2} />
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 md:py-12">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 md:py-12">
       <div className="mb-10">
-        <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Perfil de Casal</h1>
-        <p className="text-sm mt-1 text-[#6B7280]">
+        <h1 className="page-title">Perfil de Casal</h1>
+        <p className="text-sm mt-1 text-[#334155]">
           Conectem-se e organizem a vida financeira juntos
         </p>
       </div>
@@ -77,11 +77,11 @@ function PendingInviteCard({ invite }: { invite: ReceivedCoupleInvite }) {
     <div className="card mb-6"
       style={{ border: '2px solid rgba(255,127,80,0.45)', background: 'rgba(255,127,80,0.08)' }}>
       <div className="flex items-start gap-3 mb-4">
-        <span className="text-2xl">💌</span>
+        <MailPlus size={22} className="text-[#EA580C]" aria-hidden />
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[#EA580C]">Ação necessária</p>
           <p className="text-sm font-bold text-[#0F172A]">Você recebeu um convite de perfil compartilhado</p>
-          <p className="text-xs mt-0.5 text-[#6B7280]">
+          <p className="text-xs mt-0.5 text-[#334155]">
             {inviterName} convidou você para conectar as finanças.
           </p>
         </div>
@@ -99,7 +99,7 @@ function PendingInviteCard({ invite }: { invite: ReceivedCoupleInvite }) {
           disabled={respondInvite.isPending}
           className="btn-primary text-xs flex-1 justify-center py-2.5"
         >
-          {respondInvite.isPending ? 'Processando...' : 'Aceitar convite 💑'}
+          {respondInvite.isPending ? 'Processando...' : 'Aceitar convite'}
         </button>
         <button
           onClick={() => respond('reject')}
@@ -148,10 +148,10 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
 
       {/* Cabeçalho */}
       <div className="flex items-start gap-3 mb-4">
-        <span className="text-2xl">📨</span>
+        <MailPlus size={22} className="text-[#0F172A]" aria-hidden />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#0F172A]">Convite enviado</p>
-          <p className="text-xs mt-0.5 truncate text-[#6B7280]">
+          <p className="text-xs mt-0.5 truncate text-[#334155]">
             Aguardando {invitation.invitee_email} aceitar o convite
           </p>
         </div>
@@ -163,14 +163,15 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
           background: isExpired ? 'rgba(239,68,68,0.06)' : '#F3F4F6',
           border:     isExpired ? '1px solid rgba(239,68,68,0.15)' : '1px solid #D1D5DB',
         }}>
-        <span className="text-xs" style={{ color: isExpired ? '#dc2626' : '#6B7280' }}>
-          {isExpired ? '⚠️ Expirado em' : '⏱ Expira em'}
+        <span className="text-xs flex items-center gap-1" style={{ color: isExpired ? '#dc2626' : '#334155' }}>
+          {isExpired ? <AlertTriangle size={12} aria-hidden /> : <Clock3 size={12} aria-hidden />}
+          {isExpired ? 'Expirado em' : 'Expira em'}
         </span>
         <span className="text-xs font-semibold" style={{ color: isExpired ? '#dc2626' : '#0F172A' }}>
           {expiryDate}
         </span>
         {isExpired && (
-          <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-50 text-red-600">
+          <span className="ml-auto text-xs font-semibold px-1.5 py-0.5 rounded bg-red-50 text-red-600">
             Reenvie para renovar
           </span>
         )}
@@ -231,10 +232,10 @@ function InviteForm() {
   return (
     <div className="card">
       <div className="flex items-center gap-3 mb-6">
-        <span className="text-3xl">💑</span>
+        <Users size={30} className="text-[#475569]" aria-hidden />
         <div>
           <p className="text-sm font-bold text-[#0F172A]">Conectar com seu parceiro</p>
-          <p className="text-xs mt-0.5 text-[#6B7280]">
+          <p className="text-xs mt-0.5 text-[#334155]">
             Informe o e-mail do seu parceiro para enviar um convite
           </p>
         </div>
@@ -276,7 +277,7 @@ function InviteForm() {
         </button>
       </form>
 
-      <p className="text-xs mt-4 text-[#6B7280]">
+      <p className="text-xs mt-4 text-[#334155]">
         Se o email não tiver cadastro, será criada uma conta automaticamente e um e-mail de convite será enviado.
       </p>
     </div>
@@ -297,10 +298,13 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
       <div className="card"
         style={{ border: '1px solid rgba(45,212,191,0.25)', background: 'rgba(45,212,191,0.03)' }}>
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">💑</span>
+          <Users size={30} className="text-[#0d9488]" aria-hidden />
           <div>
-            <p className="text-sm font-bold text-[#0F172A]">Vocês já estão conectados 🎉</p>
-            <p className="text-xs mt-0.5 text-[#6B7280]">
+            <p className="text-sm font-bold text-[#0F172A] flex items-center gap-1.5">
+              Vocês já estão conectados
+              <PartyPopper size={14} className="text-[#0d9488]" aria-hidden />
+            </p>
+            <p className="text-xs mt-0.5 text-[#334155]">
               Conectado desde {linkedDate}
             </p>
           </div>
@@ -316,7 +320,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
             <p className="text-sm font-semibold text-[#0F172A]">
               {couple.partner?.name ?? 'Parceiro'}
             </p>
-            <p className="text-xs text-[#6B7280]">Parceiro vinculado</p>
+            <p className="text-xs text-[#334155]">Parceiro vinculado</p>
           </div>
         </div>
       </div>
@@ -355,7 +359,7 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
     <div className="card"
       style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.02)' }}>
       <p className="text-sm font-bold text-red-600 mb-1">Encerrar vínculo do casal</p>
-      <p className="text-xs mb-4 text-[#6B7280]">
+      <p className="text-xs mb-4 text-[#334155]">
         Ao encerrar o vínculo, vocês deixarão de compartilhar dados e objetivos. As seguintes ações serão executadas <strong className="text-[#0F172A]">permanentemente</strong>:
       </p>
 
@@ -407,3 +411,4 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
     </div>
   )
 }
+

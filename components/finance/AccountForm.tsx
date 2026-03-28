@@ -198,7 +198,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             className="input"
             placeholder="0,00 - deixe vazio se não souber"
           />
-          <p className="mt-1 text-[11px] text-[#6B7280]">
+          <p className="mt-1 text-xs text-[#334155]">
             Será registrado como uma transação de receita inicial.
           </p>
         </div>
@@ -257,7 +257,7 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="touch-target w-full text-xs text-[#6B7280] hover:text-[#0F172A] transition-colors"
+              className="touch-target w-full text-xs text-[#334155] hover:text-[#0F172A] transition-colors"
             >
               Cancelar exclusão
             </button>
@@ -267,3 +267,4 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
     </form>
   )
 }
+

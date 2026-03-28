@@ -41,7 +41,7 @@ export default function PerfilPage() {
     <div className="max-w-xl mx-auto px-6 py-10 md:py-12 space-y-6">
       <div className="mb-2">
         <h1 className="text-3xl font-black text-[#0F172A] tracking-tight">Meu perfil</h1>
-        <p className="text-sm mt-1 text-[#6B7280]">
+        <p className="text-sm mt-1 text-[#334155]">
           Gerencie seus dados pessoais e segurança
         </p>
       </div>
@@ -58,7 +58,7 @@ export default function PerfilPage() {
           <p className="font-bold text-[#0F172A] truncate">
             {profile.name ?? 'Sem nome'}
           </p>
-          <p className="text-xs truncate text-[#6B7280]">
+          <p className="text-xs truncate text-[#334155]">
             {profile.email}
           </p>
         </div>
@@ -279,3 +279,4 @@ function SenhaForm() {
     </div>
   )
 }
+

@@ -12,6 +12,8 @@ import { useCouple }                    from '@/hooks/useCouple'
 import { c }                            from '@/lib/utils/copy'
 import { useToast }                     from '@/components/providers/ToastProvider'
 import { useVirtualizer }               from '@tanstack/react-virtual'
+import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import type { Transaction }             from '@/types'
 
 const TransactionForm = dynamic(
@@ -74,8 +76,8 @@ function TxRow({ tx, accountName, onClick }: {
           {isIncome ? '↑' : '↓'}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-medium text-[#0F172A]">{tx.description}</span>
-          <span className="block text-xs text-[#475569]">
+          <span className="block truncate entity-title">{tx.description}</span>
+          <span className="block entity-meta">
             {accountName} · {formatDate(tx.date)}
             {tx.installment_number ? ` · Parcela ${tx.installment_number}` : ''}
           </span>
@@ -214,10 +216,10 @@ export default function TransacoesPage() {
 
       <div className="flex flex-col gap-4 mb-7 md:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="page-title">
             {c(isCouple, 'Seus gastos', 'Gastos de vocês')}
           </h1>
-          <p className="text-sm mt-1 text-[#475569]">
+          <p className="page-subtitle mt-1">
             {transactions.length} movimentação{transactions.length !== 1 ? 'ões' : ''} no período
           </p>
         </div>
@@ -234,20 +236,20 @@ export default function TransacoesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 md:mb-8">
         <div className="card">
           <p className="label">Receitas</p>
-          <p className="text-base sm:text-lg font-bold" style={{ color: '#2DD4BF' }}>
+          <p className="entity-title sm:text-lg font-bold" style={{ color: '#2DD4BF' }}>
             {formatCurrency(totalIncome)}
           </p>
         </div>
         <div className="card">
           <p className="label">Despesas</p>
-          <p className="text-base sm:text-lg font-bold" style={{ color: '#FF7F50' }}>
+          <p className="entity-title sm:text-lg font-bold" style={{ color: '#FF7F50' }}>
             {formatCurrency(totalExpense)}
           </p>
         </div>
         <div className="card">
           <p className="label">Saldo</p>
-          <p className={`text-base sm:text-lg font-bold ${
-            totalIncome - totalExpense >= 0 ? 'text-[#0F172A]' : 'text-[#FF7F50]'
+          <p className={`entity-title sm:text-lg font-bold ${
+            totalIncome - totalExpense >= 0 ? 'text-[#0F172A]' : 'text-[#C2410C]'
           }`}>
             {formatCurrency(totalIncome - totalExpense)}
           </p>
@@ -264,10 +266,11 @@ export default function TransacoesPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all"
+            data-active={activeTab === tab.key}
+            className="motion-tab px-4 py-1.5 rounded-lg text-xs font-medium transition-all"
             style={{
               background: activeTab === tab.key ? tab.bg    : 'transparent',
-              color:      activeTab === tab.key ? tab.color : '#475569',
+              color:      activeTab === tab.key ? tab.color : '#334155',
             }}
           >
             {tab.label}
@@ -277,26 +280,19 @@ export default function TransacoesPage() {
 
       {/* Lista */}
       {isLoading ? (
-        <div className="space-y-0.5">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="db-row px-2 py-3 animate-pulse">
-              <div className="w-4 h-4 rounded bg-[#E5E7EB] mr-3" />
-              <div className="flex-1 space-y-1.5">
-                <div className="h-3 bg-[#E5E7EB] rounded w-48" />
-                <div className="h-2 bg-[#E5E7EB] rounded w-28" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingStatePanel rows={5} />
       ) : displayed.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-3xl mb-3">{activeTab === 'expense' ? '💸' : '💰'}</p>
-          <p className="text-sm text-[#475569]">
-            {activeTab === 'expense'
-              ? c(isCouple, 'Nenhuma despesa registrada neste período', 'Nenhuma despesa registrada por vocês neste período')
-              : c(isCouple, 'Nenhuma receita registrada neste período', 'Nenhuma receita registrada por vocês neste período')}
-          </p>
-        </div>
+        <EmptyStatePanel
+          icon={
+            activeTab === 'expense'
+              ? <ArrowDownCircle size={26} className="text-[#FF7F50]" aria-hidden />
+              : <ArrowUpCircle size={26} className="text-[#2DD4BF]" aria-hidden />
+          }
+          title={activeTab === 'expense' ? 'Nenhuma despesa no período' : 'Nenhuma receita no período'}
+          description={activeTab === 'expense'
+            ? c(isCouple, 'Nenhuma despesa registrada neste período', 'Nenhuma despesa registrada por vocês neste período')
+            : c(isCouple, 'Nenhuma receita registrada neste período', 'Nenhuma receita registrada por vocês neste período')}
+        />
       ) : (
         <div>
           <div ref={listRef} className="max-h-[62vh] overflow-auto pr-1">
@@ -333,7 +329,7 @@ export default function TransacoesPage() {
             </div>
           </div>
           {isFetchingNextPage && (
-            <p className="text-xs text-[#475569] text-center mt-2">Carregando mais...</p>
+            <p className="text-xs text-[#334155] text-center mt-2">Carregando mais...</p>
           )}
         </div>
       )}
@@ -342,7 +338,7 @@ export default function TransacoesPage() {
       {displayed.length > 0 && (
         <div className="flex items-center justify-between px-2 py-2.5 mt-2 rounded-lg bg-white"
           style={{ border: '1px solid #D1D5DB' }}>
-          <p className="text-xs font-medium text-[#475569]">
+          <p className="meta-text">
             Total {activeTab === 'expense' ? 'de despesas' : 'de receitas'}
           </p>
           <p className="text-sm font-semibold"
@@ -377,7 +373,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="touch-target w-full text-xs mt-1 text-[#475569]"
+                  className="touch-target w-full text-xs mt-1 text-[#334155]"
                 >
                   Cancelar
                 </button>
@@ -389,3 +385,4 @@ export default function TransacoesPage() {
     </div>
   )
 }
+

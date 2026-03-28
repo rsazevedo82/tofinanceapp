@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { ChartCard, DataTable } from '@/components/reports/ChartCard'
-import { chartColors, CustomTooltip, fmtCur } from '@/components/reports/reportShared'
+import { chartColors, CustomTooltip, fmtCur, SeriesLegend } from '@/components/reports/reportShared'
 import type { ReportsPayload } from '@/types'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
@@ -22,19 +22,26 @@ export default function FlowTab({ data }: FlowTabProps) {
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data.daily_flow}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
-          <XAxis dataKey="label" tick={{ fill: '#6B7280', fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
+          <XAxis dataKey="label" tick={{ fill: '#334155', fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
           <YAxis
-            tick={{ fill: '#6B7280', fontSize: 11 }}
+            tick={{ fill: '#334155', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={v => `R$${(v / 1000).toFixed(1)}k`}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Line dataKey="income" name="Entrada" stroke={chartColors.income} dot={false} strokeWidth={2} />
-          <Line dataKey="expense" name="Saída" stroke={chartColors.expense} dot={false} strokeWidth={2} />
-          <Line dataKey="balance" name="Saldo" stroke={chartColors.balance} dot={false} strokeWidth={2} strokeDasharray="4 2" />
+          <Line dataKey="income" name="↑ Entrada" stroke={chartColors.income} dot={false} strokeWidth={2} />
+          <Line dataKey="expense" name="↓ Saída" stroke={chartColors.expense} dot={false} strokeWidth={2} />
+          <Line dataKey="balance" name="◆ Saldo acumulado" stroke={chartColors.balance} dot={false} strokeWidth={2} strokeDasharray="4 2" />
         </LineChart>
       </ResponsiveContainer>
+      <SeriesLegend
+        items={[
+          { symbol: '↑', label: 'Entrada' },
+          { symbol: '↓', label: 'Saída' },
+          { symbol: '◆', label: 'Saldo acumulado (linha tracejada)' },
+        ]}
+      />
       <DataTable
         columns={[
           { key: 'label', label: 'Dia' },
@@ -48,3 +55,4 @@ export default function FlowTab({ data }: FlowTabProps) {
     </ChartCard>
   )
 }
+

@@ -32,7 +32,7 @@ export default function PoliticaDePrivacidadePage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14 space-y-8">
         <header className="space-y-2">
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Política de Privacidade</h1>
-          <p className="text-sm text-[#6B7280]">Data de vigência: {EFFECTIVE_DATE}</p>
+          <p className="text-sm text-[#334155]">Data de vigência: {EFFECTIVE_DATE}</p>
         </header>
 
         <section className="card space-y-3">
@@ -94,7 +94,7 @@ export default function PoliticaDePrivacidadePage() {
           <p className="text-sm leading-6 text-[#334155]">
             Canal de atendimento:{' '}
             {contactEmail ? (
-              <a className="text-[#FF7F50] font-semibold hover:underline" href={`mailto:${contactEmail}`}>
+              <a className="text-[#C2410C] font-semibold hover:underline" href={`mailto:${contactEmail}`}>
                 {contactEmail}
               </a>
             ) : (
@@ -111,7 +111,7 @@ export default function PoliticaDePrivacidadePage() {
           <p className="text-sm leading-6 text-[#334155]">
             Contato do encarregado pelo tratamento de dados pessoais:{' '}
             {dpoEmail ? (
-              <a className="text-[#FF7F50] font-semibold hover:underline" href={`mailto:${dpoEmail}`}>
+              <a className="text-[#C2410C] font-semibold hover:underline" href={`mailto:${dpoEmail}`}>
                 {dpoEmail}
               </a>
             ) : (
@@ -127,7 +127,7 @@ export default function PoliticaDePrivacidadePage() {
             Esta política pode ser atualizada para refletir mudanças de produto, segurança e requisitos legais.
           </p>
           <div className="text-sm">
-            <Link href="/login" className="text-[#FF7F50] font-semibold hover:underline">
+            <Link href="/login" className="text-[#C2410C] font-semibold hover:underline">
               Voltar para login
             </Link>
           </div>
@@ -136,3 +136,4 @@ export default function PoliticaDePrivacidadePage() {
     </main>
   )
 }
+
