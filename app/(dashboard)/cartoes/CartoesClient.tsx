@@ -241,7 +241,7 @@ function CardItem({
   return (
     <div
       onClick={onClick}
-      className="card card-compact cursor-pointer transition-all duration-150 hover:border-[#D1D5DB]"
+      className="card card-compact cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:border-[#D1D5DB]"
       style={{ borderColor: card.color ? `${card.color}30` : undefined }}
     >
       {/* Header */}

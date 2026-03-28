@@ -60,7 +60,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
         {
           onSuccess: () => {
             markSaved()
-            setTimeout(() => onSuccess(), 450)
+            onSuccess()
           },
           onError: (err) => setApiError(err.message),
         }
@@ -69,7 +69,7 @@ export function CategoryForm({ category, defaultType = 'expense', onSuccess }: C
       createCategory.mutate(payload, {
         onSuccess: () => {
           markSaved()
-          setTimeout(() => onSuccess(), 450)
+          onSuccess()
         },
         onError:   (err) => setApiError(err.message),
       })

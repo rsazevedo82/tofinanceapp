@@ -8,7 +8,7 @@ export function useSubmitCtaState(
   isSaving: boolean,
   options?: UseSubmitCtaStateOptions
 ) {
-  const duration = options?.successDurationMs ?? 1200
+  const duration = options?.successDurationMs ?? 350
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isSaved, setIsSaved] = useState(false)
 
@@ -30,4 +30,3 @@ export function useSubmitCtaState(
 
   return { isSaved, markSaved }
 }
-

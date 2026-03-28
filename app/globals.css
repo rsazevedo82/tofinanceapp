@@ -114,12 +114,12 @@
   /* ── Botões ── */
   .btn-primary {
     @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold
-           transition-all duration-150
            disabled:opacity-40 disabled:cursor-not-allowed;
     min-height: 44px;
     background: #FF7F50;
     color: #FDFCF0;
     border: none;
+    transition: background-color 150ms ease, color 150ms ease, transform 120ms ease, box-shadow 150ms ease;
   }
   .btn-primary:hover  { background: #e86e40; }
   .btn-primary:focus-visible {
@@ -130,12 +130,12 @@
 
   .btn-ghost {
     @apply inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium
-           transition-all duration-150
            disabled:opacity-40 disabled:cursor-not-allowed;
     min-height: 44px;
     color: #0F172A;
     border: 1px solid rgba(148,163,184,0.35);
     background: transparent;
+    transition: background-color 150ms ease, color 150ms ease, transform 120ms ease, box-shadow 150ms ease, border-color 150ms ease;
   }
   .btn-ghost:hover { background: rgba(15,23,42,0.04); }
   .btn-ghost:focus-visible {
@@ -146,12 +146,12 @@
 
   .btn-secondary {
     @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-           transition-all duration-150
            disabled:opacity-40 disabled:cursor-not-allowed;
     min-height: 44px;
     color: #0F172A;
     border: 1px solid rgba(148,163,184,0.35);
     background: #ffffff;
+    transition: background-color 150ms ease, color 150ms ease, transform 120ms ease, box-shadow 150ms ease, border-color 150ms ease;
   }
   .btn-secondary:hover { background: rgba(15,23,42,0.04); }
   .btn-secondary:focus-visible {
@@ -161,7 +161,12 @@
   .btn-secondary:active { transform: translateY(1px); }
 
   .interactive-control {
-    transition: all var(--motion-duration-fast) var(--motion-ease-standard);
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      color var(--motion-duration-fast) var(--motion-ease-standard),
+      border-color var(--motion-duration-fast) var(--motion-ease-standard),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+      transform var(--motion-duration-fast) var(--motion-ease-standard);
   }
   .interactive-control:focus-visible {
     outline: none;
@@ -178,8 +183,7 @@
 
   /* ── Inputs ── */
   .input {
-    @apply w-full px-3 py-2.5 rounded-lg transition-all duration-150
-           focus:outline-none;
+    @apply w-full px-3 py-2.5 rounded-lg focus:outline-none;
     font-size: 1rem;
     line-height: 1.25rem;
     color: #0F172A;
@@ -205,13 +209,13 @@
   }
 
   .input-field {
-    @apply w-full px-3 py-2.5 rounded-lg transition-all duration-150
-           focus:outline-none;
+    @apply w-full px-3 py-2.5 rounded-lg focus:outline-none;
     font-size: 1rem;
     line-height: 1.25rem;
     color: #0F172A;
     background: #ffffff;
     border: 1px solid rgba(148,163,184,0.35);
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
   }
   .input-field::placeholder { color: #94A3B8; }
   .input-field:hover  { border-color: rgba(148,163,184,0.6); }
@@ -359,7 +363,13 @@
   /* ── Database row ── */
   .db-row {
     @apply flex items-center rounded-xl px-2.5 py-2.5 cursor-pointer border border-transparent
-           transition-all duration-100;
+           duration-100;
+    transition:
+      background-color 100ms ease,
+      border-color 100ms ease,
+      color 100ms ease,
+      box-shadow 100ms ease,
+      transform 100ms ease;
   }
   .db-row:hover {
     background: rgba(255,127,80,0.06);
@@ -438,8 +448,6 @@
 
   .motion-progress {
     transition: width var(--motion-duration-slow) var(--motion-ease-standard);
-    background-size: 200% 100%;
-    animation: n2r-progress-sheen 1800ms linear infinite;
   }
 
   .motion-checkpoint {
@@ -447,7 +455,12 @@
   }
 
   .motion-tab {
-    transition: all var(--motion-duration-fast) var(--motion-ease-standard);
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      color var(--motion-duration-fast) var(--motion-ease-standard),
+      border-color var(--motion-duration-fast) var(--motion-ease-standard),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+      transform var(--motion-duration-fast) var(--motion-ease-standard);
   }
   .motion-tab[data-active="true"] {
     transform: translateY(-1px);

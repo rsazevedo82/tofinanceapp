@@ -40,11 +40,13 @@ export function usePayInvoice() {
       if (json.error) throw new Error(json.error)
       return json.data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
-      queryClient.invalidateQueries({ queryKey: ['cards', 'overview'] })
-      queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+    onSuccess: (invoice) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices', invoice?.account_id ?? null], exact: true, refetchType: 'active' })
+      queryClient.invalidateQueries({ queryKey: ['cards', 'overview'], exact: true, refetchType: 'active' })
+      queryClient.invalidateQueries({ queryKey: ['transactions'], refetchType: 'active' })
+      queryClient.invalidateQueries({ queryKey: ['transactions-infinite'], refetchType: 'active' })
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'me'], exact: true, refetchType: 'active' })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'], exact: true, refetchType: 'active' })
     },
   })
 }

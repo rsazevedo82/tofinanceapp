@@ -96,7 +96,8 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
         {
           onSuccess: () => {
             markSaved()
-            setTimeout(() => { onSuccess(); router.refresh() }, 450)
+            onSuccess()
+            router.refresh()
           },
           onError:   (err) => setApiError(err.message),
         }
@@ -106,7 +107,8 @@ export function AccountForm({ account, allowedTypes, onSuccess }: AccountFormPro
       createAccount.mutate(body, {
         onSuccess: () => {
           markSaved()
-          setTimeout(() => { onSuccess(); router.refresh() }, 450)
+          onSuccess()
+          router.refresh()
         },
         onError:   (err) => setApiError(err.message),
       })

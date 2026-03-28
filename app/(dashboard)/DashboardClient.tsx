@@ -229,7 +229,7 @@ export default function DashboardPage() {
                   <div
                     key={card.id}
                     onClick={() => router.push(`/fatura/${card.id}`)}
-                    className="card card-compact cursor-pointer transition-all hover:shadow-md"
+                    className="card card-compact cursor-pointer transition-[border-color,box-shadow,transform] hover:shadow-md"
                     style={{ borderColor: card.color ? `${card.color}50` : '#D1D5DB' }}
                   >
                     <div className="flex items-center justify-between mb-4">

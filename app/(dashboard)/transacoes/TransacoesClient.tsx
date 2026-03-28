@@ -267,7 +267,7 @@ export default function TransacoesPage() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             data-active={activeTab === tab.key}
-            className="motion-tab interactive-control px-4 py-1.5 rounded-lg text-xs font-medium transition-all"
+            className="motion-tab interactive-control px-4 py-1.5 rounded-lg text-xs font-medium"
             style={{
               background: activeTab === tab.key ? tab.bg    : 'transparent',
               color:      activeTab === tab.key ? tab.color : '#334155',

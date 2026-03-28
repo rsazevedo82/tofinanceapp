@@ -134,7 +134,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
   const selectedAccount = accounts.find(a => a.id === watchedAccountId)
   const isCreditCard    = selectedAccount?.type === 'credit'
-  const { isSaved, markSaved } = useSubmitCtaState(isSubmitting)
+  const { isSaved } = useSubmitCtaState(isSubmitting)
 
   useEffect(() => {
     if (!isCreditCard) {
@@ -211,16 +211,15 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       return
     }
 
-    queryClient.invalidateQueries({ queryKey: ['transactions'] })
-    queryClient.invalidateQueries({ queryKey: ['accounts'] })
-    queryClient.invalidateQueries({ queryKey: ['invoices'] })
-    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['transactions'], refetchType: 'active' })
+    queryClient.invalidateQueries({ queryKey: ['transactions-infinite'], refetchType: 'active' })
+    queryClient.invalidateQueries({ queryKey: ['accounts', 'me'], exact: true, refetchType: 'active' })
+    queryClient.invalidateQueries({ queryKey: ['cards', 'overview'], exact: true, refetchType: 'active' })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'], exact: true, refetchType: 'active' })
     showToast({
       title: isEditing ? 'Transação atualizada' : 'Transação criada',
       variant: 'success',
     })
-    markSaved()
-    await new Promise(resolve => setTimeout(resolve, 450))
     onSuccess()
   }
 
