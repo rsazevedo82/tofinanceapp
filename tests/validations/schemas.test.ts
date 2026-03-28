@@ -107,10 +107,10 @@ describe('createAccountSchema', () => {
     }
   })
 
-  it('aplica balance zero por padrão', () => {
+  it('mantém initial_balance como opcional (sem default)', () => {
     const result = createAccountSchema.safeParse(validAccount)
     if (result.success) {
-      expect(result.data.balance).toBe(0)
+      expect(result.data.initial_balance).toBeUndefined()
     }
   })
 

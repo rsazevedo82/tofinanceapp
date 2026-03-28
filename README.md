@@ -148,6 +148,12 @@ Soft delete — define `deleted_at` com o timestamp atual.
 - **Auditoria:** Eventos sensíveis registrados em trilha de auditoria
 - **Logs seguros:** Sanitização automática para redigir segredos e tokens
 - **Runbook operacional:** rotação de segredos + política de logs em `docs/security-operations.md`
+- **Governança de schema:** padrão de migrations em `docs/padrao-governanca-migrations.md`
+- **Governança de service_role:** uso restrito via `lib/privileged/*` e check automático em CI
+- **Retenção LGPD:** política e expurgo automático em `docs/lgpd-retencao-expurgo.md`
+- **Direitos do titular (LGPD):** fluxo interno e SLA em `docs/lgpd-direitos-titular-fluxo.md`
+- **Política pública de privacidade:** rota `/politica-de-privacidade`
+- **Observabilidade de produção:** correlação, métricas e alertas em `docs/observabilidade-producao.md`
 
 ---
 
@@ -262,6 +268,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
+NEXT_PUBLIC_PRIVACY_REQUEST_EMAIL=
+NEXT_PUBLIC_PRIVACY_SLA_DAYS=15
+OBS_SERVICE_NAME=tofinanceapp
 ```
 
 ---

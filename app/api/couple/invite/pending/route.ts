@@ -3,7 +3,7 @@
 // DELETE → cancela o convite pendente do usuário autenticado.
 
 import { createClient }  from '@/lib/supabase/server'
-import { adminClient }   from '@/lib/supabase/admin'
+import { cancelPendingInvitationByInviter, getPendingInvitationByInviter } from '@/lib/privileged/coupleAdmin'
 import { ratelimit }     from '@/lib/rateLimit'
 import { log }           from '@/lib/logger'
 import { headers }       from 'next/headers'
@@ -25,12 +25,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<CoupleInvitation |
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: invitation, error } = await adminClient
-      .from('couple_invitations')
-      .select('*')
-      .eq('inviter_id', user.id)
-      .eq('status', 'pending')
-      .maybeSingle()
+    const { data: invitation, error } = await getPendingInvitationByInviter(user.id)
 
     if (error) throw error
 
@@ -60,11 +55,7 @@ export async function DELETE(): Promise<NextResponse<ApiResponse<null>>> {
     }
 
     // Garante inviter_id = user.id — nunca cancela convite de outro usuário
-    const { error } = await adminClient
-      .from('couple_invitations')
-      .update({ status: 'cancelled' })
-      .eq('inviter_id', user.id)
-      .eq('status', 'pending')
+    const { error } = await cancelPendingInvitationByInviter(user.id)
 
     if (error) throw error
 

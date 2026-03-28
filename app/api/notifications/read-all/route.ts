@@ -1,6 +1,7 @@
 // app/api/notifications/read-all/route.ts
 
 import { createClient }   from '@/lib/supabase/server'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import { NextResponse }   from 'next/server'
 import type { ApiResponse } from '@/types'
 
@@ -8,12 +9,17 @@ import type { ApiResponse } from '@/types'
 // Marca todas as notificações não lidas do usuário como lidas
 
 export async function PATCH(): Promise<NextResponse<ApiResponse<{ count: number }>>> {
+  const limited = await checkRateLimitByIP('notifications:write')
+  if (limited) return limited as NextResponse<ApiResponse<{ count: number }>>
+
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('notifications:write', user.id)
+    if (userLimited) return userLimited as NextResponse<ApiResponse<{ count: number }>>
 
     const { data, error } = await supabase
       .from('notifications')

@@ -59,6 +59,18 @@ const ROUTE_POLICIES: Record<string, RoutePolicy> = {
     ip: { limit: 90, window: '1 m' },
     user: { limit: 120, window: '1 m' },
   },
+  'transactions:write': {
+    ip: { limit: 60, window: '1 m' },
+    user: { limit: 90, window: '1 m' },
+  },
+  'notifications:write': {
+    ip: { limit: 60, window: '1 m' },
+    user: { limit: 120, window: '1 m' },
+  },
+  'couple:write': {
+    ip: { limit: 20, window: '1 m' },
+    user: { limit: 30, window: '1 m' },
+  },
 }
 
 const limiterCache = new Map<string, Ratelimit>()

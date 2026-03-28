@@ -34,20 +34,29 @@ function csrfProtection(request: NextRequest): NextResponse | null {
 }
 
 export async function middleware(request: NextRequest) {
+  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-request-id', requestId)
+
   const host = request.headers.get('host')?.toLowerCase()
   const isProdBareDomain = host === 'nos2reais.com.br'
   if (isProdBareDomain) {
     const url = request.nextUrl.clone()
     url.host = 'www.nos2reais.com.br'
     url.protocol = 'https'
-    return NextResponse.redirect(url, 308)
+    const response = NextResponse.redirect(url, 308)
+    response.headers.set('x-request-id', requestId)
+    return response
   }
 
   // CSRF check antes de qualquer outra coisa
   const csrfError = csrfProtection(request)
-  if (csrfError) return csrfError
+  if (csrfError) {
+    csrfError.headers.set('x-request-id', requestId)
+    return csrfError
+  }
 
-  let supabaseResponse = NextResponse.next({ request })
+  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,7 +70,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -85,15 +94,20 @@ export async function middleware(request: NextRequest) {
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const response = NextResponse.redirect(url)
+    response.headers.set('x-request-id', requestId)
+    return response
   }
 
   if (user && isPublicRoute && path !== '/atualizar-senha') {
     const url = request.nextUrl.clone()
     url.pathname = '/'
-    return NextResponse.redirect(url)
+    const response = NextResponse.redirect(url)
+    response.headers.set('x-request-id', requestId)
+    return response
   }
 
+  supabaseResponse.headers.set('x-request-id', requestId)
   return supabaseResponse
 }
 

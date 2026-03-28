@@ -2,7 +2,7 @@
 // GET → retorna convite pendente recebido pelo usuário autenticado.
 
 import { createClient } from '@/lib/supabase/server'
-import { adminClient } from '@/lib/supabase/admin'
+import { getLatestReceivedPendingInvitation, getUserProfileNameById } from '@/lib/privileged/coupleAdmin'
 import { NextResponse } from 'next/server'
 import type { ApiResponse, CoupleInvitation } from '@/types'
 
@@ -21,18 +21,11 @@ export async function GET(): Promise<NextResponse<ApiResponse<ReceivedInvitation
     }
 
     const normalizedEmail = user.email?.trim().toLowerCase()
-    const orFilter = normalizedEmail
-      ? `invitee_id.eq.${user.id},invitee_email.eq.${normalizedEmail}`
-      : `invitee_id.eq.${user.id}`
 
-    const { data: invitations, error: inviteError } = await adminClient
-      .from('couple_invitations')
-      .select('*')
-      .eq('status', 'pending')
-      .gt('expires_at', new Date().toISOString())
-      .or(orFilter)
-      .order('created_at', { ascending: false })
-      .limit(1)
+    const { data: invitations, error: inviteError } = await getLatestReceivedPendingInvitation({
+      userId: user.id,
+      normalizedEmail,
+    })
 
     if (inviteError) throw inviteError
 
@@ -41,11 +34,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<ReceivedInvitation
       return NextResponse.json({ data: null, error: null })
     }
 
-    const { data: inviterProfile } = await adminClient
-      .from('user_profiles')
-      .select('name')
-      .eq('id', invitation.inviter_id)
-      .maybeSingle()
+    const { data: inviterProfile } = await getUserProfileNameById(invitation.inviter_id)
 
     return NextResponse.json({
       data: {

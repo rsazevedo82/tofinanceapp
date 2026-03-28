@@ -1,41 +1,46 @@
 // app/api/couple/route.ts
 
 import { createClient }                              from '@/lib/supabase/server'
-import { adminClient }                               from '@/lib/supabase/admin'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
+import { withRouteObservability } from '@/lib/observability'
 import { getRequestAuditMeta, recordAuditEvent }     from '@/lib/audit'
+import {
+  cancelPendingInvitesForUsers,
+  deleteCoupleById,
+  deleteGoalsByCoupleId,
+  getActiveCoupleByUserId,
+  getAuthUserById,
+  getUserProfileById,
+} from '@/lib/privileged/coupleAdmin'
+import { insertAdminNotifications } from '@/lib/privileged/notificationsAdmin'
 import { NextResponse }                              from 'next/server'
 import type { ApiResponse, CoupleProfile, UserProfile } from '@/types'
 
 // ── GET /api/couple ───────────────────────────────────────────────────────────
 // Retorna o vínculo ativo do usuário + perfil do parceiro
 
-export async function GET(): Promise<NextResponse<ApiResponse<CoupleProfile | null>>> {
-  try {
+export async function GET(request: Request): Promise<NextResponse<ApiResponse<CoupleProfile | null>>> {
+  return withRouteObservability(request, {
+    route: '/api/couple',
+    operation: 'couple_get',
+  }, async () => {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: couple, error } = await supabase
-      .from('couple_profiles')
-      .select('*')
-      .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
-      .maybeSingle()
+    const { data: couple, error } = await getActiveCoupleByUserId(user.id)
 
     if (error) throw error
     if (!couple) return NextResponse.json({ data: null, error: null })
 
     // Busca perfil do parceiro
     const partnerId = couple.user_id_1 === user.id ? couple.user_id_2 : couple.user_id_1
-    const { data: partnerProfile } = await adminClient
-      .from('user_profiles')
-      .select('*')
-      .eq('id', partnerId)
-      .maybeSingle()
+    const { data: partnerProfile } = await getUserProfileById(partnerId)
 
     // Busca email do parceiro via admin
-    const { data: { user: partnerAuth } } = await adminClient.auth.admin.getUserById(partnerId)
+    const { data: { user: partnerAuth } } = await getAuthUserById(partnerId)
 
     const partner: UserProfile = {
       id:         partnerId,
@@ -46,17 +51,20 @@ export async function GET(): Promise<NextResponse<ApiResponse<CoupleProfile | nu
     }
 
     return NextResponse.json({ data: { ...couple, partner }, error: null })
-  } catch (err) {
-    console.error('[GET /api/couple]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
-  }
+  }) as Promise<NextResponse<ApiResponse<CoupleProfile | null>>>
 }
 
 // ── DELETE /api/couple ────────────────────────────────────────────────────────
 // Desvincula casal. Requer confirmação de senha no body.
 
 export async function DELETE(request: Request): Promise<NextResponse<ApiResponse<null>>> {
-  try {
+  return withRouteObservability(request, {
+    route: '/api/couple',
+    operation: 'couple_delete',
+  }, async () => {
+    const limited = await checkRateLimitByIP('couple:write')
+    if (limited) return limited as NextResponse<ApiResponse<null>>
+
     const auditMeta = await getRequestAuditMeta()
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -70,6 +78,8 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
       })
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('couple:write', user.id)
+    if (userLimited) return userLimited as NextResponse<ApiResponse<null>>
 
     const { password } = await request.json()
     if (!password) {
@@ -106,11 +116,7 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
     }
 
     // Busca o vínculo
-    const { data: couple, error: coupleError } = await adminClient
-      .from('couple_profiles')
-      .select('*')
-      .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
-      .maybeSingle()
+    const { data: couple, error: coupleError } = await getActiveCoupleByUserId(user.id)
 
     if (coupleError) throw coupleError
     if (!couple) {
@@ -130,30 +136,19 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
     const partnerId = couple.user_id_1 === user.id ? couple.user_id_2 : couple.user_id_1
 
     // Remove objetivos de casal (quando a Fase 3 for implementada)
-    await adminClient
-      .from('goals')
-      .delete()
-      .eq('couple_id', couple.id)
-      .then(() => {}) // silencia se tabela ainda não existir
+    await deleteGoalsByCoupleId(couple.id).then(() => {}) // silencia se tabela ainda não existir
 
     // Remove o vínculo
-    const { error: deleteError } = await adminClient
-      .from('couple_profiles')
-      .delete()
-      .eq('id', couple.id)
+    const { error: deleteError } = await deleteCoupleById(couple.id)
 
     if (deleteError) throw deleteError
 
     // Cancela convites pendentes entre os dois
-    await adminClient
-      .from('couple_invitations')
-      .update({ status: 'cancelled' })
-      .or(`inviter_id.eq.${user.id},inviter_id.eq.${partnerId}`)
-      .eq('status', 'pending')
+    await cancelPendingInvitesForUsers(user.id, partnerId)
 
     // Notifica ambos
     const now = new Date().toISOString()
-    await adminClient.from('notifications').insert([
+    await insertAdminNotifications([
       {
         user_id:    user.id,
         type:       'couple_unlinked',
@@ -184,8 +179,5 @@ export async function DELETE(request: Request): Promise<NextResponse<ApiResponse
     })
 
     return NextResponse.json({ data: null, error: null })
-  } catch (err) {
-    console.error('[DELETE /api/couple]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
-  }
+  }) as Promise<NextResponse<ApiResponse<null>>>
 }

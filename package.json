@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "security:check-service-role-usage": "node scripts/check-service-role-usage.mjs",
     "pwa:check-precache": "node scripts/check-precache-budget.mjs",
     "ci:check": "npm run lint && npm run build && npm run pwa:check-precache",
     "test": "vitest",

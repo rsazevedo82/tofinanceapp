@@ -47,5 +47,3 @@ next-env.d.ts
 # Scripts PowerShell locais
 *.ps1
 
-# Migrations locais
-supabase/migrations/

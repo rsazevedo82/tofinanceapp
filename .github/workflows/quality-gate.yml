@@ -30,6 +30,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Service role surface check
+        run: npm run security:check-service-role-usage
+
+      - name: Unit tests
+        run: npm run test:run
+
       - name: Build (includes TS check)
         run: npm run build
 

@@ -97,7 +97,34 @@ const nextConfig = {
 
       // Service worker precisa de worker-src
       "worker-src 'self'",
+      // Bloqueia plugins legados
+      "object-src 'none'",
     ].join('; ')
+
+    // Política de endurecimento em modo observação.
+    // Objetivo: medir impacto antes de remover unsafe-inline da CSP principal.
+    const ContentSecurityPolicyReportOnly = [
+      "default-src 'self'",
+      "script-src 'self' https://vercel.live https://challenges.cloudflare.com",
+      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live https://challenges.cloudflare.com`,
+      "style-src 'self'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "frame-ancestors 'none'",
+      "frame-src 'self' https://challenges.cloudflare.com",
+      "form-action 'self'",
+      "base-uri 'self'",
+      "worker-src 'self'",
+      "object-src 'none'",
+      "report-uri /api/security/csp-report",
+      "report-to csp-endpoint",
+    ].join('; ')
+
+    const reportTo = JSON.stringify({
+      group: 'csp-endpoint',
+      max_age: 10886400,
+      endpoints: [{ url: '/api/security/csp-report' }],
+    })
 
     return [
       {
@@ -106,6 +133,14 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: ContentSecurityPolicy,
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: ContentSecurityPolicyReportOnly,
+          },
+          {
+            key: 'Report-To',
+            value: reportTo,
           },
           {
             key: 'X-Frame-Options',

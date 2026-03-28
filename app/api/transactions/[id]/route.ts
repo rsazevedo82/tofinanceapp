@@ -1,6 +1,8 @@
 // app/api/transactions/[id]/route.ts
 import { createClient }             from '@/lib/supabase/server'
 import { createTransactionSchema }  from '@/lib/validations/schemas'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
+import { withRouteObservability } from '@/lib/observability'
 import type { ApiResponse, Transaction } from '@/types'
 import { NextResponse }             from 'next/server'
 
@@ -13,14 +15,22 @@ const transactionSelect = `
 // ── PATCH /api/transactions/:id ───────────────────────────────────────────────
 
 export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<Transaction>>> {
-  const params = await props.params;
-  try {
+  return withRouteObservability(request, {
+    route: '/api/transactions/[id]',
+    operation: 'transactions_patch',
+  }, async () => {
+    const params = await props.params
+    const limited = await checkRateLimitByIP('transactions:write')
+    if (limited) return limited as NextResponse<ApiResponse<Transaction>>
+
     const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('transactions:write', user.id)
+    if (userLimited) return userLimited as NextResponse<ApiResponse<Transaction>>
 
     const body = await request.json()
 
@@ -71,23 +81,28 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
     if (error) throw error
 
     return NextResponse.json({ data, error: null })
-  } catch (err) {
-    console.error('[PATCH /api/transactions/:id]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
-  }
+  }) as Promise<NextResponse<ApiResponse<Transaction>>>
 }
 
 // ── DELETE /api/transactions/:id ──────────────────────────────────────────────
 
 export async function DELETE(_request: Request, props: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<null>>> {
-  const params = await props.params;
-  try {
+  return withRouteObservability(_request, {
+    route: '/api/transactions/[id]',
+    operation: 'transactions_delete',
+  }, async () => {
+    const params = await props.params
+    const limited = await checkRateLimitByIP('transactions:write')
+    if (limited) return limited as NextResponse<ApiResponse<null>>
+
     const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Nao autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('transactions:write', user.id)
+    if (userLimited) return userLimited as NextResponse<ApiResponse<null>>
 
     const { data: existing, error: findError } = await supabase
       .from('transactions')
@@ -110,8 +125,5 @@ export async function DELETE(_request: Request, props: { params: Promise<{ id: s
     if (error) throw error
 
     return NextResponse.json({ data: null, error: null })
-  } catch (err) {
-    console.error('[DELETE /api/transactions/:id]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
-  }
+  }) as Promise<NextResponse<ApiResponse<null>>>
 }

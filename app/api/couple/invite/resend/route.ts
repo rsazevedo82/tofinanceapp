@@ -3,8 +3,16 @@
 // Rate limit: 3 req / 10 min por IP — mais restritivo que o envio inicial.
 
 import { createClient }  from '@/lib/supabase/server'
-import { adminClient }   from '@/lib/supabase/admin'
 import { log }           from '@/lib/logger'
+import {
+  cancelInvitationById,
+  createInvitation,
+  findAuthUserIdByEmail,
+  getPendingInvitationByInviter,
+  getUserProfileNameById,
+  inviteUserByEmail,
+} from '@/lib/privileged/coupleAdmin'
+import { insertAdminNotification } from '@/lib/privileged/notificationsAdmin'
 import { headers }       from 'next/headers'
 import { NextResponse }  from 'next/server'
 import { Redis }         from '@upstash/redis'
@@ -46,12 +54,7 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
     }
 
     // 3. Busca convite pendente do usuário — garante inviter_id = user.id
-    const { data: existing, error: fetchError } = await adminClient
-      .from('couple_invitations')
-      .select('*')
-      .eq('inviter_id', user.id)
-      .eq('status', 'pending')
-      .maybeSingle()
+    const { data: existing, error: fetchError } = await getPendingInvitationByInviter(user.id)
 
     if (fetchError) throw fetchError
 
@@ -66,49 +69,34 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
     const normalizedInviteeEmail = inviteeEmail.trim().toLowerCase()
 
     // 4. Cancela o convite antigo (invalida token anterior)
-    const { error: cancelError } = await adminClient
-      .from('couple_invitations')
-      .update({ status: 'cancelled' })
-      .eq('id', existing.id)
-      .eq('inviter_id', user.id) // dupla verificação de ownership
+    const { error: cancelError } = await cancelInvitationById(existing.id, user.id)
 
     if (cancelError) throw cancelError
 
     // 5. Reavalia se o invitee criou conta desde o convite original
     // (evita enviar e-mail para quem já tem conta e espera notificação in-app)
-    const { data: currentInviteeId, error: inviteeLookupError } = await adminClient.rpc(
-      'find_auth_user_id_by_email',
-      { p_email: normalizedInviteeEmail }
-    )
+    const { data: currentInviteeId, error: inviteeLookupError } = await findAuthUserIdByEmail(normalizedInviteeEmail)
     if (inviteeLookupError) throw inviteeLookupError
 
     // 6. Cria novo convite com nova expiração e invitee_id atualizado
-    const { data: invitation, error: inviteError } = await adminClient
-      .from('couple_invitations')
-      .insert({
-        inviter_id:    user.id,
-        invitee_email: normalizedInviteeEmail,
-        invitee_id:    currentInviteeId ?? null,
-        status:        'pending',
-      })
-      .select()
-      .single()
+    const { data: invitation, error: inviteError } = await createInvitation({
+      inviter_id: user.id,
+      invitee_email: normalizedInviteeEmail,
+      invitee_id: currentInviteeId ?? null,
+      status: 'pending',
+    })
 
     if (inviteError) throw inviteError
 
     // 7. Busca nome do inviter para notificação/e-mail
-    const { data: inviterProfile } = await adminClient
-      .from('user_profiles')
-      .select('name')
-      .eq('id', user.id)
-      .maybeSingle()
+    const { data: inviterProfile } = await getUserProfileNameById(user.id)
 
     const inviterName = inviterProfile?.name ?? user.email?.split('@')[0] ?? 'Alguém'
 
     // 8. Re-envia via notificação (conta existente) ou e-mail Supabase (conta nova)
     if (currentInviteeId) {
       // Usuário existente → nova notificação in-app
-      await adminClient.from('notifications').insert({
+      await insertAdminNotification({
         user_id: currentInviteeId,
         type:    'couple_invite',
         title:   'Novo convite de perfil de casal',
@@ -117,17 +105,15 @@ export async function POST(): Promise<NextResponse<ApiResponse<CoupleInvitation>
       })
     } else {
       // Usuário novo → reenvio via Supabase Auth
-      const { error: emailError } = await adminClient.auth.admin.inviteUserByEmail(normalizedInviteeEmail, {
-        data: {
-          couple_invitation_token: invitation.token,
-          invited_by:              inviterName,
-        },
+      const { error: emailError } = await inviteUserByEmail(normalizedInviteeEmail, {
+        couple_invitation_token: invitation.token,
+        invited_by: inviterName,
       })
       if (emailError) {
         log('error', 'POST /api/couple/invite/resend — inviteUserByEmail falhou', {
           userId: user.id, inviteeEmail, detail: emailError.message,
         })
-        await adminClient.from('couple_invitations').update({ status: 'cancelled' }).eq('id', invitation.id)
+        await cancelInvitationById(invitation.id)
         return NextResponse.json(
           { data: null, error: `Erro ao reenviar e-mail: ${emailError.message}` },
           { status: 500 }

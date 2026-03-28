@@ -20,6 +20,8 @@ function getPasswordStrength(password: string): { label: string; color: string; 
 }
 
 export default function AtualizarSenhaPage() {
+  const passwordInputId = 'reset-password'
+  const confirmPasswordInputId = 'reset-password-confirm'
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -187,9 +189,10 @@ export default function AtualizarSenhaPage() {
             ) : (
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div>
-                  <label className="label">Nova senha</label>
+                  <label className="label" htmlFor={passwordInputId}>Nova senha</label>
                   <div className="relative">
                     <input
+                      id={passwordInputId}
                       type={showPassword ? 'text' : 'password'}
                       className="input pr-24"
                       value={password}
@@ -220,9 +223,10 @@ export default function AtualizarSenhaPage() {
                 </div>
 
                 <div>
-                  <label className="label">Confirmar nova senha</label>
+                  <label className="label" htmlFor={confirmPasswordInputId}>Confirmar nova senha</label>
                   <div className="relative">
                     <input
+                      id={confirmPasswordInputId}
                       type={showConfirmPassword ? 'text' : 'password'}
                       className="input pr-24"
                       value={confirmPassword}

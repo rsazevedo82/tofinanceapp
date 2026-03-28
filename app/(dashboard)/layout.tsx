@@ -22,14 +22,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         {children}
         <footer className="px-4 sm:px-6 py-8 mt-6 border-t border-[#D1D5DB]">
-          <Link href="/" aria-label="Ir para Visão geral">
-            <Image
-              src="/n2r-wordmark-horizontal-v1.png"
-              alt="Nós 2 Reais"
-              width={220}
-              height={40}
-            />
-          </Link>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Link href="/" aria-label="Ir para Visão geral">
+              <Image
+                src="/n2r-wordmark-horizontal-v1.png"
+                alt="Nós 2 Reais"
+                width={220}
+                height={40}
+              />
+            </Link>
+            <Link
+              href="/politica-de-privacidade"
+              className="text-sm text-[#6B7280] hover:text-[#FF7F50] transition-colors"
+            >
+              Política de Privacidade
+            </Link>
+          </div>
         </footer>
       </main>
       {/* Banner de instalação iOS — só aparece no Safari/iOS fora do modo standalone */}

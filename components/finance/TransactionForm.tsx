@@ -1,7 +1,7 @@
 // components/finance/TransactionForm.tsx
 'use client'
 
-import { useState, useEffect }  from 'react'
+import { useState, useEffect, useId }  from 'react'
 import { useForm, Controller }           from 'react-hook-form'
 import { zodResolver }                   from '@hookform/resolvers/zod'
 import { z }                             from 'zod'
@@ -26,12 +26,14 @@ interface TransactionFormProps {
 interface SelectOption { value: string; label: string }
 
 function AccessibleSelect({
+  id,
   value,
   onChange,
   options,
   placeholder = 'Selecione...',
   disabled = false,
 }: {
+  id?: string
   value:        string
   onChange:     (v: string) => void
   options:      SelectOption[]
@@ -43,6 +45,7 @@ function AccessibleSelect({
 
   return (
     <select
+      id={id}
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
@@ -73,6 +76,17 @@ const TYPE_CONFIG = {
 }
 
 export function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
+  const idBase = useId()
+  const amountId = `${idBase}-amount`
+  const descriptionId = `${idBase}-description`
+  const accountId = `${idBase}-account`
+  const installmentsId = `${idBase}-installments`
+  const customInstallmentsId = `${idBase}-installments-custom`
+  const categoryId = `${idBase}-category`
+  const dateId = `${idBase}-date`
+  const statusId = `${idBase}-status`
+  const notesId = `${idBase}-notes`
+
   const isEditing   = !!transaction
   const queryClient = useQueryClient()
   const { showToast } = useToast()
@@ -233,8 +247,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
       {/* Valor */}
       <div>
-        <label className="label">Valor (R$)</label>
+        <label className="label" htmlFor={amountId}>Valor (R$)</label>
         <input
+          id={amountId}
           {...register('amount', { setValueAs: (v) => v === '' ? undefined : parseFloat(v) })}
           type="number"
           step="0.01"
@@ -248,8 +263,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
       {/* Descrição */}
       <div>
-        <label className="label">Descrição</label>
+        <label className="label" htmlFor={descriptionId}>Descrição</label>
         <input
+          id={descriptionId}
           {...register('description')}
           type="text"
           className="input"
@@ -259,12 +275,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
       {/* Conta */}
       <div>
-        <label className="label">Conta</label>
+        <label className="label" htmlFor={accountId}>Conta</label>
         <Controller
           name="account_id"
           control={control}
           render={({ field }) => (
             <AccessibleSelect
+              id={accountId}
               value={field.value}
               onChange={field.onChange}
               options={accountOptions}
@@ -277,8 +294,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       {/* Parcelas — somente cartao, despesa, criacao */}
       {isCreditCard && !isEditing && watchedType === 'expense' && (
         <div>
-          <label className="label">Parcelas</label>
+          <label className="label" htmlFor={installmentsId}>Parcelas</label>
           <AccessibleSelect
+            id={installmentsId}
             value={useCustomInstallments ? 'custom' : installments}
             onChange={v => {
               if (v === 'custom') {
@@ -293,6 +311,7 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
           />
           {useCustomInstallments && (
             <input
+              id={customInstallmentsId}
               type="number"
               min="13"
               max="360"
@@ -314,12 +333,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       {/* Categoria */}
       {watchedType !== 'transfer' && (
         <div>
-          <label className="label">Categoria</label>
+          <label className="label" htmlFor={categoryId}>Categoria</label>
           <Controller
             name="category_id"
             control={control}
             render={({ field }) => (
               <AccessibleSelect
+                id={categoryId}
                 value={field.value ?? ''}
                 onChange={field.onChange}
                 options={categoryOptions}
@@ -332,8 +352,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
 
       {/* Data */}
       <div>
-        <label className="label">Data</label>
+        <label className="label" htmlFor={dateId}>Data</label>
         <input
+          id={dateId}
           {...register('date')}
           type="date"
           className="input"
@@ -353,12 +374,13 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
       {showExtras && (
         <div className="space-y-3 pt-1">
           <div>
-            <label className="label">Status</label>
+            <label className="label" htmlFor={statusId}>Status</label>
             <Controller
               name="status"
               control={control}
               render={({ field }) => (
                 <AccessibleSelect
+                  id={statusId}
                   value={field.value}
                   onChange={field.onChange}
                   options={[
@@ -370,8 +392,9 @@ export function TransactionForm({ transaction, onSuccess }: TransactionFormProps
             />
           </div>
           <div>
-            <label className="label">Observações</label>
+            <label className="label" htmlFor={notesId}>Observações</label>
             <textarea
+              id={notesId}
               {...register('notes')}
               className="input resize-none"
               rows={2}

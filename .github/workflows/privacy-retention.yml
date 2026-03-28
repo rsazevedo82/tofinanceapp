@@ -1,0 +1,29 @@
+name: Privacy Retention Job
+
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Run retention endpoint
+        env:
+          RETENTION_JOB_URL: ${{ secrets.RETENTION_JOB_URL }}
+          PRIVACY_RETENTION_JOB_TOKEN: ${{ secrets.PRIVACY_RETENTION_JOB_TOKEN }}
+        run: |
+          if [ -z "$RETENTION_JOB_URL" ] || [ -z "$PRIVACY_RETENTION_JOB_TOKEN" ]; then
+            echo "Missing required secrets: RETENTION_JOB_URL and/or PRIVACY_RETENTION_JOB_TOKEN"
+            exit 1
+          fi
+
+          curl --fail --show-error --silent \
+            --request POST \
+            --header "x-retention-job-token: $PRIVACY_RETENTION_JOB_TOKEN" \
+            "$RETENTION_JOB_URL"

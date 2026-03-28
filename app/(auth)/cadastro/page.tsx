@@ -26,6 +26,8 @@ function getPasswordStrength(password: string): { label: string; color: string; 
 }
 
 export default function CadastroPage() {
+  const emailInputId = 'signup-email'
+  const passwordInputId = 'signup-password'
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -149,8 +151,9 @@ export default function CadastroPage() {
 
           <form onSubmit={handleCadastro} className="space-y-4">
             <div>
-              <label className="label">Email</label>
+              <label className="label" htmlFor={emailInputId}>Email</label>
               <input
+                id={emailInputId}
                 type="email"
                 className="input"
                 placeholder="seu@email.com"
@@ -161,9 +164,10 @@ export default function CadastroPage() {
               />
             </div>
             <div>
-              <label className="label">Senha</label>
+              <label className="label" htmlFor={passwordInputId}>Senha</label>
               <div className="relative">
                 <input
+                  id={passwordInputId}
                   type={showPassword ? 'text' : 'password'}
                   className="input pr-24"
                   placeholder="mínimo 10 caracteres, letras e números"
@@ -224,6 +228,13 @@ export default function CadastroPage() {
             <Link href="/login" className="text-[#FF7F50] font-medium hover:text-[#e86e40] transition-colors">
               Entrar
             </Link>
+          </p>
+          <p className="text-center text-xs mt-3 text-[#6B7280]">
+            Ao criar a conta, você concorda com a{' '}
+            <Link href="/politica-de-privacidade" className="text-[#FF7F50] hover:text-[#e86e40] transition-colors">
+              Política de Privacidade
+            </Link>
+            .
           </p>
         </div>
       </div>

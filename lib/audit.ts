@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { logInternalError } from '@/lib/apiResponse'
-import { adminClient } from '@/lib/supabase/admin'
+import { insertAuditEvent } from '@/lib/privileged/auditAdmin'
 
 export type AuditStatus = 'success' | 'failure'
 
@@ -25,7 +25,7 @@ export async function getRequestAuditMeta(): Promise<{ ip: string; userAgent: st
 
 export async function recordAuditEvent(input: AuditEventInput): Promise<void> {
   try {
-    const { error } = await adminClient.from('audit_events').insert({
+    const { error } = await insertAuditEvent({
       user_id: input.userId ?? null,
       action: input.action,
       status: input.status,

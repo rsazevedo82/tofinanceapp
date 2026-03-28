@@ -1,20 +1,18 @@
 import type { Metadata, Viewport } from 'next'
-import { Montserrat, Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { PWA_THEME } from '@/lib/pwaTheme'
 import './globals.css'
 
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
+const headingFont = localFont({
+  src: './fonts/GeistVF.woff',
   variable: '--font-heading',
 })
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '700'],
+const sansFont = localFont({
+  src: './fonts/GeistVF.woff',
   variable: '--font-sans',
 })
 
@@ -50,7 +48,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={`${montserrat.variable} ${inter.variable} font-sans`}>
+    <html lang="pt-BR" suppressHydrationWarning className={`${headingFont.variable} ${sansFont.variable} font-sans`}>
       <body>
         <QueryProvider>
           {children}

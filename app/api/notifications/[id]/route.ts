@@ -1,6 +1,8 @@
 // app/api/notifications/[id]/route.ts
 
 import { createClient }                   from '@/lib/supabase/server'
+import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
+import { withRouteObservability } from '@/lib/observability'
 import { NextResponse }                   from 'next/server'
 import type { ApiResponse, Notification } from '@/types'
 
@@ -8,10 +10,16 @@ import type { ApiResponse, Notification } from '@/types'
 // Marca uma notificação específica como lida
 
 export async function PATCH(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Notification>>> {
-  try {
+  return withRouteObservability(request, {
+    route: '/api/notifications/[id]',
+    operation: 'notifications_patch',
+  }, async () => {
+    const limited = await checkRateLimitByIP('notifications:write')
+    if (limited) return limited as NextResponse<ApiResponse<Notification>>
+
     const { id } = await params
 
     const supabase = await createClient()
@@ -19,6 +27,8 @@ export async function PATCH(
     if (authError || !user) {
       return NextResponse.json({ data: null, error: 'Não autorizado' }, { status: 401 })
     }
+    const userLimited = await checkRateLimitByUser('notifications:write', user.id)
+    if (userLimited) return userLimited as NextResponse<ApiResponse<Notification>>
 
     const { data, error } = await supabase
       .from('notifications')
@@ -37,8 +47,5 @@ export async function PATCH(
     }
 
     return NextResponse.json({ data, error: null })
-  } catch (err) {
-    console.error('[PATCH /api/notifications/[id]]', err)
-    return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })
-  }
+  }) as Promise<NextResponse<ApiResponse<Notification>>>
 }

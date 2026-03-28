@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 import { Redis } from '@upstash/redis'
-import { adminClient } from '@/lib/supabase/admin'
+import { insertAdminNotification } from '@/lib/privileged/notificationsAdmin'
 
 type SecurityNotificationType =
   | 'security_new_device'
@@ -41,7 +41,7 @@ export async function notifySecurityEvent(
   body: string,
   payload: Record<string, unknown> = {}
 ): Promise<void> {
-  await adminClient.from('notifications').insert({
+  await insertAdminNotification({
     user_id: userId,
     type,
     title,

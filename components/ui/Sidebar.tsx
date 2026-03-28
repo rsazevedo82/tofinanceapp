@@ -4,7 +4,7 @@ import Link      from 'next/link'
 import Image     from 'next/image'
 import { usePathname } from 'next/navigation'
 import { NotificationBell } from '@/components/ui/NotificationBell'
-import { useState }         from 'react'
+import { useEffect, useState }         from 'react'
 import { useCouple }        from '@/hooks/useCouple'
 import { useProfile, useLogout } from '@/hooks/useProfile'
 import {
@@ -31,6 +31,7 @@ interface NavItem {
 }
 
 export function Sidebar() {
+  const mobileDrawerId = 'mobile-navigation-drawer'
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [lockedInfo, setLockedInfo] = useState<{ label: string; message: string; hint: string } | null>(null)
@@ -39,6 +40,19 @@ export function Sidebar() {
   const { data: profile } = useProfile()
   const logout            = useLogout()
   const hasCouple = !!couple
+
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [mobileOpen])
 
   const navItems: NavItem[] = [
     { href: '/',           label: 'Visão geral',         icon: FcHome },
@@ -237,6 +251,10 @@ export function Sidebar() {
             <NotificationBell />
             <button
               onClick={() => setMobileOpen(true)}
+              aria-label="Abrir menu de navegação"
+              aria-expanded={mobileOpen}
+              aria-controls={mobileDrawerId}
+              aria-haspopup="dialog"
               className="touch-target text-[#6B7280] hover:text-[#0F172A] transition-colors p-2 text-xl"
             >
               ☰
@@ -251,13 +269,19 @@ export function Sidebar() {
           <div
             className="absolute inset-0 bg-[#0F172A]/30 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
           />
           <div
+            id={mobileDrawerId}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navegação"
             className="relative w-60 flex flex-col h-full bg-[#FDFCF0]"
             style={{ borderRight: '1px solid #D1D5DB' }}
           >
             <button
               onClick={() => setMobileOpen(false)}
+              aria-label="Fechar menu de navegação"
               className="touch-target absolute top-4 right-4 text-[#6B7280] hover:text-[#0F172A] text-sm p-2"
             >✕</button>
             <NavContent />

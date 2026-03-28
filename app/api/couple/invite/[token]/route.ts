@@ -1,8 +1,15 @@
 // app/api/couple/invite/[token]/route.ts
 
 import { createClient }   from '@/lib/supabase/server'
-import { adminClient }    from '@/lib/supabase/admin'
 import { getRequestAuditMeta, recordAuditEvent } from '@/lib/audit'
+import {
+  createCoupleProfile,
+  getActiveCoupleByUserId,
+  getPendingInvitationByToken,
+  getUserProfileNameById,
+  updateInvitationById,
+} from '@/lib/privileged/coupleAdmin'
+import { insertAdminNotifications } from '@/lib/privileged/notificationsAdmin'
 import { NextResponse }   from 'next/server'
 import type { ApiResponse } from '@/types'
 
@@ -48,12 +55,7 @@ export async function POST(
     }
 
     // Busca e valida o convite
-    const { data: invitation, error: inviteError } = await adminClient
-      .from('couple_invitations')
-      .select('*')
-      .eq('token', token)
-      .eq('status', 'pending')
-      .maybeSingle()
+    const { data: invitation, error: inviteError } = await getPendingInvitationByToken(token)
 
     if (inviteError) throw inviteError
     if (!invitation) {
@@ -75,10 +77,7 @@ export async function POST(
 
     // Verifica expiração
     if (new Date(invitation.expires_at) < new Date()) {
-      await adminClient
-        .from('couple_invitations')
-        .update({ status: 'cancelled' })
-        .eq('id', invitation.id)
+      await updateInvitationById(invitation.id, { status: 'cancelled' })
       await recordAuditEvent({
         action: 'couple_invite_respond',
         status: 'failure',
@@ -108,10 +107,7 @@ export async function POST(
     }
 
     if (action === 'reject') {
-      await adminClient
-        .from('couple_invitations')
-        .update({ status: 'rejected', invitee_id: user.id })
-        .eq('id', invitation.id)
+      await updateInvitationById(invitation.id, { status: 'rejected', invitee_id: user.id })
 
       await recordAuditEvent({
         action: 'couple_invite_respond',
@@ -130,11 +126,7 @@ export async function POST(
     // ── Aceitar ───────────────────────────────────────────────────────────────
 
     // Verifica se o aceitante já tem vínculo
-    const { data: existingCouple } = await adminClient
-      .from('couple_profiles')
-      .select('id')
-      .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
-      .maybeSingle()
+    const { data: existingCouple } = await getActiveCoupleByUserId(user.id)
 
     if (existingCouple) {
       await recordAuditEvent({
@@ -157,22 +149,17 @@ export async function POST(
     const [uid1, uid2] = [invitation.inviter_id, user.id].sort()
 
     // Cria o vínculo
-    const { error: coupleError } = await adminClient
-      .from('couple_profiles')
-      .insert({ user_id_1: uid1, user_id_2: uid2 })
+    const { error: coupleError } = await createCoupleProfile(uid1, uid2)
 
     if (coupleError) throw coupleError
 
     // Atualiza convite
-    await adminClient
-      .from('couple_invitations')
-      .update({ status: 'accepted', invitee_id: user.id })
-      .eq('id', invitation.id)
+    await updateInvitationById(invitation.id, { status: 'accepted', invitee_id: user.id })
 
     // Busca nomes para notificações
     const [{ data: inviterProfile }, { data: inviteeProfile }] = await Promise.all([
-      adminClient.from('user_profiles').select('name').eq('id', invitation.inviter_id).maybeSingle(),
-      adminClient.from('user_profiles').select('name').eq('id', user.id).maybeSingle(),
+      getUserProfileNameById(invitation.inviter_id),
+      getUserProfileNameById(user.id),
     ])
 
     const inviterName  = inviterProfile?.name ?? 'Seu parceiro'
@@ -180,7 +167,7 @@ export async function POST(
 
     // Notifica ambos
     const now = new Date().toISOString()
-    await adminClient.from('notifications').insert([
+    await insertAdminNotifications([
       {
         user_id:    invitation.inviter_id,
         type:       'couple_accepted',

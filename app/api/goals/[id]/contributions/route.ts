@@ -1,9 +1,9 @@
 // app/api/goals/[id]/contributions/route.ts
 
 import { createClient }           from '@/lib/supabase/server'
-import { adminClient }            from '@/lib/supabase/admin'
 import { addContributionSchema }  from '@/lib/validations/schemas'
 import { ratelimit }              from '@/lib/rateLimit'
+import { insertAdminNotifications } from '@/lib/privileged/notificationsAdmin'
 import { headers }                from 'next/headers'
 import { NextResponse }           from 'next/server'
 import type { ApiResponse, GoalContribution } from '@/types'
@@ -170,7 +170,7 @@ export async function POST(request: Request, { params }: Params): Promise<NextRe
         payload: { goal_id: id, total },
       }))
 
-      await adminClient.from('notifications').insert(notifications)
+      await insertAdminNotifications(notifications)
     }
 
     return NextResponse.json({ data: contribution, error: null }, { status: 201 })
