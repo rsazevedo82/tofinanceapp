@@ -84,21 +84,21 @@ export default function DashboardPage() {
       {/* ── Notificações não lidas ── */}
       {unread.length > 0 && (
         <div
-          className="motion-enter mb-6 md:mb-8 rounded-xl overflow-hidden"
-          style={{ border: '1px solid rgba(255,127,80,0.25)', background: 'rgba(255,127,80,0.05)' }}
+          className="motion-enter mb-6 md:mb-8 rounded-xl overflow-hidden card card-compact"
+          style={{ borderColor: 'rgba(15,118,110,0.22)', background: 'rgba(15,118,110,0.06)' }}
         >
           <div
             className="flex items-center justify-between px-5 py-3.5"
-            style={{ borderBottom: '1px solid rgba(255,127,80,0.15)' }}
+            style={{ borderBottom: '1px solid rgba(15,118,110,0.14)' }}
           >
-            <p className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
-              <span className="status-chip status-chip-warning">{unread.length}</span>
+            <p className="text-sm font-bold text-[#3F342C] flex items-center gap-2">
+              <span className="status-chip status-chip-highlight">{unread.length}</span>
               notificaç{unread.length === 1 ? 'ão' : 'ões'} não lida{unread.length !== 1 ? 's' : ''}
             </p>
             <button
               onClick={() => markAllAsRead.mutate()}
               disabled={markAllAsRead.isPending}
-              className="touch-target inline-flex items-center text-xs font-medium text-[#C2410C] hover:text-[#9A3412] transition-colors"
+              className="action-link"
             >
               Marcar todas como lidas
             </button>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push('/transacoes')}
-                  className="touch-target inline-flex items-center text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
+                  className="action-link"
                 >
                   Ver todas →
                 </button>
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push('/relatorios')}
-                  className="touch-target inline-flex items-center text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
+                  className="action-link"
                 >
                   Ver relatórios →
                 </button>

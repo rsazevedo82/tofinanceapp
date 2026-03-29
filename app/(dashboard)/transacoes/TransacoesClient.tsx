@@ -338,7 +338,7 @@ export default function TransacoesPage() {
             </div>
           </div>
           {isFetchingNextPage && (
-            <p className="text-xs text-[#334155] text-center mt-2">Carregando mais...</p>
+            <p className="meta-text text-center mt-2">Carregando mais...</p>
           )}
         </div>
       )}

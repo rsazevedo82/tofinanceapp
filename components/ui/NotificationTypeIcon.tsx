@@ -13,22 +13,22 @@ import {
 export function NotificationTypeIcon({ type, className = 'h-4 w-4 text-[#475569]' }: { type: string; className?: string }) {
   switch (type) {
     case 'couple_invite':
-      return <Mail className={className} aria-hidden />
+      return <Mail className={className} strokeWidth={1.8} aria-hidden />
     case 'couple_accepted':
-      return <UserCheck className={className} aria-hidden />
+      return <UserCheck className={className} strokeWidth={1.7} aria-hidden />
     case 'couple_unlinked':
-      return <UserX className={className} aria-hidden />
+      return <UserX className={className} strokeWidth={1.7} aria-hidden />
     case 'goal_reached':
-      return <Target className={className} aria-hidden />
+      return <Target className={className} strokeWidth={1.8} aria-hidden />
     case 'invoice_closed':
-      return <CreditCard className={className} aria-hidden />
+      return <CreditCard className={className} strokeWidth={1.7} aria-hidden />
     case 'security_new_device':
-      return <Shield className={className} aria-hidden />
+      return <Shield className={className} strokeWidth={1.7} aria-hidden />
     case 'security_password_changed':
-      return <LockKeyhole className={className} aria-hidden />
+      return <LockKeyhole className={className} strokeWidth={1.8} aria-hidden />
     case 'security_email_change_requested':
-      return <MailWarning className={className} aria-hidden />
+      return <MailWarning className={className} strokeWidth={1.8} aria-hidden />
     default:
-      return <Bell className={className} aria-hidden />
+      return <Bell className={className} strokeWidth={1.7} aria-hidden />
   }
 }

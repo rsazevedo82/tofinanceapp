@@ -30,46 +30,46 @@ export function EmptyStatePanel({
 }: StatePanelProps) {
   const toneStyles: Record<EmptyStateTone, { border: string; background: string; iconBg: string; iconColor: string }> = {
     neutral: {
-      border: 'rgba(148,163,184,0.28)',
-      background: 'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.9) 100%)',
-      iconBg: 'rgba(148,163,184,0.14)',
-      iconColor: '#475569',
+      border: 'rgba(195,179,164,0.42)',
+      background: 'linear-gradient(180deg, rgba(255,252,248,0.98) 0%, rgba(248,245,240,0.96) 100%)',
+      iconBg: 'rgba(201,183,156,0.18)',
+      iconColor: '#6B5D52',
     },
     finance: {
-      border: 'rgba(45,212,191,0.3)',
-      background: 'linear-gradient(180deg, rgba(236,253,250,0.88) 0%, rgba(255,255,255,0.98) 100%)',
-      iconBg: 'rgba(45,212,191,0.16)',
-      iconColor: '#0f766e',
+      border: 'rgba(74,102,85,0.34)',
+      background: 'linear-gradient(180deg, rgba(246,250,247,0.96) 0%, rgba(255,252,248,0.98) 100%)',
+      iconBg: 'rgba(74,102,85,0.16)',
+      iconColor: '#355145',
     },
     cards: {
-      border: 'rgba(245,158,11,0.3)',
-      background: 'linear-gradient(180deg, rgba(255,251,235,0.92) 0%, rgba(255,255,255,0.98) 100%)',
-      iconBg: 'rgba(245,158,11,0.16)',
-      iconColor: '#b45309',
+      border: 'rgba(201,183,156,0.44)',
+      background: 'linear-gradient(180deg, rgba(255,249,242,0.96) 0%, rgba(255,252,248,0.98) 100%)',
+      iconBg: 'rgba(201,183,156,0.2)',
+      iconColor: '#7C6A56',
     },
     goals: {
-      border: 'rgba(99,102,241,0.28)',
-      background: 'linear-gradient(180deg, rgba(238,242,255,0.9) 0%, rgba(255,255,255,0.98) 100%)',
-      iconBg: 'rgba(99,102,241,0.14)',
-      iconColor: '#4338ca',
+      border: 'rgba(15,118,110,0.28)',
+      background: 'linear-gradient(180deg, rgba(240,248,246,0.94) 0%, rgba(255,252,248,0.98) 100%)',
+      iconBg: 'rgba(15,118,110,0.14)',
+      iconColor: '#0F766E',
     },
     couple: {
-      border: 'rgba(236,72,153,0.26)',
-      background: 'linear-gradient(180deg, rgba(253,242,248,0.9) 0%, rgba(255,255,255,0.98) 100%)',
-      iconBg: 'rgba(236,72,153,0.14)',
-      iconColor: '#be185d',
+      border: 'rgba(217,119,95,0.34)',
+      background: 'linear-gradient(180deg, rgba(255,246,242,0.96) 0%, rgba(255,252,248,0.98) 100%)',
+      iconBg: 'rgba(217,119,95,0.16)',
+      iconColor: '#B7634F',
     },
     category: {
-      border: 'rgba(16,185,129,0.28)',
-      background: 'linear-gradient(180deg, rgba(236,253,245,0.9) 0%, rgba(255,255,255,0.98) 100%)',
-      iconBg: 'rgba(16,185,129,0.14)',
-      iconColor: '#047857',
+      border: 'rgba(74,102,85,0.34)',
+      background: 'linear-gradient(180deg, rgba(243,249,245,0.96) 0%, rgba(255,252,248,0.98) 100%)',
+      iconBg: 'rgba(74,102,85,0.16)',
+      iconColor: '#3A584B',
     },
     warning: {
-      border: 'rgba(239,68,68,0.26)',
-      background: 'linear-gradient(180deg, rgba(254,242,242,0.9) 0%, rgba(255,255,255,0.98) 100%)',
-      iconBg: 'rgba(239,68,68,0.14)',
-      iconColor: '#b91c1c',
+      border: 'rgba(217,119,95,0.36)',
+      background: 'linear-gradient(180deg, rgba(255,245,240,0.96) 0%, rgba(255,252,248,0.98) 100%)',
+      iconBg: 'rgba(217,119,95,0.16)',
+      iconColor: '#B05745',
     },
   }
   const style = toneStyles[tone]
@@ -83,13 +83,39 @@ export function EmptyStatePanel({
     category: '/illustrations/empty-category.svg',
     warning: '/illustrations/empty-division.svg',
   }
-  const fallbackIcon = <Inbox size={26} className="text-[#64748B]" aria-hidden />
+  const fallbackIcon = <Inbox size={26} className="text-[#6B5D52]" aria-hidden />
 
   return (
     <div
-      className="motion-feedback card py-10 px-6 text-center"
+      className="motion-feedback card py-10 px-6 text-center overflow-hidden"
       style={{ borderColor: style.border, background: style.background }}
     >
+      <div
+        className="pointer-events-none absolute -top-8 -right-10 h-24 w-24 rounded-full blur-2xl"
+        style={{ background: style.iconBg }}
+      />
+      {tone === 'couple' ? (
+        <svg
+          className="pointer-events-none absolute right-3 top-3 h-10 w-16 opacity-55"
+          viewBox="0 0 96 64"
+          fill="none"
+          aria-hidden
+        >
+          <path
+            d="M8 38c9 0 14-12 24-12 10 0 14 12 24 12s15-12 24-12"
+            stroke={style.iconColor}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M8 48c9 0 14-12 24-12 10 0 14 12 24 12s15-12 24-12"
+            stroke={style.iconColor}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            opacity="0.7"
+          />
+        </svg>
+      ) : null}
       {hasCustomIcon ? (
         <div className="mb-3 flex justify-center">
           <div
