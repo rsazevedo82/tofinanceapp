@@ -1,7 +1,7 @@
 // components/ui/NotificationBell.tsx
 'use client'
 
-import { useState, useRef, useEffect }      from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { Bell }                             from 'lucide-react'
 import { useNotificationsLive, useMarkAsRead, useMarkAllAsRead } from '@/hooks/useNotifications'
 import { NotificationTypeIcon }             from '@/components/ui/NotificationTypeIcon'
@@ -20,7 +20,9 @@ function timeAgo(dateStr: string): string {
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({})
   const ref             = useRef<HTMLDivElement>(null)
+  const triggerRef      = useRef<HTMLButtonElement>(null)
 
   const { data, unreadCount }  = useNotificationsLive({ enableLivePolling: open })
   const markAsRead             = useMarkAsRead()
@@ -37,6 +39,44 @@ export function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useLayoutEffect(() => {
+    if (!open) return
+
+    const HORIZONTAL_MARGIN = 8
+    const DESKTOP_WIDTH = 288
+
+    const updatePosition = () => {
+      const triggerRect = triggerRef.current?.getBoundingClientRect()
+      if (!triggerRect) return
+
+      const viewportWidth = window.innerWidth
+      const width = Math.min(DESKTOP_WIDTH, Math.max(220, viewportWidth - HORIZONTAL_MARGIN * 2))
+      const top = triggerRect.bottom + 8
+
+      let left = triggerRect.right - width
+      if (left < HORIZONTAL_MARGIN) left = HORIZONTAL_MARGIN
+      if (left + width > viewportWidth - HORIZONTAL_MARGIN) {
+        left = viewportWidth - width - HORIZONTAL_MARGIN
+      }
+
+      setPanelStyle({
+        position: 'fixed',
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `${width}px`,
+      })
+    }
+
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [open])
+
   function handleItemClick(notification: Notification) {
     if (!notification.read_at) {
       markAsRead.mutate(notification.id)
@@ -49,6 +89,7 @@ export function NotificationBell() {
     <div ref={ref} className="relative">
       {/* Botão sino */}
       <button
+        ref={triggerRef}
         onClick={() => setOpen(prev => !prev)}
         className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
         style={{
@@ -71,8 +112,9 @@ export function NotificationBell() {
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] rounded-xl overflow-hidden z-50"
+          className="rounded-xl overflow-hidden z-50"
           style={{
+            ...panelStyle,
             background:  '#ffffff',
             border:      '1px solid #D1D5DB',
             boxShadow:   '0 8px 32px rgba(15,23,42,0.12)',
