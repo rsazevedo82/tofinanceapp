@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createTransactionSchema, createAccountSchema } from '@/lib/validations/schemas'
+import { createTransactionSchema, createAccountSchema, createSplitSchema } from '@/lib/validations/schemas'
 
 describe('createTransactionSchema', () => {
 
@@ -138,6 +138,49 @@ describe('createAccountSchema', () => {
 
   it('aceita color com formato hex válido', () => {
     const result = createAccountSchema.safeParse({ ...validAccount, color: '#EF4444' })
+    expect(result.success).toBe(true)
+  })
+})
+
+describe('createSplitSchema', () => {
+  const validSplit = {
+    couple_id: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Jantar',
+    date: '2026-03-29',
+    total_amount: 120,
+  }
+
+  it('aceita split equal sem partner_amount', () => {
+    const result = createSplitSchema.safeParse({
+      ...validSplit,
+      split_mode: 'equal',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejeita split manual sem partner_amount', () => {
+    const result = createSplitSchema.safeParse({
+      ...validSplit,
+      split_mode: 'manual',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita split manual com partner_amount >= total', () => {
+    const result = createSplitSchema.safeParse({
+      ...validSplit,
+      split_mode: 'manual',
+      partner_amount: 120,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('aceita split manual com partner_amount valido', () => {
+    const result = createSplitSchema.safeParse({
+      ...validSplit,
+      split_mode: 'manual',
+      partner_amount: 35,
+    })
     expect(result.success).toBe(true)
   })
 })

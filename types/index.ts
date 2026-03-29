@@ -171,14 +171,17 @@ export interface GoalContribution {
 // ── Expense Splits ────────────────────────────────────────────────────────────
 
 export type SplitStatus = 'pending' | 'settled'
+export type SplitMode = 'equal' | 'manual'
 
 export interface ExpenseSplit {
   id:                  string
+  transaction_id:      string | null
   couple_id:           string
   payer_id:            string
   description:         string
   date:                string
   total_amount:        number
+  split_mode:          SplitMode
   payer_share_percent: number
   status:              SplitStatus
   settled_at:          string | null

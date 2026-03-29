@@ -139,10 +139,32 @@ export const createSplitSchema = z.object({
   description:         safeString(255).min(1, 'Descrição é obrigatória'),
   date:                isoDate,
   total_amount:        z.number().positive('Valor deve ser maior que zero').max(999999999),
+  split_mode:          z.enum(['equal', 'manual']).default('equal'),
+  partner_amount:      z.number().positive('Valor do parceiro deve ser maior que zero').max(999999999).optional(),
+  // Mantido por compatibilidade com payload antigo.
   payer_share_percent: z.number()
-                         .min(1,   'Percentual mínimo é 1%')
-                         .max(99,  'Percentual máximo é 99%')
-                         .default(50),
+                         .min(0.01, 'Percentual mínimo é 0,01%')
+                         .max(99.99, 'Percentual máximo é 99,99%')
+                         .optional(),
+}).superRefine((data, ctx) => {
+  if (data.split_mode !== 'manual') return
+
+  if (data.partner_amount == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['partner_amount'],
+      message: 'Informe o valor fixo do parceiro',
+    })
+    return
+  }
+
+  if (data.partner_amount >= data.total_amount) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['partner_amount'],
+      message: 'Valor do parceiro deve ser menor que o valor total',
+    })
+  }
 })
 
 export const settleSplitSchema = z.object({

@@ -1,17 +1,12 @@
 // app/api/splits/[id]/route.ts
 
 import { createClient }      from '@/lib/supabase/server'
+import { computeSplitAmounts } from '@/lib/splitLogic'
 import { settleSplitSchema } from '@/lib/validations/schemas'
 import { NextResponse }      from 'next/server'
 import type { ApiResponse, ExpenseSplit } from '@/types'
 
 type Params = { params: Promise<{ id: string }> }
-
-function computeAmounts(split: { total_amount: number; payer_share_percent: number }) {
-  const payer_amount   = Math.round(split.total_amount * split.payer_share_percent) / 100
-  const partner_amount = Math.round((split.total_amount - payer_amount) * 100) / 100
-  return { payer_amount, partner_amount }
-}
 
 // ── Helper: busca split e verifica acesso do parceiro ─────────────────────────
 
@@ -85,7 +80,7 @@ export async function PATCH(request: Request, { params }: Params): Promise<NextR
 
     if (error) throw error
 
-    return NextResponse.json({ data: { ...data, ...computeAmounts(data) }, error: null })
+    return NextResponse.json({ data: { ...data, ...computeSplitAmounts(data) }, error: null })
   } catch (err) {
     console.error('[PATCH /api/splits/[id]]', err)
     return NextResponse.json({ data: null, error: 'Erro interno' }, { status: 500 })

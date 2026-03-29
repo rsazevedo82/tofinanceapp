@@ -2,6 +2,7 @@
 
 import { createClient }       from '@/lib/supabase/server'
 import { createSplitSchema }  from '@/lib/validations/schemas'
+import { computeSplitAmounts, resolveSplitValues } from '@/lib/splitLogic'
 import { ratelimit }          from '@/lib/rateLimit'
 import { headers }            from 'next/headers'
 import { NextResponse }       from 'next/server'
@@ -12,11 +13,6 @@ async function getIP() {
   return h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1'
 }
 
-function computeAmounts(split: { total_amount: number; payer_share_percent: number }) {
-  const payer_amount   = Math.round(split.total_amount * split.payer_share_percent) / 100
-  const partner_amount = Math.round((split.total_amount - payer_amount) * 100) / 100
-  return { payer_amount, partner_amount }
-}
 
 // ── GET /api/splits ────────────────────────────────────────────────────────────
 // ?status=pending | settled | all (default: all)
@@ -60,7 +56,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Ex
 
     const splits: ExpenseSplit[] = (data ?? []).map(s => ({
       ...s,
-      ...computeAmounts(s),
+      ...computeSplitAmounts(s),
     }))
 
     return NextResponse.json({ data: splits, error: null })
@@ -112,16 +108,26 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<E
       )
     }
 
+    const resolved = resolveSplitValues(parsed.data)
+    const { split_mode: _splitMode, partner_amount: _partnerAmount, ...payload } = parsed.data
+
     const { data, error } = await supabase
       .from('expense_splits')
-      .insert({ ...parsed.data, payer_id: user.id })
+      .insert({
+        ...payload,
+        split_mode: resolved.split_mode,
+        payer_share_percent: resolved.payer_share_percent,
+        payer_amount: resolved.payer_amount,
+        partner_amount: resolved.partner_amount,
+        payer_id: user.id,
+      })
       .select()
       .single()
 
     if (error) throw error
 
     return NextResponse.json(
-      { data: { ...data, ...computeAmounts(data) }, error: null },
+      { data: { ...data, ...computeSplitAmounts(data) }, error: null },
       { status: 201 }
     )
   } catch (err) {

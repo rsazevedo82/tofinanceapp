@@ -6,6 +6,7 @@ import { createClient }                                        from '@/lib/supab
 import { fail, logInternalError }                              from '@/lib/apiResponse'
 import { getRequestAuditMeta, recordAuditEvent }               from '@/lib/audit'
 import { createTransactionSchema }                             from '@/lib/validations/schemas'
+import { buildEqualSplitAmounts, shouldAutoSplitTransaction } from '@/lib/splitLogic'
 import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
 import { limitFrequentRead, ratelimit }                        from '@/lib/rateLimit'
 import { finalizeIdempotency, prepareIdempotency }             from '@/lib/idempotency'
@@ -16,6 +17,94 @@ import { NextResponse }                                        from 'next/server
 async function getIP(): Promise<string> {
   const h = await headers()
   return h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1'
+}
+
+async function getActiveCoupleId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<string | null> {
+  const { data: couple } = await supabase
+    .from('couple_profiles')
+    .select('id')
+    .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
+    .maybeSingle()
+
+  return couple?.id ?? null
+}
+
+async function syncSplitForTransaction(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  args: {
+    transactionId: string
+    userId: string
+    type: Transaction['type']
+    description: string
+    date: string
+    amount: number
+  }
+): Promise<void> {
+  const coupleId = await getActiveCoupleId(supabase, args.userId)
+  const eligible = shouldAutoSplitTransaction({
+    hasCouple: !!coupleId,
+    type: args.type,
+    amount: args.amount,
+  })
+
+  if (!eligible) {
+    await supabase
+      .from('expense_splits')
+      .delete()
+      .eq('transaction_id', args.transactionId)
+    return
+  }
+
+  const totalAmount = Math.round(args.amount * 100) / 100
+  const { payer_amount: payerAmount, partner_amount: partnerAmount } = buildEqualSplitAmounts(totalAmount)
+
+  const { data: existing } = await supabase
+    .from('expense_splits')
+    .select('id')
+    .eq('transaction_id', args.transactionId)
+    .maybeSingle()
+
+  if (existing?.id) {
+    const { error: updateError } = await supabase
+      .from('expense_splits')
+      .update({
+        couple_id: coupleId,
+        payer_id: args.userId,
+        description: args.description,
+        date: args.date,
+        total_amount: totalAmount,
+        split_mode: 'equal',
+        payer_share_percent: 50,
+        payer_amount: payerAmount,
+        partner_amount: partnerAmount,
+      })
+      .eq('id', existing.id)
+
+    if (updateError) throw updateError
+    return
+  }
+
+  const { error: insertError } = await supabase
+    .from('expense_splits')
+    .insert({
+      transaction_id: args.transactionId,
+      couple_id: coupleId,
+      payer_id: args.userId,
+      description: args.description,
+      date: args.date,
+      total_amount: totalAmount,
+      split_mode: 'equal',
+      payer_share_percent: 50,
+      payer_amount: payerAmount,
+      partner_amount: partnerAmount,
+      status: 'pending',
+      settled_at: null,
+    })
+
+  if (insertError) throw insertError
 }
 
 // ── GET /api/transactions ─────────────────────────────────────────────────────
@@ -261,6 +350,14 @@ export async function POST(
         .single()
 
       if (error) throw error
+      await syncSplitForTransaction(supabase, {
+        transactionId: data.id,
+        userId: user.id,
+        type: data.type,
+        description: data.description,
+        date: data.date,
+        amount: data.amount,
+      })
       await recordAuditEvent({
         action: 'finance_transaction_create',
         status: 'success',
@@ -358,6 +455,16 @@ export async function POST(
       .select()
 
     if (insertError) throw insertError
+    for (const tx of created ?? []) {
+      await syncSplitForTransaction(supabase, {
+        transactionId: tx.id,
+        userId: user.id,
+        type: tx.type,
+        description: tx.description,
+        date: tx.date,
+        amount: tx.amount,
+      })
+    }
     await recordAuditEvent({
       action: 'finance_transaction_create',
       status: 'success',
