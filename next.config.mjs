@@ -79,11 +79,11 @@ const nextConfig = {
       // Next.js requer unsafe-inline para scripts internos
       // unsafe-eval necessário para desenvolvimento — removido em produção
       process.env.NODE_ENV === 'development'
-        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://challenges.cloudflare.com"
-        : "script-src 'self' 'unsafe-inline' https://vercel.live https://challenges.cloudflare.com",
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://challenges.cloudflare.com https://static.cloudflareinsights.com"
+        : "script-src 'self' 'unsafe-inline' https://vercel.live https://challenges.cloudflare.com https://static.cloudflareinsights.com",
 
       // Supabase API + WebSocket para realtime
-      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live https://challenges.cloudflare.com`,
+      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live https://challenges.cloudflare.com https://cloudflareinsights.com https://static.cloudflareinsights.com`,
 
       // Estilos inline necessários para Tailwind
       "style-src 'self' 'unsafe-inline'",
@@ -115,8 +115,8 @@ const nextConfig = {
     // Objetivo: medir impacto antes de remover unsafe-inline da CSP principal.
     const ContentSecurityPolicyReportOnly = [
       "default-src 'self'",
-      "script-src 'self' https://vercel.live https://challenges.cloudflare.com",
-      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live https://challenges.cloudflare.com`,
+      "script-src 'self' https://vercel.live https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vercel.live https://challenges.cloudflare.com https://cloudflareinsights.com https://static.cloudflareinsights.com`,
       "style-src 'self'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
