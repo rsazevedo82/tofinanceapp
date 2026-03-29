@@ -70,10 +70,10 @@ export default function ObjetivosPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">
+          <h1 className="page-title">
             {c(isCouple, 'Seus objetivos', 'Objetivos de vocês')}
           </h1>
-          <p className="text-sm mt-1 text-[#334155]">
+          <p className="page-subtitle mt-1">
             {goals.length} {goals.length === 1 ? 'meta' : 'metas'} ·{' '}
             {formatCurrency(totalCurrent)} de {formatCurrency(totalTarget)} acumulados
           </p>
@@ -90,7 +90,7 @@ export default function ObjetivosPage() {
             key={s}
             onClick={() => setScope(s)}
             data-active={scope === s}
-            className={`motion-tab interactive-control px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+            className={`touch-target motion-tab interactive-control px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               scope === s
                 ? 'bg-[#FF7F50] text-white shadow-sm'
                 : 'text-[#334155] hover:text-[#0F172A]'
@@ -106,8 +106,8 @@ export default function ObjetivosPage() {
         <EmptyStatePanel
           icon={<Users size={26} className="text-[#475569]" aria-hidden />}
           tone="couple"
-          title="Nenhum perfil de casal vinculado"
-          description="Vincule-se ao seu parceiro para criar objetivos compartilhados."
+          title="Conectem o perfil de casal para metas em conjunto"
+          description="Depois da conexão, vocês podem criar objetivos compartilhados e acompanhar aportes lado a lado."
           nextSteps={[
             'Conecte o perfil de casal para desbloquear metas em conjunto',
             'Definam prazo e valor-alvo para acompanhar aportes dos dois',
@@ -166,8 +166,12 @@ export default function ObjetivosPage() {
         <EmptyStatePanel
           icon={<Target size={26} className="text-[#475569]" aria-hidden />}
           tone="goals"
-          title={scope === 'individual' ? 'Você ainda não criou nenhum objetivo' : 'Vocês ainda não definiram um objetivo em conjunto'}
-          description={c(isCouple, 'Defina um objetivo e acompanhe seu progresso', 'Definam um objetivo e acompanhem juntos')}
+          title={scope === 'individual' ? 'Comece pela sua primeira meta' : 'Definam a primeira meta do casal'}
+          description={c(
+            isCouple,
+            'Com uma meta clara, fica mais fácil transformar planejamento em hábito.',
+            'Com uma meta clara, vocês transformam planejamento financeiro em rotina.'
+          )}
           nextSteps={[
             'Crie uma meta com prazo e valor para acompanhar progresso real',
             scope === 'individual' ? 'Registre aportes recorrentes para acelerar a conclusão' : 'Contribuam juntos para avançar mais rápido',

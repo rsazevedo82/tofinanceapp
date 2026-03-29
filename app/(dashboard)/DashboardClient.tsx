@@ -4,7 +4,6 @@
 import { useQuery }                              from '@tanstack/react-query'
 import { useRouter }                             from 'next/navigation'
 import dynamic                                   from 'next/dynamic'
-import Image                                     from 'next/image'
 import { formatCurrency }                        from '@/lib/utils/format'
 import { Modal }                                 from '@/components/ui/Modal'
 import { useMemo, useState }                     from 'react'
@@ -12,7 +11,7 @@ import { useNotifications, useMarkAllAsRead }    from '@/hooks/useNotifications'
 import { useCouple }                             from '@/hooks/useCouple'
 import { c }                                     from '@/lib/utils/copy'
 import { OnboardingChecklist }                   from '@/components/ui/OnboardingChecklist'
-import { ErrorStatePanel, LoadingStatePanel }    from '@/components/ui/StatePanel'
+import { EmptyStatePanel, ErrorStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
 import { NotificationTypeIcon }                  from '@/components/ui/NotificationTypeIcon'
 import { CreditCard }                            from 'lucide-react'
 import type { ApiResponse }                      from '@/types'
@@ -85,20 +84,21 @@ export default function DashboardPage() {
       {/* ── Notificações não lidas ── */}
       {unread.length > 0 && (
         <div
-          className="mb-6 md:mb-8 rounded-xl overflow-hidden"
+          className="motion-enter mb-6 md:mb-8 rounded-xl overflow-hidden"
           style={{ border: '1px solid rgba(255,127,80,0.25)', background: 'rgba(255,127,80,0.05)' }}
         >
           <div
             className="flex items-center justify-between px-5 py-3.5"
             style={{ borderBottom: '1px solid rgba(255,127,80,0.15)' }}
           >
-            <p className="text-sm font-bold text-[#0F172A]">
-              {unread.length} notificaç{unread.length === 1 ? 'ão' : 'ões'} não lida{unread.length !== 1 ? 's' : ''}
+            <p className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+              <span className="status-chip status-chip-warning">{unread.length}</span>
+              notificaç{unread.length === 1 ? 'ão' : 'ões'} não lida{unread.length !== 1 ? 's' : ''}
             </p>
             <button
               onClick={() => markAllAsRead.mutate()}
               disabled={markAllAsRead.isPending}
-              className="text-xs font-medium text-[#C2410C] hover:text-[#9A3412] transition-colors"
+              className="touch-target inline-flex items-center text-xs font-medium text-[#C2410C] hover:text-[#9A3412] transition-colors"
             >
               Marcar todas como lidas
             </button>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 mb-5 md:mb-6">
 
             {/* Saldo */}
-            <div className="card card-compact sm:col-span-1">
+            <div className="motion-enter motion-delay-1 card card-compact sm:col-span-1">
               <p className="label">Saldo em contas</p>
               <p className={`kpi-value mt-1 ${
                 data.total_balance >= 0 ? 'text-[#0F172A]' : 'text-[#EF4444]'
@@ -173,7 +173,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Receitas */}
-            <div className="card card-compact">
+            <div className="motion-enter motion-delay-2 card card-compact">
               <p className="label">Receitas</p>
               <p className="kpi-value mt-1 text-[#2DD4BF]">
                 {formatCurrency(data.income_month)}
@@ -182,7 +182,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Despesas */}
-            <div className="card card-compact">
+            <div className="motion-enter motion-delay-3 card card-compact">
               <p className="label">Despesas</p>
               <p className="kpi-value mt-1 text-[#EF4444]">
                 {formatCurrency(data.expense_month)}
@@ -192,7 +192,7 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Saldo do mês ── */}
-          <div className="card card-compact mb-6 flex items-center justify-between gap-4">
+          <div className="motion-enter motion-delay-4 card card-compact mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="label">{c(isCouple, 'Seu saldo no mês', 'Saldo de vocês no mês')}</p>
               <p className={`kpi-value mt-1 ${
@@ -226,7 +226,17 @@ export default function DashboardPage() {
             <div className="mb-8">
               <p className="section-heading">Cartões de crédito</p>
               <div className="space-y-3">
-                {data.cards.map(card => (
+                {data.cards.map(card => {
+                  const usagePercent = card.credit_limit > 0
+                    ? Math.min(Math.round((card.open_invoice / card.credit_limit) * 100), 100)
+                    : 0
+                  const usageTone = usagePercent > 80
+                    ? 'status-chip-danger'
+                    : usagePercent > 50
+                    ? 'status-chip-warning'
+                    : 'status-chip-success'
+
+                  return (
                   <div
                     key={card.id}
                     onClick={() => router.push(`/fatura/${card.id}`)}
@@ -238,8 +248,9 @@ export default function DashboardPage() {
                         <CreditCard size={18} className="text-[#475569]" aria-hidden />
                         <p className="text-base font-bold text-[#0F172A]">{card.name}</p>
                       </div>
-                      <span className="meta-text font-medium">
-                        Fecha dia {card.closing_day} · <span className="text-[#C2410C]">Ver fatura →</span>
+                      <span className="meta-text font-medium flex items-center gap-2">
+                        <span className={`status-chip ${usageTone}`}>{usagePercent}% usado</span>
+                        <span>Fecha dia {card.closing_day} · <span className="text-[#C2410C]">Ver fatura →</span></span>
                       </span>
                     </div>
 
@@ -279,7 +290,7 @@ export default function DashboardPage() {
                       />
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
           )}
@@ -294,7 +305,7 @@ export default function DashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push('/transacoes')}
-                  className="text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
+                  className="touch-target inline-flex items-center text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
                 >
                   Ver todas →
                 </button>
@@ -302,22 +313,24 @@ export default function DashboardPage() {
 
               <div className="space-y-1">
                 {data.recent_transactions.length === 0 ? (
-                  <div className="card card-compact py-6 text-center">
-                    <div className="flex justify-center mb-2">
-                      <Image
-                        src="/illustrations/context-onboarding-path.svg"
-                        alt=""
-                        aria-hidden
-                        width={112}
-                        height={48}
-                        sizes="112px"
-                        className="w-28 h-12 object-contain select-none pointer-events-none"
-                      />
-                    </div>
-                    <p className="text-sm text-[#334155]">
-                      {c(isCouple, 'Você ainda não registrou gastos este mês', 'Vocês ainda não registraram gastos este mês')}
-                    </p>
-                  </div>
+                  <EmptyStatePanel
+                    tone="finance"
+                    title={c(isCouple, 'Sem transações no período', 'Sem transações de vocês no período')}
+                    description={c(
+                      isCouple,
+                      'Registre sua primeira movimentação para começar os insights.',
+                      'Registrem a primeira movimentação para começar os insights do casal.'
+                    )}
+                    nextSteps={[
+                      'Registre uma despesa ou receita',
+                      'Use categorias para melhorar os relatórios mensais',
+                    ]}
+                    action={(
+                      <button onClick={() => setShowTx(true)} className="btn-primary w-full sm:w-auto justify-center">
+                        Registrar primeira transação
+                      </button>
+                    )}
+                  />
                 ) : (
                   data.recent_transactions.map(tx => (
                     <div key={tx.id} className="db-row flex items-center justify-between px-3 py-3.5">
@@ -360,29 +373,26 @@ export default function DashboardPage() {
                 </p>
                 <button
                   onClick={() => router.push('/relatorios')}
-                  className="text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
+                  className="touch-target inline-flex items-center text-xs font-semibold text-[#C2410C] hover:text-[#9A3412] transition-colors"
                 >
                   Ver relatórios →
                 </button>
               </div>
 
               {data.top_categories.length === 0 ? (
-                <div className="card card-compact py-6 text-center">
-                  <div className="flex justify-center mb-2">
-                    <Image
-                      src="/illustrations/context-insights-mini.svg"
-                      alt=""
-                      aria-hidden
-                      width={112}
-                      height={48}
-                      sizes="112px"
-                      className="w-28 h-12 object-contain select-none pointer-events-none"
-                    />
-                  </div>
-                  <p className="text-sm text-[#334155]">
-                    {c(isCouple, 'Nenhum gasto categorizado este mês', 'Vocês ainda não categorizaram gastos este mês')}
-                  </p>
-                </div>
+                <EmptyStatePanel
+                  tone="category"
+                  title={c(isCouple, 'Sem categorias no período', 'Sem categorias de gastos no período')}
+                  description={c(
+                    isCouple,
+                    'Classifique seus lançamentos para ver onde você mais gasta.',
+                    'Classifiquem os lançamentos para ver onde vocês mais gastam.'
+                  )}
+                  nextSteps={[
+                    'Abra uma transação e defina uma categoria',
+                    'Use relatórios para comparar hábitos por mês',
+                  ]}
+                />
               ) : (
                 <div className="space-y-4">
                   {data.top_categories.map((cat, i) => (

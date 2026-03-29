@@ -12,6 +12,7 @@ import { Modal }                      from '@/components/ui/Modal'
 import { useCouple }                  from '@/hooks/useCouple'
 import { c }                          from '@/lib/utils/copy'
 import { EmptyStatePanel, LoadingStatePanel } from '@/components/ui/StatePanel'
+import { CreditCard, FileText }       from 'lucide-react'
 import type { Transaction, ApiResponse } from '@/types'
 
 const TransactionForm = dynamic(
@@ -99,7 +100,7 @@ export default function FaturaPage() {
         <div className="flex items-start gap-3">
           <button
             onClick={() => router.back()}
-            className="text-xs px-2 py-1 rounded-lg transition-colors text-[#334155] bg-[#F3F4F6] hover:bg-[#E5E7EB]"
+            className="btn-secondary touch-target px-3 text-xs"
           >
             ← voltar
           </button>
@@ -158,9 +159,23 @@ export default function FaturaPage() {
             <LoadingStatePanel rows={3} />
           ) : invoices.length === 0 ? (
             <EmptyStatePanel
-              icon="🧾"
-              title="Nenhuma fatura disponível"
-              description={c(isCouple, 'Registre um gasto no cartão para gerar a primeira fatura.', 'Registrem um gasto no cartão para gerar a primeira fatura.')}
+              icon={<CreditCard size={26} className="text-[#475569]" aria-hidden />}
+              tone="cards"
+              title="Ainda não há faturas para este cartão"
+              description={c(
+                isCouple,
+                'A primeira fatura aparece assim que você registra uma transação neste cartão.',
+                'A primeira fatura aparece assim que vocês registram uma transação neste cartão.'
+              )}
+              nextSteps={[
+                'Registre uma transação no cartão para iniciar a fatura',
+                'Acompanhe os lançamentos por mês para evitar surpresas no vencimento',
+              ]}
+              action={(
+                <button onClick={() => setShowNewTx(true)} className="btn-primary w-full justify-center">
+                  Registrar primeira transação
+                </button>
+              )}
             />
           ) : (
             <div className="space-y-0.5">
@@ -199,11 +214,13 @@ export default function FaturaPage() {
                   Lançamentos · {selectedInvoice.reference_month}
                 </p>
                 <span
-                  className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                  style={{
-                    color:      STATUS_COLOR[selectedInvoice.status],
-                    background: `${STATUS_COLOR[selectedInvoice.status]}18`,
-                  }}
+                  className={`status-chip ${
+                    selectedInvoice.status === 'paid'
+                      ? 'status-chip-success'
+                      : selectedInvoice.status === 'closed'
+                      ? 'status-chip-warning'
+                      : 'status-chip-info'
+                  }`}
                 >
                   {STATUS_LABEL[selectedInvoice.status]}
                 </span>
@@ -213,9 +230,10 @@ export default function FaturaPage() {
               <div className="space-y-0.5 mb-4">
                 {transactions.length === 0 ? (
                   <EmptyStatePanel
-                    icon="📭"
+                    icon={<FileText size={26} className="text-[#475569]" aria-hidden />}
+                    tone="neutral"
                     title="Nenhum lançamento nesta fatura"
-                    description="Adicione uma transação para começar."
+                    description="Quando você registrar despesas neste período, elas aparecerão aqui."
                   />
                 ) : (
                   transactions.map(tx => (
@@ -298,7 +316,8 @@ export default function FaturaPage() {
             </>
           ) : (
             <EmptyStatePanel
-              icon="🧾"
+              icon={<FileText size={26} className="text-[#475569]" aria-hidden />}
+              tone="cards"
               title="Selecione uma fatura"
               description="Escolha uma fatura na lista para ver os lançamentos."
             />

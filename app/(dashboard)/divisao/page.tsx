@@ -49,7 +49,7 @@ function SplitCard({
   const isPending = split.status === 'pending'
 
   return (
-    <div className="card card-compact flex flex-col gap-3">
+    <div className="motion-enter card card-compact flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold text-[#0F172A] truncate">{split.description}</p>
@@ -60,11 +60,11 @@ function SplitCard({
         <div className="text-right shrink-0">
           <p className="font-bold text-[#0F172A]">{formatCurrency(split.total_amount)}</p>
           {isPending ? (
-            <span className="badge-status badge-status-warning">
+            <span className="status-chip status-chip-warning">
               pendente
             </span>
           ) : (
-            <span className="badge-status badge-status-success">
+            <span className="status-chip status-chip-success">
               quitado
             </span>
           )}
@@ -103,7 +103,7 @@ function SplitCard({
             <button
               onClick={() => onDelete(split.id)}
               disabled={deleting}
-              className="btn-ghost text-xs px-3 py-1.5 hover:text-red-500"
+              className="btn-danger text-xs px-3 py-1.5"
               title="Remover divisão"
             >
               <Trash2 size={14} aria-hidden />
@@ -122,10 +122,13 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
 
   if (abs < 0.01) {
     return (
-      <div className="card p-5 flex items-center gap-4 mb-6">
+      <div className="motion-enter motion-delay-1 card p-5 flex items-center gap-4 mb-6">
         <Handshake size={28} className="text-[#475569]" aria-hidden />
         <div>
-          <p className="font-semibold text-[#0F172A]">Tudo certo entre vocês</p>
+          <p className="font-semibold text-[#0F172A] flex items-center gap-2">
+            Tudo certo entre vocês
+            <span className="status-chip status-chip-success">em dia</span>
+          </p>
           <p className="text-sm text-[#334155]">Nenhum valor pendente entre vocês</p>
         </div>
       </div>
@@ -137,7 +140,7 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
   const colorClass = youOwe ? 'text-red-500' : 'text-[#2DD4BF]'
 
   return (
-    <div className="card p-5 flex items-center gap-4 mb-6 border-l-4"
+    <div className="motion-enter motion-delay-1 card p-5 flex items-center gap-4 mb-6 border-l-4"
       style={{ borderLeftColor: youOwe ? '#ef4444' : '#2DD4BF' }}>
       {youOwe ? (
         <ArrowDownCircle size={28} className="text-red-500" aria-hidden />
@@ -145,7 +148,12 @@ function SplitBalanceCard({ balance, partnerName }: { balance: number; partnerNa
         <ArrowUpCircle size={28} className="text-[#2DD4BF]" aria-hidden />
       )}
       <div>
-        <p className="text-sm text-[#334155]">{label}</p>
+        <p className="text-sm text-[#334155] flex items-center gap-2">
+          {label}
+          <span className={`status-chip ${youOwe ? 'status-chip-danger' : 'status-chip-warning'}`}>
+            {youOwe ? 'pendente' : 'a receber'}
+          </span>
+        </p>
         <p className={`text-2xl font-black ${colorClass}`}>{formatCurrency(abs)}</p>
       </div>
     </div>
@@ -227,8 +235,8 @@ export default function DivisaoPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">Divisão</h1>
-          <p className="text-sm mt-1 text-[#334155]">
+          <h1 className="page-title">Divisão</h1>
+          <p className="page-subtitle mt-1">
             Despesas compartilhadas com {partnerName}
           </p>
         </div>
@@ -247,7 +255,7 @@ export default function DivisaoPage() {
             key={t}
             onClick={() => setTab(t)}
             data-active={tab === t}
-            className={`motion-tab interactive-control px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+            className={`touch-target motion-tab interactive-control px-4 py-1.5 rounded-md text-sm font-semibold transition-colors ${
               tab === t
                 ? 'bg-[#FF7F50] text-white shadow-sm'
                 : 'text-[#334155] hover:text-[#0F172A]'

@@ -66,8 +66,8 @@ export default function CategoriasPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8 md:mb-10">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F172A] tracking-tight">Categorias</h1>
-          <p className="text-sm mt-1 text-[#334155]">
+          <h1 className="page-title">Categorias</h1>
+          <p className="page-subtitle mt-1">
             {systemCategories.length} do sistema · {userCategories.length} suas
           </p>
         </div>
@@ -168,8 +168,12 @@ export default function CategoriasPage() {
             <EmptyStatePanel
               icon={<Tag size={26} className="text-[#475569]" aria-hidden />}
               tone="category"
-              title={c(isCouple, 'Crie suas próprias categorias', 'Criem categorias que façam sentido para vocês')}
-              description={c(isCouple, 'Personalize além das categorias padrão', 'Personalizem além das categorias padrão')}
+              title={c(isCouple, 'Personalize suas categorias', 'Personalizem categorias com a cara de vocês')}
+              description={c(
+                isCouple,
+                'As categorias padrão já ajudam, mas personalizar deixa os relatórios muito mais úteis.',
+                'As categorias padrão já ajudam, mas personalizar deixa os relatórios do casal muito mais úteis.'
+              )}
               nextSteps={[
                 'Crie categorias para os gastos que mais se repetem',
                 'Separe receitas e despesas para relatórios mais claros',

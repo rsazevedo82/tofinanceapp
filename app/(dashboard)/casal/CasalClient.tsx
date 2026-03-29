@@ -31,7 +31,7 @@ export default function CasalPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 md:py-12">
       <div className="mb-10">
         <h1 className="page-title">Perfil de Casal</h1>
-        <p className="text-sm mt-1 text-[#334155]">
+        <p className="page-subtitle mt-1">
           Conectem-se e organizem a vida financeira juntos
         </p>
       </div>
@@ -74,12 +74,14 @@ function PendingInviteCard({ invite }: { invite: ReceivedCoupleInvite }) {
   }
 
   return (
-    <div className="card mb-6"
+    <div className="motion-enter card mb-6"
       style={{ border: '2px solid rgba(255,127,80,0.45)', background: 'rgba(255,127,80,0.08)' }}>
       <div className="flex items-start gap-3 mb-4">
         <MailPlus size={22} className="text-[#EA580C]" aria-hidden />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#EA580C]">Ação necessária</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#EA580C]">
+            <span className="status-chip status-chip-warning">Ação necessária</span>
+          </p>
           <p className="text-sm font-bold text-[#0F172A]">Você recebeu um convite de perfil compartilhado</p>
           <p className="text-xs mt-0.5 text-[#334155]">
             {inviterName} convidou você para conectar as finanças.
@@ -143,14 +145,17 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
   }
 
   return (
-    <div className="card mb-6"
+    <div className="motion-enter card mb-6"
       style={{ border: '1px solid rgba(245,158,11,0.25)', background: 'rgba(245,158,11,0.04)' }}>
 
       {/* Cabeçalho */}
       <div className="flex items-start gap-3 mb-4">
         <MailPlus size={22} className="text-[#0F172A]" aria-hidden />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-[#0F172A]">Convite enviado</p>
+          <p className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+            Convite enviado
+            <span className="status-chip status-chip-info">aguardando resposta</span>
+          </p>
           <p className="text-xs mt-0.5 truncate text-[#334155]">
             Aguardando {invitation.invitee_email} aceitar o convite
           </p>
@@ -189,8 +194,7 @@ function SentInviteCard({ invitation }: { invitation: CoupleInvitation }) {
         <button
           onClick={handleResend}
           disabled={isBusy}
-          className="btn-primary text-xs flex-1 justify-center py-2.5"
-          style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706' }}
+          className="btn-secondary text-xs flex-1 justify-center py-2.5"
         >
           {resendInvite.isPending ? 'Reenviando...' : 'Reenviar convite'}
         </button>
@@ -225,7 +229,7 @@ function InviteForm() {
   }
 
   return (
-    <div className="card">
+    <div className="motion-enter card card-compact">
       <div className="flex items-center gap-3 mb-6">
         <Users size={30} className="text-[#475569]" aria-hidden />
         <div>
@@ -289,7 +293,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
 
   return (
     <div className="space-y-4">
-      <div className="card"
+      <div className="motion-enter card card-compact"
         style={{ border: '1px solid rgba(45,212,191,0.25)', background: 'rgba(45,212,191,0.03)' }}>
         <div className="flex items-center gap-3 mb-4">
           <Users size={30} className="text-[#0d9488]" aria-hidden />
@@ -325,7 +329,7 @@ function CoupleStatus({ couple }: { couple: NonNullable<ReturnType<typeof useCou
       ) : (
         <button
           onClick={() => setShowUnlink(true)}
-          className="touch-target w-full rounded-xl text-sm transition-colors text-red-500 border border-red-100 hover:bg-red-50"
+          className="btn-danger w-full justify-center"
         >
           Encerrar vínculo do casal
         </button>
@@ -350,7 +354,7 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
   }
 
   return (
-    <div className="card"
+    <div className="motion-enter card card-compact"
       style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.02)' }}>
       <p className="text-sm font-bold text-red-600 mb-1">Encerrar vínculo do casal</p>
       <p className="text-xs mb-4 text-[#334155]">
@@ -388,15 +392,14 @@ function UnlinkCoupleModal({ partnerName, onCancel }: { partnerName: string; onC
           <button
             type="submit"
             disabled={unlinkCouple.isPending || !password}
-            className="touch-target flex-1 rounded-xl text-sm font-semibold transition-colors"
-            style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }}
+            className="btn-danger flex-1 justify-center"
           >
             {unlinkCouple.isPending ? 'Encerrando...' : 'Confirmar encerramento'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="btn-ghost px-4 text-sm"
+            className="btn-secondary px-4 text-sm"
           >
             Cancelar
           </button>

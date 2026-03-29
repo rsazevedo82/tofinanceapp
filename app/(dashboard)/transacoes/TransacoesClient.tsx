@@ -234,19 +234,19 @@ export default function TransacoesPage() {
 
       {/* Resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 md:mb-8">
-        <div className="card">
+        <div className="motion-enter motion-delay-1 card card-compact">
           <p className="label">Receitas</p>
           <p className="entity-title sm:text-lg font-bold" style={{ color: '#2DD4BF' }}>
             {formatCurrency(totalIncome)}
           </p>
         </div>
-        <div className="card">
+        <div className="motion-enter motion-delay-2 card card-compact">
           <p className="label">Despesas</p>
           <p className="entity-title sm:text-lg font-bold" style={{ color: '#FF7F50' }}>
             {formatCurrency(totalExpense)}
           </p>
         </div>
-        <div className="card">
+        <div className="motion-enter motion-delay-3 card card-compact">
           <p className="label">Saldo</p>
           <p className={`entity-title sm:text-lg font-bold ${
             totalIncome - totalExpense >= 0 ? 'text-[#0F172A]' : 'text-[#C2410C]'
@@ -267,7 +267,7 @@ export default function TransacoesPage() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             data-active={activeTab === tab.key}
-            className="motion-tab interactive-control px-4 py-1.5 rounded-lg text-xs font-medium"
+            className="touch-target motion-tab interactive-control px-4 py-1.5 rounded-lg text-xs font-medium"
             style={{
               background: activeTab === tab.key ? tab.bg    : 'transparent',
               color:      activeTab === tab.key ? tab.color : '#334155',
@@ -296,6 +296,11 @@ export default function TransacoesPage() {
           nextSteps={activeTab === 'expense'
             ? ['Registre uma despesa para iniciar o histórico do mês', 'Classifique por categoria para melhorar os relatórios']
             : ['Registre uma receita para acompanhar seu fluxo de caixa', 'Use conta correta para manter o saldo confiável']}
+          action={(
+            <button onClick={() => setShowCreate(true)} className="btn-primary w-full sm:w-auto justify-center">
+              Registrar transação
+            </button>
+          )}
         />
       ) : (
         <div>
@@ -340,7 +345,7 @@ export default function TransacoesPage() {
 
       {/* Total */}
       {displayed.length > 0 && (
-        <div className="flex items-center justify-between px-2 py-2.5 mt-2 rounded-lg bg-white"
+        <div className="motion-enter motion-delay-4 flex items-center justify-between px-2 py-2.5 mt-2 rounded-lg bg-white"
           style={{ border: '1px solid #D1D5DB' }}>
           <p className="meta-text">
             Total {activeTab === 'expense' ? 'de despesas' : 'de receitas'}
@@ -365,10 +370,10 @@ export default function TransacoesPage() {
                 type="button"
                 onClick={handleDelete}
                 disabled={deleteTransaction.isPending}
-                className={`touch-target w-full rounded-xl text-sm font-medium transition-colors ${
+                className={`w-full justify-center ${
                   confirmDelete
-                    ? 'bg-red-500 text-white'
-                    : 'bg-transparent text-red-500 border border-red-200 hover:bg-red-50'
+                    ? 'btn-danger'
+                    : 'btn-ghost text-red-500 border-red-200 hover:bg-red-50'
                 }`}
               >
                 {deleteTransaction.isPending ? 'Excluindo...' : confirmDelete ? 'Confirmar exclusão' : 'Excluir transação'}
@@ -377,7 +382,7 @@ export default function TransacoesPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="touch-target w-full text-xs mt-1 text-[#334155]"
+                  className="btn-secondary w-full justify-center mt-2"
                 >
                   Cancelar
                 </button>

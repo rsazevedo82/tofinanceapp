@@ -139,7 +139,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
         <button
           onClick={dismiss}
           aria-label="Fechar"
-          className="text-xs px-2 py-1 rounded-lg transition-colors"
+          className="touch-target inline-flex items-center justify-center text-xs px-2 py-1 rounded-lg transition-colors"
           style={{ color: 'var(--text-muted)' }}
         >
           ✕
@@ -245,7 +245,7 @@ export function OnboardingChecklist({ dashboardData, onNewTransaction }: Props) 
             {!step.done && (
               <button
                 onClick={step.action}
-                className="text-xs px-2.5 py-1 rounded-lg shrink-0 transition-colors"
+                className="touch-target inline-flex items-center text-xs px-2.5 py-1 rounded-lg shrink-0 transition-colors"
                 style={{
                   background:  'rgba(255,127,80,0.1)',
                   border:      '1px solid rgba(255,127,80,0.25)',
