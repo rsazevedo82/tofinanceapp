@@ -67,9 +67,6 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
           supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -90,6 +87,19 @@ export async function proxy(request: NextRequest) {
 
   const publicRoutes = ['/login', '/cadastro', '/recuperar-senha', '/atualizar-senha']
   const isPublicRoute = publicRoutes.includes(path)
+  const hasRecoveryQuery =
+    request.nextUrl.searchParams.get('type') === 'recovery' ||
+    !!request.nextUrl.searchParams.get('token_hash') ||
+    !!request.nextUrl.searchParams.get('token') ||
+    !!request.nextUrl.searchParams.get('code')
+
+  if (path === '/login' && hasRecoveryQuery) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/atualizar-senha'
+    const response = NextResponse.redirect(url)
+    response.headers.set('x-request-id', requestId)
+    return response
+  }
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()

@@ -1,9 +1,8 @@
 'use client'
 
-import { useState }       from 'react'
+import { useEffect, useState } from 'react'
 import Image              from 'next/image'
 import Link               from 'next/link'
-import { createClient }   from '@/lib/supabase/client'
 import { useRouter }      from 'next/navigation'
 import { useToast }       from '@/components/providers/ToastProvider'
 
@@ -29,6 +28,26 @@ export default function LoginPage() {
   const router = useRouter()
   const { showToast } = useToast()
 
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const hasRecoveryQuery =
+      !!url.searchParams.get('code') ||
+      (!!url.searchParams.get('token_hash') && url.searchParams.get('type') === 'recovery') ||
+      (!!url.searchParams.get('token') && url.searchParams.get('type') === 'recovery')
+
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const hasRecoveryHash =
+      hashParams.get('type') === 'recovery' &&
+      !!hashParams.get('access_token') &&
+      !!hashParams.get('refresh_token')
+
+    if (!hasRecoveryQuery && !hasRecoveryHash) return
+
+    const search = window.location.search ?? ''
+    const hash = window.location.hash ?? ''
+    router.replace(`/atualizar-senha${search}${hash}`)
+  }, [router])
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -49,12 +68,16 @@ export default function LoginPage() {
       return
     }
 
-    const supabase = createClient()
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: json.data.access_token,
-      refresh_token: json.data.refresh_token,
+    const sessionRes = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_token: json.data.access_token,
+        refresh_token: json.data.refresh_token,
+      }),
     })
-    if (sessionError) {
+    const sessionJson: { error?: string | null } = await sessionRes.json().catch(() => ({}))
+    if (!sessionRes.ok || sessionJson.error) {
       const message = 'Falha ao iniciar sessao. Tente novamente.'
       setError(message)
       showToast({ title: 'Falha no login', description: message, variant: 'error' })
