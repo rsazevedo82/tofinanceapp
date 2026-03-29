@@ -55,6 +55,54 @@
     --motion-duration-md: 220ms;
     --motion-duration-slow: 320ms;
     --motion-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    /* ── Design System Tokens (DS-01) ─────────────────────────────── */
+    /* Cores semânticas */
+    --ds-color-bg-page: #FDFCF0;
+    --ds-color-bg-surface: #ffffff;
+    --ds-color-bg-surface-muted: #F8FAFC;
+    --ds-color-text-primary: #0F172A;
+    --ds-color-text-secondary: #334155;
+    --ds-color-text-muted: #64748B;
+    --ds-color-border-default: #D1D5DB;
+    --ds-color-border-strong: #94A3B8;
+    --ds-color-brand-primary: #FF7F50;
+    --ds-color-brand-primary-hover: #e86e40;
+    --ds-color-success: #2DD4BF;
+    --ds-color-warning: #F59E0B;
+    --ds-color-danger: #EF4444;
+    --ds-color-info: #475569;
+
+    /* Tipografia */
+    --ds-font-family-body: var(--font-family-sans);
+    --ds-font-family-heading: var(--font-family-heading);
+    --ds-font-size-xs: 0.75rem;
+    --ds-font-size-sm: 0.875rem;
+    --ds-font-size-md: 1rem;
+    --ds-font-size-lg: 1.125rem;
+    --ds-font-size-xl: 1.5rem;
+    --ds-font-size-2xl: 2rem;
+
+    /* Espaçamento */
+    --ds-space-1: 0.25rem;
+    --ds-space-2: 0.5rem;
+    --ds-space-3: 0.75rem;
+    --ds-space-4: 1rem;
+    --ds-space-5: 1.25rem;
+    --ds-space-6: 1.5rem;
+
+    /* Raios/elevation */
+    --ds-radius-sm: 0.5rem;
+    --ds-radius-md: 0.75rem;
+    --ds-radius-lg: 1rem;
+    --ds-shadow-1: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.04);
+    --ds-shadow-2: 0 8px 32px rgba(15,23,42,0.12);
+
+    /* Motion */
+    --ds-motion-fast: var(--motion-duration-fast);
+    --ds-motion-md: var(--motion-duration-md);
+    --ds-motion-slow: var(--motion-duration-slow);
+    --ds-motion-ease: var(--motion-ease-standard);
   }
   body {
     @apply antialiased;
@@ -582,6 +630,21 @@
 }
 
 .dark {
+  --ds-color-bg-page: #111110;
+  --ds-color-bg-surface: #18181b;
+  --ds-color-bg-surface-muted: #27272a;
+  --ds-color-text-primary: #e8e6e1;
+  --ds-color-text-secondary: #d4d4d8;
+  --ds-color-text-muted: #a1a1aa;
+  --ds-color-border-default: rgba(255,255,255,0.1);
+  --ds-color-border-strong: rgba(255,255,255,0.2);
+  --ds-color-brand-primary: #FF7F50;
+  --ds-color-brand-primary-hover: #e86e40;
+  --ds-color-success: #2DD4BF;
+  --ds-color-warning: #F59E0B;
+  --ds-color-danger: #F87171;
+  --ds-color-info: #cbd5e1;
+
   --background:      #111110;
   --foreground:      #e8e6e1;
   --card:      oklch(0.205 0 0);
