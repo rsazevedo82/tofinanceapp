@@ -38,6 +38,15 @@ function isStandalone() {
   )
 }
 
+function isMobileOrTabletDevice() {
+  const ua = navigator.userAgent.toLowerCase()
+  const uaLooksMobile = /android|iphone|ipad|ipod|mobile|tablet/i.test(ua)
+  const touchSmallViewport =
+    navigator.maxTouchPoints > 0 && window.matchMedia('(max-width: 1024px)').matches
+
+  return uaLooksMobile || touchSmallViewport
+}
+
 function readDismissRecord(): InstallDismissRecord | null {
   const raw = localStorage.getItem(DISMISSED_KEY)
   if (!raw) return null
@@ -70,6 +79,7 @@ export function InstallBanner() {
 
   useEffect(() => {
     if (isStandalone()) return
+    if (!isMobileOrTabletDevice()) return
 
     // Limpa chave antiga para migrar para estratégia com TTL/versionamento.
     localStorage.removeItem(LEGACY_DISMISSED_KEY)
