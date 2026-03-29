@@ -1,5 +1,6 @@
 // app/api/reports/route.ts
 import { createClient }     from '@/lib/supabase/server'
+import { getCachedReports, setCachedReports } from '@/lib/summaryCache'
 import { NextResponse }     from 'next/server'
 import { checkRateLimitByIP, checkRateLimitByUser }   from '@/lib/apiHelpers'
 import type { ApiResponse } from '@/types'
@@ -120,6 +121,24 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') ?? new Date().toISOString().slice(0, 7)
     const { start, end } = monthRange(month)
+    const cached = await getCachedReports<ReportsPayload>({
+      userId: user.id,
+      period: month,
+    })
+
+    if (cached) {
+      return NextResponse.json(
+        {
+          data: cached,
+          error: null,
+        },
+        {
+          headers: {
+            'Cache-Control': 'private, max-age=30, stale-while-revalidate=90',
+          },
+        }
+      )
+    }
 
     const monthsBack = 5
     const monthList  = Array.from({ length: monthsBack + 1 }, (_, i) => addMonths(month, -monthsBack + i))
@@ -258,9 +277,24 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Re
       }),
     ]
 
+    const payload: ReportsPayload = {
+      categories,
+      monthly,
+      daily_flow,
+      card_limits,
+      projection,
+      period: { start, end, month },
+    }
+
+    await setCachedReports({
+      userId: user.id,
+      period: month,
+      value: payload,
+    })
+
     return NextResponse.json(
       {
-        data: { categories, monthly, daily_flow, card_limits, projection, period: { start, end, month } },
+        data: payload,
         error: null,
       },
       {

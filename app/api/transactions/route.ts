@@ -7,6 +7,7 @@ import { fail, logInternalError }                              from '@/lib/apiRe
 import { getRequestAuditMeta, recordAuditEvent }               from '@/lib/audit'
 import { createTransactionSchema }                             from '@/lib/validations/schemas'
 import { buildEqualSplitAmounts, shouldAutoSplitTransaction } from '@/lib/splitLogic'
+import { invalidateSummaryCacheForUser } from '@/lib/summaryCache'
 import { getReferenceMonth, getDueDate, getInstallmentDates } from '@/lib/domain/invoices'
 import { limitFrequentRead, ratelimit }                        from '@/lib/rateLimit'
 import { finalizeIdempotency, prepareIdempotency }             from '@/lib/idempotency'
@@ -372,6 +373,7 @@ export async function POST(
           account_id: txData.account_id,
         },
       })
+      await invalidateSummaryCacheForUser(user.id)
       return respond(201, { data, error: null })
     }
 
@@ -479,6 +481,7 @@ export async function POST(
         account_id: txData.account_id,
       },
     })
+    await invalidateSummaryCacheForUser(user.id)
     return respond(201, { data: created, error: null })
   } catch (err) {
     if (auditUserId) {

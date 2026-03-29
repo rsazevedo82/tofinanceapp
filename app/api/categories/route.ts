@@ -1,5 +1,6 @@
 ﻿// app/api/categories/route.ts
 import { createClient }          from '@/lib/supabase/server'
+import { invalidateSummaryCacheForUser } from '@/lib/summaryCache'
 import { createCategorySchema }  from '@/lib/validations/schemas'
 import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import type { ApiResponse, Category } from '@/types'
@@ -78,6 +79,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<C
       .single()
 
     if (error) throw error
+    await invalidateSummaryCacheForUser(user.id)
     return NextResponse.json({ data, error: null }, { status: 201 })
   } catch (err) {
     console.error('[POST /api/categories]', err)

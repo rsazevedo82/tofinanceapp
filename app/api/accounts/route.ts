@@ -1,5 +1,6 @@
 ﻿// app/api/accounts/route.ts
 import { createClient }        from '@/lib/supabase/server'
+import { invalidateSummaryCacheForUser } from '@/lib/summaryCache'
 import { createAccountSchema } from '@/lib/validations/schemas'
 import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import type { ApiResponse, Account } from '@/types'
@@ -95,9 +96,11 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<A
         .eq('id', account.id)
         .single()
 
+      await invalidateSummaryCacheForUser(user.id)
       return NextResponse.json({ data: updated, error: null }, { status: 201 })
     }
 
+    await invalidateSummaryCacheForUser(user.id)
     return NextResponse.json({ data: account, error: null }, { status: 201 })
   } catch (err) {
     console.error('[POST /api/accounts]', err)

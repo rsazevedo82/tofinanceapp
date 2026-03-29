@@ -2,6 +2,7 @@
 import { createClient }    from '@/lib/supabase/server'
 import { fail, logInternalError } from '@/lib/apiResponse'
 import { getRequestAuditMeta, recordAuditEvent } from '@/lib/audit'
+import { invalidateSummaryCacheForUser } from '@/lib/summaryCache'
 import { payInvoiceSchema } from '@/lib/validations/schemas'
 import { checkRateLimitByIP, checkRateLimitByUser }  from '@/lib/apiHelpers'
 import { finalizeIdempotency, prepareIdempotency } from '@/lib/idempotency'
@@ -182,6 +183,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
         payment_account_id: parsed.data.payment_account_id,
       },
     })
+    await invalidateSummaryCacheForUser(user.id)
     return respond(200, { data: updated, error: null })
   } catch (err) {
     if (auditUserId) {

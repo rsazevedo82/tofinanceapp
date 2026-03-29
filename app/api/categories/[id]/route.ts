@@ -1,5 +1,6 @@
 ﻿// app/api/categories/[id]/route.ts
 import { createClient }          from '@/lib/supabase/server'
+import { invalidateSummaryCacheForUser } from '@/lib/summaryCache'
 import { updateCategorySchema }  from '@/lib/validations/schemas'
 import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import type { ApiResponse, Category } from '@/types'
@@ -49,6 +50,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
       .single()
 
     if (error) throw error
+    await invalidateSummaryCacheForUser(user.id)
     return NextResponse.json({ data, error: null })
   } catch (err) {
     console.error('[PATCH /api/categories/:id]', err)
@@ -91,6 +93,7 @@ export async function DELETE(_request: Request, props: { params: Promise<{ id: s
       .eq('id', params.id)
 
     if (error) throw error
+    await invalidateSummaryCacheForUser(user.id)
     return NextResponse.json({ data: null, error: null })
   } catch (err) {
     console.error('[DELETE /api/categories/:id]', err)

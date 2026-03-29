@@ -1,5 +1,6 @@
 ﻿// app/api/dashboard/route.ts
 import { createClient }          from '@/lib/supabase/server'
+import { getCachedDashboard, setCachedDashboard } from '@/lib/summaryCache'
 import { getCurrentMonthRange }  from '@/lib/utils/format'
 import type { ApiResponse }      from '@/types'
 import { NextResponse }          from 'next/server'
@@ -66,6 +67,15 @@ export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
     }
 
     const { start, end } = getCurrentMonthRange()
+    const cachePeriod = start.slice(0, 7)
+    const cached = await getCachedDashboard<DashboardData>({
+      userId: user.id,
+      period: cachePeriod,
+    })
+
+    if (cached) {
+      return NextResponse.json({ data: cached, error: null })
+    }
 
     // Busca tudo em paralelo
     const [accountsRes, recentTxRes, invoicesRes, monthlyRes, categoryRes] = await Promise.all([
@@ -188,17 +198,25 @@ export async function GET(): Promise<NextResponse<ApiResponse<DashboardData>>> {
         }
       })
 
+    const payload: DashboardData = {
+      total_balance,
+      income_month,
+      expense_month,
+      net_month: income_month - expense_month,
+      cards,
+      recent_transactions,
+      top_categories,
+      period: { start, end },
+    }
+
+    await setCachedDashboard({
+      userId: user.id,
+      period: cachePeriod,
+      value: payload,
+    })
+
     return NextResponse.json({
-      data: {
-        total_balance,
-        income_month,
-        expense_month,
-        net_month: income_month - expense_month,
-        cards,
-        recent_transactions,
-        top_categories,
-        period: { start, end },
-      },
+      data: payload,
       error: null,
     })
   } catch (err) {

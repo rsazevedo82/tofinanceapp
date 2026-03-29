@@ -2,6 +2,7 @@
 import { createClient }             from '@/lib/supabase/server'
 import { createTransactionSchema }  from '@/lib/validations/schemas'
 import { buildEqualSplitAmounts, shouldAutoSplitTransaction } from '@/lib/splitLogic'
+import { invalidateSummaryCacheForUser } from '@/lib/summaryCache'
 import { checkRateLimitByIP, checkRateLimitByUser } from '@/lib/apiHelpers'
 import { withRouteObservability } from '@/lib/observability'
 import type { ApiResponse, Transaction } from '@/types'
@@ -176,6 +177,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
       date: data.date,
       amount: data.amount,
     })
+    await invalidateSummaryCacheForUser(user.id)
 
     return NextResponse.json({ data, error: null })
   }) as Promise<NextResponse<ApiResponse<Transaction>>>
@@ -224,6 +226,7 @@ export async function DELETE(_request: Request, props: { params: Promise<{ id: s
       .from('expense_splits')
       .delete()
       .eq('transaction_id', params.id)
+    await invalidateSummaryCacheForUser(user.id)
 
     return NextResponse.json({ data: null, error: null })
   }) as Promise<NextResponse<ApiResponse<null>>>
