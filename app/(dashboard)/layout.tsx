@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Sidebar }            from '@/components/ui/Sidebar'
 import { PartnerViewToggle }  from '@/components/ui/PartnerViewToggle'
 import { PartnerViewBanner }  from '@/components/ui/PartnerViewBanner'

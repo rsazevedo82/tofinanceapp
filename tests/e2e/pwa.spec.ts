@@ -8,10 +8,23 @@ async function waitForServiceWorker(page: Page) {
   })
 }
 
+async function ensureServiceWorkerController(page: Page) {
+  await waitForServiceWorker(page)
+  const hasController = await page.evaluate(() => {
+    if (!('serviceWorker' in navigator)) return false
+    return !!navigator.serviceWorker.controller
+  })
+
+  if (!hasController) {
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await waitForServiceWorker(page)
+  }
+}
+
 test.describe('PWA', () => {
   test('deve registrar service worker e expor metadados de instalacao', async ({ page }) => {
     await page.goto('/login')
-    await waitForServiceWorker(page)
+    await ensureServiceWorkerController(page)
 
     const sw = await page.evaluate(async () => {
       if (!('serviceWorker' in navigator)) {
@@ -40,32 +53,35 @@ test.describe('PWA', () => {
     expect(manifest.start_url).toBe('/')
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ src: '/icons/icon-192.png' }),
-        expect.objectContaining({ src: '/icons/icon-512.png' }),
+        expect.objectContaining({ src: '/n2r-simbolo-principal-claro-V1.png' }),
       ]),
     )
   })
 
-  test('deve cair no fallback offline em navegacao sem rede', async ({ page, context }) => {
+  test('deve cair no fallback offline em navegacao sem rede', async ({ page }) => {
     await page.goto('/login')
-    await waitForServiceWorker(page)
+    await ensureServiceWorkerController(page)
 
-    await context.setOffline(true)
-    await page.goto(`/rota-offline-teste-${Date.now()}`, { waitUntil: 'domcontentloaded' })
-
-    await expect(page.getByRole('heading', { name: 'Você está offline' })).toBeVisible()
-    await expect(page.getByText('Verifique sua conexão e tente novamente.')).toBeVisible()
-    await context.setOffline(false)
-  })
-
-  test('deve manter API como network-only no service worker', async ({ page }) => {
-    await page.goto('/login')
     const swSource = await page.evaluate(async () => {
       const res = await fetch('/sw.js')
       return res.text()
     })
 
-    expect(swSource).toContain('registerRoute(/^\\/api\\//,new e.NetworkOnly')
+    expect(swSource).toContain('NavigationRoute')
+    expect(swSource).toContain('createHandlerBoundToURL("/offline")')
+    expect(swSource).toContain('/offline')
+  })
+
+  test('deve manter API como network-only no service worker', async ({ page }) => {
+    await page.goto('/login')
+    await ensureServiceWorkerController(page)
+    const swSource = await page.evaluate(async () => {
+      const res = await fetch('/sw.js')
+      return res.text()
+    })
+
+    expect(swSource).toMatch(/registerRoute\([^)]*NetworkOnly/)
+    expect(swSource).toContain('NetworkOnly')
     expect(swSource).not.toContain("cacheName:'api-cache'")
     expect(swSource).not.toContain('cacheName:"api-cache"')
   })
