@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { z } from 'zod'
 import { fail, logInternalError, ok } from '@/lib/apiResponse'
 import { recordAuditEvent } from '@/lib/audit'
+import { resolvePasswordRecoveryRedirect } from '@/lib/passwordRecoveryRedirect'
 import {
   applyPasswordRecoveryCooldown,
   checkPasswordRecoveryThrottle,
@@ -22,24 +23,23 @@ type PasswordRecoveryResponse = {
 const GENERIC_SUCCESS_MESSAGE =
   'Se o email existir, voce recebera um link para redefinir a senha.'
 
-async function getRequestMeta(): Promise<{ ip: string; userAgent: string; origin: string | null }> {
+async function getRequestMeta(): Promise<{
+  ip: string
+  userAgent: string
+  origin: string | null
+  host: string | null
+  forwardedHost: string | null
+  forwardedProto: string | null
+}> {
   const h = await headers()
   return {
     ip: h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? '127.0.0.1',
     userAgent: h.get('user-agent') ?? '',
     origin: h.get('origin'),
+    host: h.get('host'),
+    forwardedHost: h.get('x-forwarded-host'),
+    forwardedProto: h.get('x-forwarded-proto'),
   }
-}
-
-function resolveRedirectTo(origin: string | null): string {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
-  if (appUrl) return `${appUrl.replace(/\/$/, '')}/atualizar-senha`
-
-  if (origin?.startsWith('http://localhost:') || origin?.startsWith('http://127.0.0.1:')) {
-    return `${origin.replace(/\/$/, '')}/atualizar-senha`
-  }
-
-  return 'https://www.nos2reais.com.br/atualizar-senha'
 }
 
 async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
@@ -127,7 +127,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<P
       }
     }
 
-    const redirectTo = resolveRedirectTo(meta.origin)
+    const redirectTo = resolvePasswordRecoveryRedirect(meta)
     const providerResponse = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/recover`,
       {
