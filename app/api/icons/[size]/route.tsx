@@ -3,7 +3,9 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
 
-export const runtime = 'edge'
+// Evita limite de 1 MB de Edge Function no plano free da Vercel.
+// Mantém o endpoint funcional em runtime Node.js.
+export const runtime = 'nodejs'
 
 export async function GET(_req: NextRequest, props: { params: Promise<{ size: string }> }) {
   const params = await props.params;
