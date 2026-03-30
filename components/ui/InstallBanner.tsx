@@ -41,10 +41,10 @@ function isStandalone() {
 function isMobileOrTabletDevice() {
   const ua = navigator.userAgent.toLowerCase()
   const uaLooksMobile = /android|iphone|ipad|ipod|mobile|tablet/i.test(ua)
-  const touchSmallViewport =
-    navigator.maxTouchPoints > 0 && window.matchMedia('(max-width: 1024px)').matches
+  const smallViewport = window.matchMedia('(max-width: 1024px)').matches
 
-  return uaLooksMobile || touchSmallViewport
+  // Evita falso positivo em desktop touch/híbrido.
+  return uaLooksMobile && smallViewport
 }
 
 function readDismissRecord(): InstallDismissRecord | null {

@@ -41,8 +41,8 @@ export default function OfflinePage() {
       }
 
       try {
-        // Probe no mesmo domínio para evitar falso "online" de outros apps.
-        const res = await fetch(`/manifest.webmanifest?ts=${Date.now()}`, {
+        // Probe em endpoint de rede (API) para evitar falso "online" via cache do SW.
+        const res = await fetch(`/api/healthz?ts=${Date.now()}`, {
           method: 'GET',
           cache: 'no-store',
         })
